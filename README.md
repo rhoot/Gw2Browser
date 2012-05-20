@@ -30,7 +30,7 @@ Usage
 
 It can be started as:
 
-    Gw2Browser -i <input dat>
+    Gw2Browser <input dat>
 
 If `<input dat>` is given, the program will open the file as soon as it starts.
 

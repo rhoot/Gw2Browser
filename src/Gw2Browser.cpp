@@ -52,12 +52,8 @@ bool Gw2Browser::OnInit()
 
 void Gw2Browser::ParseArguments()
 {
-    wxString lastArg;
-    for (int i = 1; i < this->argc; i++) {
-        if (lastArg == wxT("-i")) {
-            mDatPath = this->argv[i];
-        }
-        lastArg = this->argv[i];
+    if (this->argc > 1) {
+        mDatPath = this->argv[1];
     }
 }
 
