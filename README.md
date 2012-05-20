@@ -44,7 +44,7 @@ to be enabled in order to compile (if you can dynamic_cast, you're covered).
 
 ### Required libraries
 
-* [gw2DatTools](https://bitbucket.org/Daegalus/gw2re/)
+* [gw2DatTools](https://github.com/ahom/gw2DatTools/)
 * [wxWidgets](http://wxwidgets.org/)
 
 Keep in mind gw2DatTools is still under development and some modifications may
