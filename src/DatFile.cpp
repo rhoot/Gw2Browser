@@ -257,7 +257,7 @@ Array<byte>* DatFile::PeekEntry(uint pEntryNum, uint pPeekSize)
         uint32 outputSize = pPeekSize;
         byte* outputData;
         try {
-            outputData = gw2dt::compression::inflateBuffer((uint32*)mInputBuffer.GetPointer(), inputSize, outputSize);
+            outputData = gw2dt::compression::inflateBuffer(mInputBuffer.GetPointer(), inputSize, outputSize);
         } catch (std::exception&) {
             outputSize = 0;
             outputData = NULL;
@@ -311,7 +311,7 @@ Array<byte>* DatFile::ReadEntry(uint pEntryNum)
         uint32 outputSize = 0;
         byte* outputData;
         try {
-            outputData = gw2dt::compression::inflateBuffer((uint32*)mInputBuffer.GetPointer(), inputSize, outputSize);
+            outputData = gw2dt::compression::inflateBuffer(mInputBuffer.GetPointer(), inputSize, outputSize);
         } catch (std::exception&) {
             outputSize = 0;
             outputData = NULL;

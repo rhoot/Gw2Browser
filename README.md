@@ -13,6 +13,8 @@ will have to be re-indexed (for now).
 Keep in mind that if you keep tree items expanded while the indexer is running,
 or while an index is being read, the process is *a lot* slower.
 
+The latest Win32 binary can always be found at http://skold.cc/gw2browser/
+
 Authors
 -------
 
