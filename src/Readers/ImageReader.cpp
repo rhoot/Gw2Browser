@@ -63,7 +63,7 @@ ImageReader::~ImageReader()
 {
 }
 
-wxImage* ImageReader::GetImage() const
+wxImage ImageReader::GetImage() const
 {
     wxSize size;
     BGR* colors   = NULL;
@@ -71,16 +71,16 @@ wxImage* ImageReader::GetImage() const
 
     // Bail if the data was invalid
     if (!this->ReadAtexData(size, colors, alphas)) {
-        return NULL;
+        return wxImage();
     }
 
     // Create image and fill it with color data
-    wxImage* image = new wxImage(size.x, size.y);
-    image->SetData(reinterpret_cast<unsigned char*>(colors));
+    wxImage image(size.x, size.y);
+    image.SetData(reinterpret_cast<unsigned char*>(colors));
 
     // Set alpha if the format has any
     if (alphas) {
-        image->SetAlpha(alphas);
+        image.SetAlpha(alphas);
     }
 
     return image;
@@ -88,18 +88,17 @@ wxImage* ImageReader::GetImage() const
 
 byte* ImageReader::ConvertData(uint& poSize) const
 {
-    wxImage* image = this->GetImage();
+    wxImage image = this->GetImage();
 
     // Bail if invalid
-    if (!image) {
+    if (!image.IsOk()) {
         poSize = 0;
         return NULL;
     }
 
     // Write the png to memory
     wxMemoryOutputStream stream;
-    if (!image->SaveFile(stream, wxBITMAP_TYPE_PNG)) {
-        DeletePointer(image);
+    if (!image.SaveFile(stream, wxBITMAP_TYPE_PNG)) {
         poSize = 0;
         return NULL;
     }
@@ -114,7 +113,6 @@ byte* ImageReader::ConvertData(uint& poSize) const
     buffer->Read(data, poSize);
 
     // Return the PNG data
-    DeletePointer(image);
     return data;
 }
 
@@ -461,7 +459,7 @@ void ImageReader::Process3DCX(BGRA* pData, uint pWidth, uint pHeight, BGR*& poCo
         for (uint x = 0; x < numHorizBlocks; x++)
         {
             DCXBlock& block = blocks[(y * numHorizBlocks) + x];
-            // 3DCX actually uses RGBA, so *pretend* that's what the output is
+            // 3DCX actually uses RGB and not BGR, so *pretend* that's what the output is
             this->Process3DCXBlock(reinterpret_cast<RGB*>(poColors), block, x * 4, y * 4, pWidth);
         }
     }

@@ -36,7 +36,7 @@ class ImageReader;
 class ImageViewer : public Viewer
 {
     ImageControl*       mImageControl;
-    wxImage*            mImage;
+    wxImage             mImage;
     Array<wxWindowID>   mToolbarButtonIds;
     Array<wxBitmap>     mToolbarButtonIcons;
     Array<wxToolBarToolBase*>   mToolbarButtons;

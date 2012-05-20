@@ -33,7 +33,6 @@ namespace gw2b
 
 ImageViewer::ImageViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& pSize)
     : Viewer(pParent, pPos, pSize)
-    , mImage(NULL)
     , mImageControl(NULL)
 {
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
@@ -53,13 +52,11 @@ ImageViewer::ImageViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& p
 
 ImageViewer::~ImageViewer() 
 {
-    DeletePointer(mImage);
 }
 
 void ImageViewer::Clear()
 {
-    mImageControl->SetImage(NULL);
-    DeletePointer(mImage);
+    mImageControl->SetImage(wxImage());
     Viewer::Clear();
 }
 

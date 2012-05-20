@@ -44,14 +44,14 @@ public:
         IC_All      = 15,
     };
 private:
-    wxImage*        mImage;
+    wxImage         mImage;
     wxBitmap        mBitmap;
     wxBitmap        mBackdrop;
     ImageChannels   mChannels;
 public:
     ImageControl(wxWindow* pParent, const wxPoint& pPosition = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
     virtual ~ImageControl();
-    void SetImage(wxImage* pImage);
+    void SetImage(wxImage pImage);
     void OnDraw(wxDC& pDC, wxRect& pRegion);
     void ToggleChannel(ImageChannels pChannel, bool pToggled);
 private:

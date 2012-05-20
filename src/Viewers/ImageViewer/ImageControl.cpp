@@ -32,7 +32,6 @@ namespace gw2b
 
 ImageControl::ImageControl(wxWindow* pParent, const wxPoint& pPosition, const wxSize& pSize)
     : wxScrolledWindow(pParent, wxID_ANY, pPosition, pSize)
-    , mImage(NULL)
     , mChannels(IC_All)
 {    
     mBackdrop = data::LoadPNG(data::checkers_png, data::checkers_png_size);
@@ -45,7 +44,7 @@ ImageControl::~ImageControl()
 {
 }
 
-void ImageControl::SetImage(wxImage* pImage)
+void ImageControl::SetImage(wxImage pImage)
 {
     mImage = pImage;
     this->UpdateBitmap();
@@ -55,19 +54,22 @@ void ImageControl::UpdateBitmap()
 {
     mBitmap = wxBitmap();
 
-    if (mImage && mImage->IsOk()) {
-        mBitmap.Create(mImage->GetWidth(), mImage->GetHeight());
-
-        // Fill with backdrop
+    if (mImage.IsOk()) {
+        mBitmap.Create(mImage.GetWidth(), mImage.GetHeight());
         wxMemoryDC dc(mBitmap);
-        for (uint y = 0; y < (uint)mBitmap.GetHeight(); y += mBackdrop.GetHeight()) {
-            for (uint x = 0; x < (uint)mBitmap.GetWidth(); x += mBackdrop.GetWidth()) {
-                dc.DrawBitmap(mBackdrop, x, y);
+
+        // New image so we don't mess with the actual image
+        wxImage image(mImage);
+        bool imageHasAlpha = image.HasAlpha();
+
+        // Skip backdrop if image has no alpha, or if it's not visible
+        if (imageHasAlpha && !!(mChannels & IC_Alpha)) {
+            for (uint y = 0; y < (uint)mBitmap.GetHeight(); y += mBackdrop.GetHeight()) {
+                for (uint x = 0; x < (uint)mBitmap.GetWidth(); x += mBackdrop.GetWidth()) {
+                    dc.DrawBitmap(mBackdrop, x, y);
+                }
             }
         }
-
-        wxImage image(*mImage);
-        bool imageHasAlpha = image.HasAlpha();
 
         // Check if any channels have been toggled off
         if (mChannels != IC_All) {

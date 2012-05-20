@@ -138,8 +138,8 @@ public:
      *  \return byte*   converted data. */
     virtual byte* ConvertData(uint& poSize) const;
     /** Gets the image contained in the data owned by this reader.
-     *  \return wxImage*    Newly created image. Must be deleted by the caller. */
-    wxImage* GetImage() const;
+     *  \return wxImage     Newly created image. */
+    wxImage GetImage() const;
     /** Determines whether the header of this image is valid.
      *  \return bool    true if valid, false if not. */
     static bool IsValidHeader(byte* pData, uint pSize);
