@@ -26,6 +26,8 @@
 #ifndef TASKS_WRITEINDEXTASK_H_INCLUDED
 #define TASKS_WRITEINDEXTASK_H_INCLUDED
 
+#include <wx/filename.h>
+
 #include "DatIndexIO.h"
 #include "Task.h"
 
@@ -37,10 +39,10 @@ class WriteIndexTask : public Task
 {
     AutoPtr<DatIndex>   mIndex;
     DatIndexWriter      mWriter;
-    wxString            mFilename;
+    wxFileName          mFilename;
     bool                mErrorOccured;
 public:
-    WriteIndexTask(DatIndex* pIndex, const wxString& pFilename);
+    WriteIndexTask(DatIndex* pIndex, const wxFileName& pFilename);
 
     virtual bool Init();
     virtual void Perform();

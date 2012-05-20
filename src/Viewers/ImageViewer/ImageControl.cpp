@@ -65,11 +65,13 @@ void ImageControl::UpdateBitmap()
                 dc.DrawBitmap(mBackdrop, x, y);
             }
         }
+
         wxImage image(*mImage);
+        bool imageHasAlpha = image.HasAlpha();
 
         // Check if any channels have been toggled off
         if (mChannels != IC_All) {
-            uint numPixels = image.GetWidth() * image.GetHeight();
+            uint numPixels    = image.GetWidth() * image.GetHeight();
             uint8* alphaCache = NULL;
 
             // Any colors toggled off?
@@ -78,20 +80,24 @@ void ImageControl::UpdateBitmap()
                 ::memcpy(colors, image.GetData(), numPixels * 3);
 
                 // Setting colors clears the alpha, so cache it for restoration later,
-                // if the alpha channel is visible
-                if (mChannels & IC_Alpha) {
+                // if the image has an alpha channel and it's visible
+                if (imageHasAlpha && (mChannels & IC_Alpha)) {
                     alphaCache = Alloc<uint8>(numPixels);
                     ::memcpy(alphaCache, image.GetAlpha(), numPixels);
                 }
 
                 // If all colors are off, but alpha is on, alpha should be made white
-                bool noColors   = (!(mChannels & IC_Red) && !(mChannels & IC_Green) && !(mChannels & IC_Blue));
-                bool whiteAlpha = noColors && (mChannels & IC_Alpha);
+                bool noColors   = !((mChannels & IC_Red) || (mChannels & IC_Green) || (mChannels & IC_Blue));
+                bool whiteAlpha = noColors && !!(mChannels & IC_Alpha);
 
                 // Loop through the pixels
                 for (uint i = 0; i < numPixels; i++) {
                     if (whiteAlpha) {
-                        ::memset(&colors[i * 3], alphaCache[i], sizeof(uint8) * 3);
+                        if (alphaCache) {
+                            ::memset(&colors[i * 3], alphaCache[i], sizeof(uint8) * 3);
+                        } else {
+                            ::memset(&colors[i * 3], 0xff, sizeof(uint8) * 3);
+                        }
                     } else {
                         // Red turned off?
                         if (!(mChannels & IC_Red))   { colors[i * 3 + 0] = 0x00; }
@@ -112,7 +118,7 @@ void ImageControl::UpdateBitmap()
             }
 
             // Was alpha turned off?
-            if (!(mChannels & IC_Alpha)) {
+            if (imageHasAlpha && !(mChannels & IC_Alpha)) {
                 uint8* alpha = Alloc<uint8>(numPixels);
                 ::memset(alpha, 0xff, numPixels);
                 image.SetAlpha(alpha);

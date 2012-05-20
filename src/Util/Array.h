@@ -156,7 +156,7 @@ namespace gw2b
          *  \param[in]  pIndex  Index of element to remove. */
         void RemoveAt(uint pIndex)
         {
-            assert(pIndex >= 0 && pIndex < mSize);
+            wxASSERT(pIndex >= 0 && pIndex < mSize);
 
             if (Construct)
                 mData[pIndex].~T();
@@ -226,7 +226,7 @@ namespace gw2b
          *  \return T&  Reference to the found item. */
         inline T& operator[](uint pIndex)
         {
-            assert(pIndex < mSize);
+            wxASSERT(pIndex < mSize);
             return mData[pIndex];
         }
 
@@ -235,7 +235,7 @@ namespace gw2b
          *  \return T&  Reference to the found item. */
         inline const T& operator[](uint pIndex) const
         {
-            assert(pIndex < mSize);
+            wxASSERT(pIndex < mSize);
             return mData[pIndex];
         }
 

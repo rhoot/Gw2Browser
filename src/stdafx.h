@@ -26,9 +26,6 @@
 #ifndef STDAFX_H_INCLUDED
 #define STDAFX_H_INCLUDED
 
-// C/C++ runtime
-#include <cassert>
-
 // wxWidgets
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP

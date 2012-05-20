@@ -26,8 +26,11 @@
 #ifndef READERS_IMAGEREADER_H_INCLUDED
 #define READERS_IMAGEREADER_H_INCLUDED
 
-
 #include "FileReader.h"
+
+#ifdef RGB
+#  undef RGB    // GOD DAMN MICROSOFT WITH YOUR GOD DAMN MACROS
+#endif
 
 namespace gw2b
 {
@@ -56,6 +59,20 @@ union RGBA
     };
     uint8 mParts[4];
     uint32 mColor;
+};
+
+struct BGR
+{
+    uint8   b;
+    uint8   g;
+    uint8   r;
+};
+
+struct RGB
+{
+    uint8   r;
+    uint8   g;
+    uint8   b;
 };
 
 struct DXTColor
@@ -117,9 +134,9 @@ public:
     virtual const wxChar* GetExtension() const  { return wxT("png"); }
     /** Converts the data associated with this file into PNG.
      *  The caller is responsible for cleanup the malloc'd data.
-     *  \param[out] pOutSize    size of converted data.
+     *  \param[out] poSize  size of converted data.
      *  \return byte*   converted data. */
-    virtual byte* ConvertData(uint& pOutSize) const;
+    virtual byte* ConvertData(uint& poSize) const;
     /** Gets the image contained in the data owned by this reader.
      *  \return wxImage*    Newly created image. Must be deleted by the caller. */
     wxImage* GetImage() const;
@@ -127,15 +144,15 @@ public:
      *  \return bool    true if valid, false if not. */
     static bool IsValidHeader(byte* pData, uint pSize);
 private:
-    BGRA* ReadAtexData(wxSize& pOutSize) const;
-    BGRA* ProcessDXT1(BGRA* pData, uint pWidth, uint pHeight) const;
-    void ProcessDXT1Block(BGRA* pOutput, const DXT1Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    BGRA* ProcessDXT3(BGRA* pData, uint pWidth, uint pHeight) const;
-    void ProcessDXT3Block(BGRA* pOutput, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    BGRA* ProcessDXT5(BGRA* pData, uint pWidth, uint pHeight) const;
-    void ProcessDXT5Block(BGRA* pOutput, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    BGRA* Process3DCX(BGRA* pData, uint pWidth, uint pHeight) const;
-    void Process3DCXBlock(RGBA* pOutput, const DCXBlock& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
+    bool ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const;
+    void ProcessDXT1(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
+    void ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
+    void ProcessDXT3(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
+    void ProcessDXT3Block(BGR* pColors, uint8* pAlphas, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
+    void ProcessDXT5(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
+    void ProcessDXT5Block(BGR* pColors, uint8* pAlphas, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
+    void Process3DCX(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
+    void Process3DCXBlock(RGB* pColors, const DCXBlock& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
 }; // class ImageReader
 
 }; // namespace gw2b

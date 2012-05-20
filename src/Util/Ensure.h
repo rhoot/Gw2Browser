@@ -1,5 +1,5 @@
 /** \file       Util/Ensure.h
- *  \brief      Contains some common asserts.
+ *  \brief      Contains some common wxASSERTs.
  *  \author     Rhoot
  */
 
@@ -38,7 +38,7 @@ namespace Ensure
 template <typename T, typename TPtr>
     void IsOfType(TPtr* pObject)
 {
-    assert(dynamic_cast<T*>(pObject) != NULL);
+    wxASSERT(dynamic_cast<T*>(pObject) != NULL);
 }
 
 /** Asserts that the given pointer is not NULL. 
@@ -46,7 +46,7 @@ template <typename T, typename TPtr>
 template <typename T>
     void NotNull(T* pPointer)
 {
-    assert(pPointer != NULL);
+    wxASSERT(pPointer != NULL);
 }
 
 /** Asserts that the given pointer is NULL.
@@ -54,7 +54,7 @@ template <typename T>
 template <typename T>
     void IsNull(T* pPointer)
 {
-    assert(pPointer == NULL);
+    wxASSERT(pPointer == NULL);
 }
 
 }; // namespace Ensure

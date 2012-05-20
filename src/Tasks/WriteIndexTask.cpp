@@ -27,7 +27,7 @@
 namespace gw2b
 {
 
-WriteIndexTask::WriteIndexTask(DatIndex* pIndex, const wxString& pFilename)
+WriteIndexTask::WriteIndexTask(DatIndex* pIndex, const wxFileName& pFilename)
     : mIndex(pIndex, true)
     , mWriter(*pIndex)
     , mFilename(pFilename)
@@ -38,8 +38,12 @@ WriteIndexTask::WriteIndexTask(DatIndex* pIndex, const wxString& pFilename)
 
 bool WriteIndexTask::Init()
 {
+    if (!mFilename.DirExists()) {
+        mFilename.Mkdir(511, wxPATH_MKDIR_FULL);
+    }
+
     if (mIndex->IsDirty()) {
-        bool result = mWriter.Open(mFilename);
+        bool result = mWriter.Open(mFilename.GetFullPath());
         if (result) { this->SetMaxProgress(mWriter.GetNumEntries() + mWriter.GetNumCategories()); }
         return result;
     }
@@ -54,8 +58,9 @@ void WriteIndexTask::Perform()
         this->SetCurrentProgress(progress);
         this->SetText(wxT("Saving .dat index..."));
         // If something went wrong, we should delete the file again since it's half-complete
-        if (mErrorOccured && wxFile::Exists(mFilename)) {
-            wxRemoveFile(mFilename);
+        wxString path = mFilename.GetFullPath();
+        if (mErrorOccured && wxFile::Exists(path)) {
+            wxRemoveFile(path);
         }
         // If done, remove the dirty flag from the index
         if (this->IsDone()) {
@@ -68,8 +73,9 @@ void WriteIndexTask::Abort()
 {
     mWriter.Close();
     // Remove the file again
-    if (wxFile::Exists(mFilename)) {
-        wxRemoveFile(mFilename);
+    wxString path = mFilename.GetFullPath();
+    if (wxFile::Exists(path)) {
+        wxRemoveFile(path);
     }
 }
 

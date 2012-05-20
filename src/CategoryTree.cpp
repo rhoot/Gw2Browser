@@ -277,7 +277,7 @@ Array<const DatIndexEntry*>* CategoryTree::GetSelectedEntries() const
                 this->AddCategoryEntriesToArray(retval, index, *(const DatIndexCategory*)itemData->GetData());
             }
         }
-        assert(index == count);
+        wxASSERT(index == count);
     }
 
     return retval;
@@ -496,13 +496,13 @@ void CategoryTree::OnIndexFileAdded(DatIndex& pIndex, const DatIndexEntry& pEntr
 
 void CategoryTree::OnIndexCleared(DatIndex& pIndex)
 {
-    assert(&pIndex == mIndex);
+    wxASSERT(&pIndex == mIndex);
     this->ClearEntries();
 }
 
 void CategoryTree::OnIndexDestruction(DatIndex& pIndex)
 {
-    assert(&pIndex == mIndex);
+    wxASSERT(&pIndex == mIndex);
     mIndex = NULL;
     this->ClearEntries();
 }

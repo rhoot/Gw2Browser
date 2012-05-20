@@ -110,7 +110,7 @@ void DatIndexCategory::AddEntry(DatIndexEntry* pEntry)
 void DatIndexCategory::AddSubCategory(DatIndexCategory* pSubCategory)
 {
     Ensure::NotNull(pSubCategory);
-    assert(!pSubCategory->GetParent());
+    wxASSERT(!pSubCategory->GetParent());
 
     mSubCategories.Add(pSubCategory);
     pSubCategory->OnAddedToCategory(this);
