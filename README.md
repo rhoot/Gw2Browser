@@ -6,12 +6,12 @@ files. Currently supports viewing power-of-two textures (aside from DXTA) and
 binary files. The decompression algorithm for non-power-of-two textures is yet
 to be figured out.
 
-When a .dat file is opened, it will first index the file. This makes it a *lot*
+When a .dat file is opened, it will first index the file. This makes it *a lot*
 faster to re-open the same .dat. Unfortunately, every time the .dat changes it
 will have to be re-indexed (for now).
 
 Keep in mind that if you keep tree items expanded while the indexer is running,
-or while an index is being read, the process is a *lot* slower.
+or while an index is being read, the process is *a lot* slower.
 
 Authors
 -------
@@ -30,7 +30,7 @@ It can be started as:
 
     Gw2Browser -i <input dat>
 
-If <input dat> is given, the program will open the file as soon as it starts.
+If `<input dat>` is given, the program will open the file as soon as it starts.
 
 Libraries and restrictions
 --------------------------
