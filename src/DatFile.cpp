@@ -170,6 +170,28 @@ void DatFile::Close()
     mFile.Close();
 }
 
+uint DatFile::GetEntrySize(uint pEntryNum)
+{
+    if (!IsOpen()) { return std::numeric_limits<uint>::max(); }
+    if (pEntryNum >= mMftEntries.GetSize()) { return std::numeric_limits<uint>::max(); }
+    
+    const ANetMftEntry& entry = mMftEntries[pEntryNum];
+
+    // If the entry is compressed we need to read the uncompressed size from the .dat
+    if (entry.mCompressionFlag & ANCF_Compressed) {
+        uint32 uncompressedSize = 0;
+        mFile.Seek(entry.mOffset + 4, wxFromStart);
+        mFile.Read(&uncompressedSize, sizeof(uncompressedSize));
+        return uncompressedSize;
+    } 
+        
+    return entry.mSize;
+}
+
+uint DatFile::GetFileSize(uint pFileNum) {
+    return this->GetEntrySize(pFileNum + MFT_FILE_OFFSET);
+}
+
 uint DatFile::GetEntryNumFromFileId(uint pFileId) const
 {
     if (!IsOpen()) { return std::numeric_limits<uint>::max(); }
@@ -217,32 +239,39 @@ uint DatFile::GetBaseIdFromFileNum(uint pFileNum) const
     return this->GetBaseIdFromEntryNum(pFileNum + MFT_FILE_OFFSET);
 }
 
-Array<byte>* DatFile::PeekFile(uint pFileNum, uint pPeekSize)
+uint DatFile::PeekFile(uint pFileNum, uint pPeekSize, byte* poBuffer)
 {
-    return this->PeekEntry(pFileNum + MFT_FILE_OFFSET, pPeekSize);
+    return this->PeekEntry(pFileNum + MFT_FILE_OFFSET, pPeekSize, poBuffer);
 }
 
-Array<byte>* DatFile::PeekEntry(uint pEntryNum, uint pPeekSize)
+uint DatFile::PeekEntry(uint pEntryNum, uint pPeekSize, byte* poBuffer)
 {
+    Ensure::NotNull(poBuffer);
     uint inputSize;
 
-    // If this was the last entry we read, there's no need to re-read it
+    // Return instantly if size is 0, or if the file isn't open
+    if (pPeekSize == 0 || !this->IsOpen()) {
+        return 0;
+    }
+
+    // If this was the last entry we read, there's no need to re-read it. The
+    // input buffer should already contain the full file.
     if (mLastReadEntry != pEntryNum) {
-        bool isOpen             = this->IsOpen();
-        bool entryIsInRange     = mMftHead.mNumEntries > (uint)pEntryNum;
-        if (!isOpen || !entryIsInRange) { return NULL; }
+        // Perform some checks
+        bool entryIsInRange = mMftHead.mNumEntries > (uint)pEntryNum;
+        if (!entryIsInRange) { return 0; }
 
-        bool entryIsInUse       = (mMftEntries[pEntryNum].mEntryFlags & ANMEF_InUse);
-        bool fileIsLargeEnough  = (uint64)mFile.Length() >= mMftEntries[pEntryNum].mOffset + mMftEntries[pEntryNum].mSize;
-        if (!entryIsInUse || !fileIsLargeEnough) { return NULL; }
-
-        inputSize = mMftEntries[pEntryNum].mSize;
+        bool entryIsInUse      = (mMftEntries[pEntryNum].mEntryFlags & ANMEF_InUse);
+        bool fileIsLargeEnough = (uint64)mFile.Length() >= mMftEntries[pEntryNum].mOffset + mMftEntries[pEntryNum].mSize;
+        if (!entryIsInUse || !fileIsLargeEnough) { return 0; }
 
         // Make sure we can re-use the input buffer
+        inputSize = mMftEntries[pEntryNum].mSize;
         if (mInputBuffer.GetSize() < inputSize) {
             mInputBuffer.SetSize(inputSize);
         }
 
+        // Read the file data
         mFile.Seek(mMftEntries[pEntryNum].mOffset, wxFromStart);
         mFile.Read(mInputBuffer.GetPointer(), inputSize);
         mLastReadEntry = pEntryNum;
@@ -250,25 +279,54 @@ Array<byte>* DatFile::PeekEntry(uint pEntryNum, uint pPeekSize)
         inputSize = mMftEntries[pEntryNum].mSize;
     }
 
-    Array<byte>* output = new Array<byte>();
-
+    // If the file is compressed we need to uncompress it
     if (mMftEntries[pEntryNum].mCompressionFlag) {
-        std::string error;
         uint32 outputSize = pPeekSize;
-        byte* outputData;
         try {
-            outputData = gw2dt::compression::inflateBuffer(mInputBuffer.GetPointer(), inputSize, outputSize);
+            gw2dt::compression::inflateDatFileBuffer(inputSize, mInputBuffer.GetPointer(), outputSize, poBuffer);
+            return outputSize;
         } catch (std::exception&) {
-            outputSize = 0;
-            outputData = NULL;
+            return 0;
         }
-        output->Wrap(outputData, outputSize);
     } else {
-        output->SetSize(inputSize);
-        ::memcpy(output->GetPointer(), mInputBuffer.GetPointer(), inputSize);
+        uint size = wxMin(pPeekSize, inputSize);
+        ::memcpy(poBuffer, mInputBuffer.GetPointer(), size);
+        return size;
+    }
+}
+
+Array<byte>* DatFile::PeekFile(uint pFileNum, uint pPeekSize)
+{
+    return this->PeekEntry(pFileNum + MFT_FILE_OFFSET, pPeekSize);
+}
+
+Array<byte>* DatFile::PeekEntry(uint pEntryNum, uint pPeekSize)
+{
+    Array<byte>* output = new Array<byte>(pPeekSize);
+    uint readBytes = this->PeekEntry(pEntryNum, pPeekSize, output->GetPointer());
+
+    if (readBytes == 0) {
+        DeletePointer(output);
+        return NULL;
     }
 
     return output;
+}
+
+uint DatFile::ReadFile(uint pFileNum, byte* poBuffer)
+{
+    return this->ReadEntry(pFileNum + MFT_FILE_OFFSET, poBuffer);
+}
+
+uint DatFile::ReadEntry(uint pEntryNum, byte* poBuffer)
+{
+    uint size = this->GetEntrySize(pEntryNum);
+
+    if (size != std::numeric_limits<uint>::max()) {
+        return this->PeekEntry(pEntryNum, size, poBuffer);
+    } 
+
+    return 0;
 }
 
 Array<byte>* DatFile::ReadFile(uint pFileNum)
@@ -278,51 +336,20 @@ Array<byte>* DatFile::ReadFile(uint pFileNum)
 
 Array<byte>* DatFile::ReadEntry(uint pEntryNum)
 {
-    uint inputSize;
+    uint size = this->GetEntrySize(pEntryNum);
+    Array<byte>* output = NULL;
 
-    // If this was the last entry we read, there's no need to re-read it
-    if (mLastReadEntry != pEntryNum) {
-        bool isOpen             = this->IsOpen();
-        bool entryIsInRange     = mMftHead.mNumEntries > (uint)pEntryNum;
-        if (!isOpen || !entryIsInRange) { return NULL; }
+    if (size != std::numeric_limits<uint>::max()) {
+        output = new Array<byte>(size);
+        uint readBytes = this->PeekEntry(pEntryNum, size, output->GetPointer());
 
-        bool entryIsInUse       = (mMftEntries[pEntryNum].mEntryFlags & ANMEF_InUse);
-        bool fileIsLargeEnough  = (uint64)mFile.Length() >= mMftEntries[pEntryNum].mOffset + mMftEntries[pEntryNum].mSize;
-        if (!entryIsInUse || !fileIsLargeEnough) { return NULL; }
-
-        inputSize = mMftEntries[pEntryNum].mSize;
-
-        // Make sure we can re-use the input buffer
-        if (mInputBuffer.GetSize() < inputSize) {
-            mInputBuffer.SetSize(inputSize);
+        if (readBytes > 0) {
+            return output;
         }
-
-        mFile.Seek(mMftEntries[pEntryNum].mOffset, wxFromStart);
-        mFile.Read(mInputBuffer.GetPointer(), inputSize);
-        mLastReadEntry = pEntryNum;
-    } else {
-        inputSize = mMftEntries[pEntryNum].mSize;
     }
-
-    Array<byte>* output = new Array<byte>();
-
-    if (mMftEntries[pEntryNum].mCompressionFlag) {
-        std::string error;
-        uint32 outputSize = 0;
-        byte* outputData;
-        try {
-            outputData = gw2dt::compression::inflateBuffer(mInputBuffer.GetPointer(), inputSize, outputSize);
-        } catch (std::exception&) {
-            outputSize = 0;
-            outputData = NULL;
-        }
-        output->Wrap(outputData, outputSize);
-    } else {
-        output->SetSize(inputSize);
-        ::memcpy(output->GetPointer(), mInputBuffer.GetPointer(), inputSize);
-    }
-
-    return output;
+    
+    DeletePointer(output);
+    return NULL;
 }
 
 DatFile::IdentificationResult DatFile::IdentifyFileType(byte* pData, uint pSize, ANetFileType& pFileType)

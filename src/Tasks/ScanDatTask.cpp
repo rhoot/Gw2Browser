@@ -56,54 +56,66 @@ bool ScanDatTask::Init()
 
 void ScanDatTask::Perform()
 {
-    if (!this->IsDone()) {
-        uint32 entryNumber = this->GetCurrentProgress();
-        Array<byte>* file = mDatFile.PeekFile(entryNumber, 0x20);
+    // Make sure the output buffer is big enough
+    this->EnsureBufferSize(0x20);
 
-        // Skip if empty
-        if (!file || !file->GetSize()) {
-            this->SetCurrentProgress(entryNumber + 1);
-            DeletePointer(file);
-            return;
-        }
+    // Read file
+    uint32 entryNumber = this->GetCurrentProgress();
+    uint size = mDatFile.PeekFile(entryNumber, 0x20, mOutputBuffer.GetPointer());
 
-        // Get the file type
-        ANetFileType fileType;
-        DatFile::IdentificationResult results = mDatFile.IdentifyFileType(file->GetPointer(), file->GetSize(), fileType);
-        uint lastRequestedSize = 0x20;
-        while (results == DatFile::IR_NotEnoughData) {
-            uint sizeRequired = this->GetRequiredIdentificationSize(file->GetPointer(), file->GetSize(), fileType);
-            if (sizeRequired <= lastRequestedSize) { break; }
-            lastRequestedSize = sizeRequired;
-            DeletePointer(file);
-            file = mDatFile.PeekFile(entryNumber, sizeRequired);
-            mDatFile.IdentifyFileType(file->GetPointer(), file->GetSize(), fileType);
-        }
-
-        // Categorize the entry
-        DatIndexCategory* category = this->Categorize(fileType, file->GetPointer(), file->GetSize());
-
-        // Add to index
-        uint baseId = mDatFile.GetBaseIdFromFileNum(entryNumber);
-        DatIndexEntry& newEntry = mIndex->AddIndexEntry()
-            ->SetBaseId(baseId)
-            .SetFileId(mDatFile.GetFileIdFromFileNum(entryNumber))
-            .SetFileType(fileType)
-            .SetMftEntry(entryNumber)
-            .SetName(wxString::Format(wxT("%d"), baseId));
-        // Found a file with no baseId...
-        if (baseId == 0) {
-            newEntry.SetName(wxString::Format(wxT("ID-less_%d"), entryNumber));
-        }
-        // Finalize the add
-        category->AddEntry(&newEntry);
-        newEntry.FinalizeAdd();
-
-        // Delete the reader and proceed to the next file
-        DeletePointer(file);
-        this->SetText(wxString::Format(wxT("Scanning .dat: %d/%d"), entryNumber, this->GetMaxProgress()));
+    // Skip if empty
+    if (!size) {
         this->SetCurrentProgress(entryNumber + 1);
+        return;
     }
+
+    // Get the file type
+    ANetFileType fileType;
+    DatFile::IdentificationResult results = mDatFile.IdentifyFileType(mOutputBuffer.GetPointer(), size, fileType);
+
+    // Enough data to identify the file type?
+    uint lastRequestedSize = 0x20;
+    while (results == DatFile::IR_NotEnoughData) {
+        uint sizeRequired = this->GetRequiredIdentificationSize(mOutputBuffer.GetPointer(), size, fileType);
+
+        // Prevent infinite loops
+        if (sizeRequired == lastRequestedSize) { break; }
+        lastRequestedSize = sizeRequired;
+
+        // Re-read with the newly asked-for size
+        this->EnsureBufferSize(sizeRequired);
+        size    = mDatFile.PeekFile(entryNumber, sizeRequired, mOutputBuffer.GetPointer());
+        results = mDatFile.IdentifyFileType(mOutputBuffer.GetPointer(), size, fileType);
+    }
+
+    // Need another check, since the file might have been reloaded a couple of times
+    if (!size) {
+        this->SetCurrentProgress(entryNumber + 1);
+        return;
+    }
+
+    // Categorize the entry
+    DatIndexCategory* category = this->Categorize(fileType, mOutputBuffer.GetPointer(), size);
+
+    // Add to index
+    uint baseId = mDatFile.GetBaseIdFromFileNum(entryNumber);
+    DatIndexEntry& newEntry = mIndex->AddIndexEntry()
+        ->SetBaseId(baseId)
+        .SetFileId(mDatFile.GetFileIdFromFileNum(entryNumber))
+        .SetFileType(fileType)
+        .SetMftEntry(entryNumber)
+        .SetName(wxString::Format(wxT("%d"), baseId));
+    // Found a file with no baseId...
+    if (baseId == 0) {
+        newEntry.SetName(wxString::Format(wxT("ID-less_%d"), entryNumber));
+    }
+    // Finalize the add
+    category->AddEntry(&newEntry);
+    newEntry.FinalizeAdd();
+
+    // Delete the reader and proceed to the next file
+    this->SetText(wxString::Format(wxT("Scanning .dat: %d/%d"), entryNumber, this->GetMaxProgress()));
+    this->SetCurrentProgress(entryNumber + 1);
 }
 
 uint ScanDatTask::GetRequiredIdentificationSize(byte* pData, uint pSize, ANetFileType pFileType)
@@ -250,6 +262,13 @@ DatIndexCategory* ScanDatTask::Categorize(ANetFileType pFileType, byte* pData, u
     }
 
     return category;
+}
+
+void ScanDatTask::EnsureBufferSize(uint pSize)
+{
+    if (mOutputBuffer.GetSize() < pSize) {
+        mOutputBuffer.SetSize(pSize);
+    }
 }
 
 }; // namespace gw2b

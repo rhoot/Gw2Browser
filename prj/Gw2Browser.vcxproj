@@ -75,7 +75,7 @@
     <ClCompile Include="..\src\Viewers\ImageViewer\ImageControl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\README" />
+    <None Include="..\README.md" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}</ProjectGuid>
@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>wxbase29ud.lib;wxpngd.lib;gw2DatTools-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase29ud.lib;wxpngd.lib;gw2DatToolsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>

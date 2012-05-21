@@ -38,6 +38,7 @@ class DatIndexCategory;
 class ScanDatTask : public Task
 {
     AutoPtr<DatIndex>   mIndex;
+    Array<byte>         mOutputBuffer;
     DatFile&            mDatFile;
 public:
     ScanDatTask(DatIndex* pIndex, DatFile& pDatFile);
@@ -48,6 +49,7 @@ public:
 private:
     uint GetRequiredIdentificationSize(byte* pData, uint pSize, ANetFileType pFileType);
     DatIndexCategory* Categorize(ANetFileType pFileType, byte* pData, uint pSize);
+    void EnsureBufferSize(uint pSize);
 }; // class ScanDatTask
 
 }; // namespace gw2b

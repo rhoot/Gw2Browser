@@ -232,6 +232,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\README" />
+    <None Include="..\README.md" />
   </ItemGroup>
 </Project>

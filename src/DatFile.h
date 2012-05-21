@@ -107,17 +107,39 @@ public:
      *  \return uint    The base id if it was found, UINT_MAX if not. */
     uint GetBaseIdFromFileNum(uint pEntryNum) const;
 
+    /** Gets the total uncompressed size of the given entry.
+     *  \param[in]  pEntryNum   Entry number to check the size for.
+     *  \return uint    Uncompressed size of the entry. */
+    uint GetEntrySize(uint pEntryNum);
+    /** Gets the total uncompressed size of the given file.
+     *  \param[in]  pFileNum   File entry number to check the size for.
+     *  \return uint    Uncompressed size of the file. */
+    uint GetFileSize(uint pFileNum);
     /** Gets the amount of total MFT entries in the .dat file. 
      *  \return uint    Amount of entries in the .dat file, UINT_MAX if file not open. */
-    uint GetNumEntries() const          { if (!this->IsOpen()) { return UINT_MAX; } return mMftHead.mNumEntries; }
+    uint GetNumEntries() const                  { if (!this->IsOpen()) { return UINT_MAX; } return mMftHead.mNumEntries; }
     /** Gets the amount of file MFT entries in the .dat file. 
      *  \return uint    Amount of file entries in the .dat file, UINT_MAX if file not open. */
-    uint GetNumFiles() const            { if (!this->IsOpen()) { return UINT_MAX; } return mMftHead.mNumEntries - MFT_FILE_OFFSET; }
+    uint GetNumFiles() const                    { if (!this->IsOpen()) { return UINT_MAX; } return mMftHead.mNumEntries - MFT_FILE_OFFSET; }
     /** Gets the amount of entries that appear before the file entries in the 
     *   .dat file.
      *  \return uint    Index of the first file entry in the MFT. */
-    uint GetMftFileOffset() const       { return MFT_FILE_OFFSET; }
+    uint GetMftFileOffset() const               { return MFT_FILE_OFFSET; }
 
+    /** Peeks at the contents of the given MFT entry and returns the results.
+     *  \param[in]  pEntryNum   MFT entry number to get contents for.
+     *  \param[in]  pPeekSize   Amount of bytes to peek at. Specifying 0 will read the whole entry.
+     *  \param[in,out]  poBuffer    Buffer to store results in. Must be *at least*
+     *                  pPeekSize in length.
+     *  \return uint    Size of poBuffer. */
+    uint PeekEntry(uint pEntryNum, uint pPeekSize, byte* poBuffer);
+    /** Peeks at the contents of the given MFT file entry and returns the results.
+     *  \param[in]  pFileNum    MFT entry number to get contents for.
+     *  \param[in]  pPeekSize   Amount of bytes to peek at. Specifying 0 will read the whole file.
+     *  \param[in,out]  poBuffer    Buffer to store results in. Must be *at least*
+     *                  pPeekSize in length.
+     *  \return uint    Size of poBuffer. */
+    uint PeekFile(uint pFileNum, uint pPeekSize, byte* poBuffer);
     /** Peeks at the contents of the given MFT entry and returns the results.
      *  \param[in]  pEntryNum   MFT entry number to get contents for.
      *  \param[in]  pPeekSize   Amount of bytes to peek at.
@@ -129,6 +151,18 @@ public:
      *  \return Array<byte>* Object used to handle the peeked data. Must be deleted. */
     Array<byte>* PeekFile(uint pFileNum, uint pPeekSize);
 
+    /** Reads the contents of the given MFT entry and returns the results.
+     *  \param[in]  pEntryNum   MFT entry number to get contents for.
+     *  \param[in,out]  poBuffer    Buffer to store results in. It is up to the
+                        caller to make sure the buffer is big enough.
+     *  \return uint    Size of poBuffer. */
+    uint ReadEntry(uint pEntryNum, byte* poBuffer);
+    /** Reads the contents of the given MFT file entry and returns the results.
+     *  \param[in]  pFileNum   MFT entry number to get contents for.
+     *  \param[in,out]  poBuffer    Buffer to store results in. It is up to the
+                        caller to make sure the buffer is big enough.
+     *  \return uint    Size of poBuffer. */
+    uint ReadFile(uint pFileNum, byte* poBuffer);
     /** Reads the data contained at the given MFT entry.
      *  \param[in]  pEntryNum   MFT entry number to read.
      *  \return Array<byte>* Object used to handle the read data. Must be deleted. */

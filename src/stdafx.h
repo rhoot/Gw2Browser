@@ -33,7 +33,7 @@
 #endif
 
 // gw2CoreTools
-#include <gw2DatTools/compression/inflateBuffer.h>
+#include <gw2DatTools/compression/inflateDatFileBuffer.h>
 
 // Handy defines
 #define ArraySize(x)        (sizeof(x) / sizeof(*x))
