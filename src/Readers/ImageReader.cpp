@@ -53,6 +53,7 @@ enum FourCC
     FCC_DXT5  = 0x35545844,
     FCC_DXTN  = 0x4e545844,
     FCC_DXTL  = 0x4c545844,
+    FCC_DXTA  = 0x41545844,
 };
 
 ImageReader::ImageReader(const FileReaderData& pData)
@@ -308,6 +309,11 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
             this->ProcessDXT5(output, atex->mWidth, atex->mHeight, poColors, poAlphas);
         }
         break;
+    case FCC_DXTA:
+        if (::AtexDecompress(data, mData.mSize, 0x14, descriptor, reinterpret_cast<uint*>(output))) {
+            this->ProcessDXTA(reinterpret_cast<uint64*>(output), atex->mWidth, atex->mHeight, poColors);
+        }
+        break;
     case FCC_DXTL:
         if (::AtexDecompress(data, mData.mSize, 0x12, descriptor, reinterpret_cast<uint*>(output))) {
             this->ProcessDXT5(output, atex->mWidth, atex->mHeight, poColors, poAlphas);
@@ -376,6 +382,7 @@ bool ImageReader::IsValidHeader(byte* pData, uint pSize)
                 (compression == FCC_DXT5) || 
                 (compression == FCC_DXTN) || 
                 (compression == FCC_DXTL) || 
+                (compression == FCC_DXTA) ||
                 (compression == FCC_3DCX);
     }
 
@@ -461,6 +468,58 @@ void ImageReader::ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block
     }
 }
 
+void ImageReader::ProcessDXTA(uint64* pData, uint pWidth, uint pHeight, BGR*& poColors) const
+{
+    uint numPixels    = (pWidth * pHeight);
+    uint numBlocks    = numPixels >> 4;
+
+    poColors = Alloc<BGR>(numPixels);
+
+    const uint numHorizBlocks = pWidth >> 2;
+    const uint numVertBlocks  = pHeight >> 2;
+
+#pragma omp parallel for
+    for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
+        for (uint x = 0; x < numHorizBlocks; x++)
+        {
+            uint64 block = pData[(y * numHorizBlocks) + x];
+            this->ProcessDXTABlock(poColors, block, x * 4, y * 4, pWidth);
+        }    
+    }
+}
+
+void ImageReader::ProcessDXTABlock(BGR* pColors, uint64 pBlock, uint pBlockX, uint pBlockY, uint pWidth) const
+{
+    uint8  alphas[8];
+
+    // Alpha 1 and 2
+    alphas[0] = (pBlock & 0xff);
+    alphas[1] = (pBlock & 0xff00) >> 8;
+    pBlock  >>= 16;
+    // Alpha 3 to 8
+    if (alphas[0] > alphas[1]) {
+        for (uint i = 2; i < 8; i++) {
+            alphas[i] = ((8 - i) * alphas[0] + (i - 1) * alphas[1]) / 7;
+        }
+    } else {
+        for (uint i = 2; i < 6; i++) {
+            alphas[i] = ((6 - i) * alphas[0] + (i - 1) * alphas[1]) / 5;
+        }
+        alphas[6] = 0x00;
+        alphas[7] = 0xff;
+    }
+
+    for (uint y = 0; y < 4; y++) {
+        uint curPixel = (pBlockY + y) * pWidth + pBlockX;
+
+        for (uint x = 0; x < 4; x++) {
+            ::memset(&pColors[curPixel], alphas[pBlock & 0x7], sizeof(pColors[curPixel]));
+            curPixel++;
+            pBlock >>= 3;
+        }
+    }
+}
+
 void ImageReader::ProcessDXT3(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
 {
     uint numPixels    = (pWidth * pHeight);
@@ -500,7 +559,7 @@ void ImageReader::ProcessDXT3Block(BGR* pColors, uint8* pAlphas, const DXT3Block
 
             uint index = (indices & 3);
             ::memcpy(&color, &colors[index], sizeof(color));
-            alpha = (blockAlpha & 0xf) * 0x11;    // (*0x11) instead of (<<4) since 0xf should map to 0xff and not 0xf0.
+            alpha = ((blockAlpha & 0xf) << 4) | (blockAlpha & 0xf);
 
             curPixel++;
             indices    >>= 2;
