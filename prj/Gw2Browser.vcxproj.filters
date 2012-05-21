@@ -55,6 +55,9 @@
     <Filter Include="Source Files\Viewers\ImageViewer">
       <UniqueIdentifier>{84a65cd1-ade2-4813-99c8-6ebe70a65832}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Util">
+      <UniqueIdentifier>{59e1e936-b1c8-48f4-8de9-9a86162e6754}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\stdafx.h">
@@ -156,6 +159,9 @@
     <ClInclude Include="..\src\AboutBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Util\Misc.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\stdafx.cpp">
@@ -229,6 +235,9 @@
     </ClCompile>
     <ClCompile Include="..\src\AboutBox.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Util\Misc.cpp">
+      <Filter>Source Files\Util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

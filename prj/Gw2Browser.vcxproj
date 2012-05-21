@@ -38,6 +38,7 @@
     <ClInclude Include="..\src\Util\Delegate.h" />
     <ClInclude Include="..\src\Util\DelegateTemplate.h" />
     <ClInclude Include="..\src\Util\Ensure.h" />
+    <ClInclude Include="..\src\Util\Misc.h" />
     <ClInclude Include="..\src\Util\RefCounted.h" />
     <ClInclude Include="..\src\Viewer.h" />
     <ClInclude Include="..\src\Viewers\BinaryViewer.h" />
@@ -68,6 +69,7 @@
     <ClCompile Include="..\src\Tasks\ReadIndexTask.cpp" />
     <ClCompile Include="..\src\Tasks\ScanDatTask.cpp" />
     <ClCompile Include="..\src\Tasks\WriteIndexTask.cpp" />
+    <ClCompile Include="..\src\Util\Misc.cpp" />
     <ClCompile Include="..\src\Viewer.cpp" />
     <ClCompile Include="..\src\Viewers\BinaryViewer.cpp" />
     <ClCompile Include="..\src\Viewers\BinaryViewer\HexControl.cpp" />

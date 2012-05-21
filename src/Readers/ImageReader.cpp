@@ -44,6 +44,7 @@ enum FourCC
     FCC_ATET  = 0x54455441,
     FCC_3DCX  = 0x58434433,
     FCC_DXT   = 0x00545844,
+    FCC_DDS   = 0x20534444,
 
     FCC_DXT1  = 0x31545844,
     FCC_DXT2  = 0x32545844,
@@ -65,13 +66,22 @@ ImageReader::~ImageReader()
 
 wxImage ImageReader::GetImage() const
 {
+    wxASSERT(mData.mSize >= 4);
+
     wxSize size;
     BGR* colors   = NULL;
     uint8* alphas = NULL;
 
-    // Bail if the data was invalid
-    if (!this->ReadAtexData(size, colors, alphas)) {
-        return wxImage();
+    // Read the correct type of data
+    uint32 fourcc = *reinterpret_cast<uint32*>(mData.mData);
+    if (fourcc != FCC_DDS) {
+        if (!this->ReadAtexData(size, colors, alphas)) {
+            return wxImage();
+        }
+    } else {
+        if (!this->ReadDdsData(size, colors, alphas)) {
+            return wxImage();
+        }
     }
 
     // Create image and fill it with color data
@@ -114,6 +124,125 @@ byte* ImageReader::ConvertData(uint& poSize) const
 
     // Return the PNG data
     return data;
+}
+
+bool ImageReader::ReadDdsData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const
+{
+    // Get header
+    if (mData.mSize < sizeof(DdsHeader)) { return false; }
+    DdsHeader* header = reinterpret_cast<DdsHeader*>(mData.mData);
+    
+    // Ensure some of the values are correct
+    if (header->mMagic != FCC_DDS || 
+        header->mSize != sizeof(DdsHeader) - 4 || 
+        header->mPixelFormat.mSize != sizeof(DdsPixelFormat))
+    {
+        return false;
+    }
+
+    // Determine the pixel format
+    if (header->mPixelFormat.mFlags & 0x40) {               // 0x40 = DDPF_RGB, uncompressed data
+        if (!this->ProcessUncompressedDDS(header, reinterpret_cast<RGB*&>(poColors), poAlphas)) {
+            return false;
+        }
+    } else if (header->mPixelFormat.mFlags & 0x4) {         // 0x4 = DDPF_FOURCC, compressed
+        BGRA* data = reinterpret_cast<BGRA*>(mData.mData + sizeof(*header));
+        switch (header->mPixelFormat.mFourCC) {
+        case FCC_DXT1:
+            this->ProcessDXT1(data, header->mWidth, header->mHeight, poColors, poAlphas);
+            break;
+        case FCC_DXT2:
+        case FCC_DXT3:
+            this->ProcessDXT3(data, header->mWidth, header->mHeight, poColors, poAlphas);
+            break;
+        case FCC_DXT4:
+        case FCC_DXT5:
+            this->ProcessDXT5(data, header->mWidth, header->mHeight, poColors, poAlphas);
+            break;
+        }
+    } else if (header->mPixelFormat.mFlags & 0x20000) {     // 0x20000 = DDPF_LUMINANCE, single-byte color
+        if (!this->ProcessLuminanceDDS(header, reinterpret_cast<RGB*&>(poColors))) {
+            return false;
+        }
+    }
+
+    if (!!poColors) {
+        poSize.Set(header->mWidth, header->mHeight);
+    }
+
+    return !!poColors;
+}
+
+bool ImageReader::ProcessLuminanceDDS(DdsHeader* pHeader, RGB*& poColors) const
+{
+    // Ensure the image is 8-bit
+    if (pHeader->mPixelFormat.mRGBBitCount != 8) { return false; }
+
+    // Determine the size of the pixel data
+    uint numPixels = pHeader->mWidth * pHeader->mHeight;
+    uint dataSize  = (numPixels * pHeader->mPixelFormat.mRGBBitCount) >> 3;
+
+    // Image data buffer too small?
+    if (mData.mSize < (sizeof(*pHeader) + dataSize)) { return false; }
+
+    // Read the data
+    uint8* pixelData = static_cast<uint8*>(&mData.mData[sizeof(*pHeader)]);
+    uint32 curPixel  = 0;
+    for (uint y = 0; y < pHeader->mHeight; y++) {
+        for (uint x = 0; x < pHeader->mWidth; x++) {
+            ::memset(&poColors[curPixel], pixelData[curPixel], sizeof(poColors[curPixel]));
+            curPixel++;
+        }
+    }
+
+    return true;
+}
+
+bool ImageReader::ProcessUncompressedDDS(DdsHeader* pHeader, RGB*& poColors, uint8*& poAlphas) const
+{
+    // Ensure the image is 32-bit. Until a non-32 bit texture is found,
+    // there's no point adding support for it
+    if (pHeader->mPixelFormat.mRGBBitCount != 32) { return false; }
+
+    // Determine the size of the pixel data
+    uint numPixels = pHeader->mWidth * pHeader->mHeight;
+    uint dataSize  = (numPixels * pHeader->mPixelFormat.mRGBBitCount) >> 3;
+
+    // Image data buffer too small?
+    if (mData.mSize < (sizeof(*pHeader) + dataSize)) { return false; }
+
+    // Color data
+    RGBA shift;
+    poColors = Alloc<RGB>(numPixels);
+    shift.r = LowestSetBit(pHeader->mPixelFormat.mRBitMask);
+    shift.g = LowestSetBit(pHeader->mPixelFormat.mGBitMask);
+    shift.b = LowestSetBit(pHeader->mPixelFormat.mBBitMask);
+
+    // Alpha data
+    bool hasAlpha = (pHeader->mPixelFormat.mFlags & 0x1);    // 0x1 = DDPF_ALPHAPIXELS, alpha is present
+    if (hasAlpha) { 
+        poAlphas = Alloc<uint8>(numPixels); 
+        shift.a  = LowestSetBit(pHeader->mPixelFormat.mABitMask);
+    }
+
+    // Read the data
+    uint32* pixelData = reinterpret_cast<uint32*>(&mData.mData[sizeof(*pHeader)]);
+    uint32  curPixel  = 0;
+    for (uint y = 0; y < pHeader->mHeight; y++) {
+        for (uint x = 0; x < pHeader->mWidth; x++) {
+            poColors[curPixel].r = (pixelData[curPixel] & pHeader->mPixelFormat.mRBitMask) >> shift.r;
+            poColors[curPixel].g = (pixelData[curPixel] & pHeader->mPixelFormat.mGBitMask) >> shift.g;
+            poColors[curPixel].b = (pixelData[curPixel] & pHeader->mPixelFormat.mBBitMask) >> shift.b;
+
+            if (hasAlpha) {
+                poAlphas[curPixel] = (pixelData[curPixel] & pHeader->mPixelFormat.mABitMask) >> shift.a;
+            }
+
+            curPixel++;
+        }
+    }
+
+    return true;
 }
 
 bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const
@@ -206,28 +335,42 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
 
 bool ImageReader::IsValidHeader(byte* pData, uint pSize)
 {
-    if (pSize >= sizeof(ANetAtexHeader)) {
-        ANetAtexHeader* atex = reinterpret_cast<ANetAtexHeader*>(pData);
-        uint32 fourcc        = atex->mIdentifierInteger;
-        uint32 compression   = atex->mFormatInteger;
+    if (pSize < 0x10) { return false; }
+    uint32 fourcc = *reinterpret_cast<uint32*>(pData);
 
-        // The compression algorithm for non-power-of-two textures is unknown
-        if (!IsPowerOfTwo(atex->mWidth) || !IsPowerOfTwo(atex->mHeight)) {
-            return false;
-        }
+    // Is this a DDS file?
+    if (fourcc == FCC_DDS) {
+        if (pSize < sizeof(DdsHeader)) { return false; }
+        DdsHeader* dds = reinterpret_cast<DdsHeader*>(pData);
 
-        if ((fourcc == FCC_ATEX) || (fourcc == FCC_ATTX) || (fourcc == FCC_ATEP) || 
-            (fourcc == FCC_ATEU) || (fourcc == FCC_ATEC) || (fourcc == FCC_ATET)) 
-        {
-            return (compression == FCC_DXT1) || 
-                   (compression == FCC_DXT2) || 
-                   (compression == FCC_DXT3) || 
-                   (compression == FCC_DXT4) || 
-                   (compression == FCC_DXT5) || 
-                   (compression == FCC_DXTN) || 
-                   (compression == FCC_DXTL) || 
-                   (compression == FCC_3DCX);
-        }
+        bool isUncompressedRgb  = !!(dds->mPixelFormat.mFlags &    0x40);
+        bool isCompressedRgb    = !!(dds->mPixelFormat.mFlags &     0x4);
+        bool isLuminanceTexture = !!(dds->mPixelFormat.mFlags & 0x20000);
+        bool is8Bit             = (dds->mPixelFormat.mRGBBitCount ==  8);
+        bool is32Bit            = (dds->mPixelFormat.mRGBBitCount == 32);
+
+        return (isCompressedRgb || (isLuminanceTexture && is8Bit) || (isUncompressedRgb && is32Bit));
+    }
+
+    ANetAtexHeader* atex = reinterpret_cast<ANetAtexHeader*>(pData);
+    uint32 compression   = atex->mFormatInteger;
+
+    // The compression algorithm for non-power-of-two textures is unknown
+    if (!IsPowerOfTwo(atex->mWidth) || !IsPowerOfTwo(atex->mHeight)) {
+        return false;
+    }
+
+    if ((fourcc == FCC_ATEX) || (fourcc == FCC_ATTX) || (fourcc == FCC_ATEP) || 
+        (fourcc == FCC_ATEU) || (fourcc == FCC_ATEC) || (fourcc == FCC_ATET)) 
+    {
+        return (compression == FCC_DXT1) || 
+                (compression == FCC_DXT2) || 
+                (compression == FCC_DXT3) || 
+                (compression == FCC_DXT4) || 
+                (compression == FCC_DXT5) || 
+                (compression == FCC_DXTN) || 
+                (compression == FCC_DXTL) || 
+                (compression == FCC_3DCX);
     }
 
     return false;

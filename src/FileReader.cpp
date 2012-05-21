@@ -69,6 +69,7 @@ FileReader* FileReader::GetReaderForData(const FileReaderData& pData)
     case ANFT_ATEP:
     case ANFT_ATEU:
     case ANFT_ATET:
+    case ANFT_DDS:
         if (ImageReader::IsValidHeader(pData.mData, pData.mSize)) {
             return new ImageReader(pData);
         }

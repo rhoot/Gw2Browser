@@ -74,6 +74,7 @@ namespace gw2b
 #include "Util/AutoPtr.h"
 #include "Util/Delegate.h"
 #include "Util/Ensure.h"
+#include "Util/Misc.h"
 
 namespace gw2b
 {

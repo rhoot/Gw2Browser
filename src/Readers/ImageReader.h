@@ -114,6 +114,37 @@ struct DCXBlock     // Should be 3DCXBlock, but names can't start with a number 
     uint64  mRed;
 };
 
+struct DdsPixelFormat
+{
+    uint32          mSize;                  /**< Structure size; set to 32 (bytes). */
+    uint32          mFlags;                 /**< Values which indicate what type of data is in the surface. */
+    uint32          mFourCC;                /**< Four-character codes for specifying compressed or custom formats. */
+    uint32          mRGBBitCount;           /**< Number of bits in an RGB (possibly including alpha) format. */
+    uint32          mRBitMask;              /**< Red (or lumiannce or Y) mask for reading color data. */
+    uint32          mGBitMask;              /**< Green (or U) mask for reading color data. */
+    uint32          mBBitMask;              /**< Blue (or V) mask for reading color data. */
+    uint32          mABitMask;              /**< Alpha mask for reading alpha data. */
+};
+
+struct DdsHeader
+{
+    uint32          mMagic;                 /**< Identifies a DDS file. This member must be set to 0x20534444. */
+    uint32          mSize;                  /**< Size of structure. This member must be set to 124. */
+    uint32          mFlags;                 /**< Flags to indicate which members contain valid data. */
+    uint32          mHeight;                /**< Surface height (in pixels). */
+    uint32          mWidth;                 /**< Surface width (in pixels). */
+    uint32          mPitchOrLinearSize;     /**< The pitch or number of bytes per scan line in an uncompressed texture; the total number of bytes in the top level texture for a compressed texture. */
+    uint32          mDepth;                 /**< Depth of a volume texture (in pixels), otherwise unused. */
+    uint32          mMipMapCount;           /**< Number of mipmap levels, otherwise unused. */
+    uint32          mReserved1[11];         /**< Unused. */
+    DdsPixelFormat  mPixelFormat;           /**< The pixel format. */
+    uint32          mCaps;                  /**< Specifies the complexity of the surfaces stored. */
+    uint32          mCaps2;                 /**< Additional detail about the surfaces stored. */
+    uint32          mCaps3;                 /**< Unused. */
+    uint32          mCaps4;                 /**< Unused. */
+    uint32          mReserved2;             /**< Unused. */
+};
+
 #pragma pack(pop)
 
 class ImageReader : public FileReader
@@ -144,7 +175,12 @@ public:
      *  \return bool    true if valid, false if not. */
     static bool IsValidHeader(byte* pData, uint pSize);
 private:
+    bool ReadDdsData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const;
     bool ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const;
+
+    bool ProcessLuminanceDDS(DdsHeader* pHeader, RGB*& poColors) const;
+    bool ProcessUncompressedDDS(DdsHeader* pHeader, RGB*& poColors, uint8*& poAlphas) const;
+
     void ProcessDXT1(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
     void ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
     void ProcessDXT3(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
