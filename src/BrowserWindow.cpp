@@ -56,7 +56,8 @@ BrowserWindow::BrowserWindow(const wxString& pTitle)
     wxMenuBar* menuBar = new wxMenuBar();
     // File menu
     wxMenu* fileMenu = new wxMenu();
-    fileMenu->Append(wxID_OPEN, wxT("&Open"));
+    wxAcceleratorEntry accel(wxACCEL_CTRL, 'O');
+    fileMenu->Append(wxID_OPEN, wxT("&Open"), wxT("Open a file for browsing"))->SetAccel(&accel);
     fileMenu->AppendSeparator();
     fileMenu->Append(wxID_EXIT, wxT("E&xit"));
     // Help menu
