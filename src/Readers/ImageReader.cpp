@@ -189,7 +189,7 @@ bool ImageReader::ProcessLuminanceDDS(DdsHeader* pHeader, RGB*& poColors) const
     const uint8* pixelData = static_cast<uint8*>(&mData.mData[sizeof(*pHeader)]);
 
 #pragma omp parallel for
-    for (int y = 0; y < (int)pHeader->mHeight; y++) {
+    for (int y = 0; y < static_cast<int>(pHeader->mHeight); y++) {
         uint32 curPixel  = (y * pHeader->mWidth);
 
         for (uint x = 0; x < pHeader->mWidth; x++) {
@@ -232,7 +232,7 @@ bool ImageReader::ProcessUncompressedDDS(DdsHeader* pHeader, RGB*& poColors, uin
     const uint32* pixelData = reinterpret_cast<uint32*>(&mData.mData[sizeof(*pHeader)]);
 
 #pragma omp parallel for
-    for (int y = 0; y < (int)pHeader->mHeight; y++) {
+    for (int y = 0; y < static_cast<int>(pHeader->mHeight); y++) {
         uint32 curPixel = (y * pHeader->mWidth);
 
         for (uint x = 0; x < pHeader->mWidth; x++) {
@@ -312,7 +312,7 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
         if (::AtexDecompress(data, mData.mSize, 0x12, descriptor, reinterpret_cast<uint*>(output))) {
             this->ProcessDXT5(output, atex->mWidth, atex->mHeight, poColors, poAlphas);
 
-            for (uint i = 0; i < ((uint)atex->mWidth * (uint)atex->mHeight); i++) {
+            for (uint i = 0; i < (static_cast<uint>(atex->mWidth) * static_cast<uint>(atex->mHeight)); i++) {
                 poColors[i].r = (poColors[i].r * poAlphas[i]) / 0xff;
                 poColors[i].g = (poColors[i].g * poAlphas[i]) / 0xff;
                 poColors[i].b = (poColors[i].b * poAlphas[i]) / 0xff;
@@ -382,6 +382,39 @@ bool ImageReader::IsValidHeader(byte* pData, uint pSize)
     return false;
 }
 
+void ImageReader::ProcessDXTColor(BGR* pColors, uint8* pAlphas, const DXTColor& pBlockColor, bool pIsDXT1) const
+{
+    // Color 0
+    pColors[0].r = (pBlockColor.mRed1   << 3) | (pBlockColor.mRed1   >> 2 );
+    pColors[0].g = (pBlockColor.mGreen1 << 2) | (pBlockColor.mGreen1 >> 4 );
+    pColors[0].b = (pBlockColor.mBlue1  << 3) | (pBlockColor.mBlue1  >> 2 );
+    // Color 1
+    pColors[1].r = (pBlockColor.mRed2   << 3) | (pBlockColor.mRed2   >> 2 );
+    pColors[1].g = (pBlockColor.mGreen2 << 2) | (pBlockColor.mGreen2 >> 4 );
+    pColors[1].b = (pBlockColor.mBlue2  << 3) | (pBlockColor.mBlue2  >> 2 );
+    // Colors 2 and 3
+    if (!pIsDXT1 || pBlockColor.mColor1 > pBlockColor.mColor2) {
+        pColors[2].r = (pColors[0].r * 2 + pColors[1].r) / 3;
+        pColors[2].g = (pColors[0].g * 2 + pColors[1].g) / 3;
+        pColors[2].b = (pColors[0].b * 2 + pColors[1].b) / 3;
+        pColors[3].r = (pColors[0].r + pColors[1].r * 2) / 3;
+        pColors[3].g = (pColors[0].g + pColors[1].g * 2) / 3;
+        pColors[3].b = (pColors[0].b + pColors[1].b * 2) / 3;
+        // Alpha is only being set for DXT1
+        if (pAlphas) { ::memset(pAlphas, 0xff, 4); }
+    } else {
+        pColors[2].r = (pColors[0].r + pColors[1].r) >> 1;
+        pColors[2].g = (pColors[0].g + pColors[1].g) >> 1;
+        pColors[2].b = (pColors[0].b + pColors[1].b) >> 1;
+        ::memset(&pColors[3], 0, sizeof(pColors[3]));
+        // Alpha is only being set for DXT1
+        if (pAlphas) {
+            ::memset(pAlphas, 0xff, 3);
+            pAlphas[3] = 0x0;
+        }
+    }
+}
+
 void ImageReader::ProcessDXT1(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const {
     uint numPixels    = (pWidth * pHeight);
     uint numBlocks    = numPixels >> 4;
@@ -394,7 +427,7 @@ void ImageReader::ProcessDXT1(BGRA* pData, uint pWidth, uint pHeight, BGR*& poCo
     const uint numVertBlocks  = pHeight >> 2;
 
 #pragma omp parallel for
-    for (int y = 0; y < (int)numVertBlocks; y++) {
+    for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
         for (uint x = 0; x < numHorizBlocks; x++)
         {
             const DXT1Block& block = blocks[(y * numHorizBlocks) + x];
@@ -406,35 +439,10 @@ void ImageReader::ProcessDXT1(BGRA* pData, uint pWidth, uint pHeight, BGR*& poCo
 void ImageReader::ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const
 {
     uint32 indices = pBlock.mIndices;
-    BGRA colors[4];
+    BGR colors[4];
+    uint8 alphas[4];
 
-    // Color 1
-    colors[0].r = pBlock.mColors.mRed1   << 3;
-    colors[0].g = pBlock.mColors.mGreen1 << 2;
-    colors[0].b = pBlock.mColors.mBlue1  << 3;
-    colors[0].a = 0xff;
-    // Color 2
-    colors[1].r = pBlock.mColors.mRed2   << 3;
-    colors[1].g = pBlock.mColors.mGreen2 << 2;
-    colors[1].b = pBlock.mColors.mBlue2  << 3;
-    colors[1].a = 0xff;
-    // Colors 3 and 4
-    if (pBlock.mColors.mColor1 > pBlock.mColors.mColor2) {
-        colors[2].r = (colors[0].r * 2 + colors[1].r) / 3;
-        colors[2].g = (colors[0].g * 2 + colors[1].g) / 3;
-        colors[2].b = (colors[0].b * 2 + colors[1].b) / 3;
-        colors[2].a = 0xff;
-        colors[3].r = (colors[0].r + colors[1].r * 2) / 3;
-        colors[3].g = (colors[0].g + colors[1].g * 2) / 3;
-        colors[3].b = (colors[0].b + colors[1].b * 2) / 3;
-        colors[3].a = 0xff;
-    } else {
-        colors[2].r = (colors[0].r + colors[1].r) >> 1;
-        colors[2].g = (colors[0].g + colors[1].g) >> 1;
-        colors[2].b = (colors[0].b + colors[1].b) >> 1;
-        colors[2].a = 0xff;
-        ::memset(&colors[3], 0, sizeof(colors[3]));
-    }
+    this->ProcessDXTColor(colors, alphas, pBlock.mColors, true);
 
     for (uint y = 0; y < 4; y++) {
         uint curPixel = (pBlockY + y) * pWidth + pBlockX;
@@ -445,7 +453,7 @@ void ImageReader::ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block
 
             uint index = (indices & 3);
             ::memcpy(&color, &colors[index], sizeof(color));
-            alpha = colors[index].a;
+            alpha = alphas[index];
 
             curPixel++;
             indices >>= 2;
@@ -466,7 +474,7 @@ void ImageReader::ProcessDXT3(BGRA* pData, uint pWidth, uint pHeight, BGR*& poCo
     const uint numVertBlocks  = pHeight >> 2;
 
 #pragma omp parallel for
-    for (int y = 0; y < (int)numVertBlocks; y++) {
+    for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
         for (uint x = 0; x < numHorizBlocks; x++)
         {
             const DXT3Block& block = blocks[(y * numHorizBlocks) + x];
@@ -481,21 +489,7 @@ void ImageReader::ProcessDXT3Block(BGR* pColors, uint8* pAlphas, const DXT3Block
     uint64 blockAlpha = pBlock.mAlpha;
     BGR colors[4];
 
-    // Color 1
-    colors[0].r = pBlock.mColors.mRed1   << 3;
-    colors[0].g = pBlock.mColors.mGreen1 << 2;
-    colors[0].b = pBlock.mColors.mBlue1  << 3;
-    // Color 2
-    colors[1].r = pBlock.mColors.mRed2   << 3;
-    colors[1].g = pBlock.mColors.mGreen2 << 2;
-    colors[1].b = pBlock.mColors.mBlue2  << 3;
-    // Colors 3 and 4
-    colors[2].r = (colors[0].r * 2 + colors[1].r) / 3;
-    colors[2].g = (colors[0].g * 2 + colors[1].g) / 3;
-    colors[2].b = (colors[0].b * 2 + colors[1].b) / 3;
-    colors[3].r = (colors[0].r + colors[1].r * 2) / 3;
-    colors[3].g = (colors[0].g + colors[1].g * 2) / 3;
-    colors[3].b = (colors[0].b + colors[1].b * 2) / 3;
+    this->ProcessDXTColor(colors, NULL, pBlock.mColors, false);
 
     for (uint y = 0; y < 4; y++) {
         uint curPixel = (pBlockY + y) * pWidth + pBlockX;
@@ -528,7 +522,7 @@ void ImageReader::ProcessDXT5(BGRA* pData, uint pWidth, uint pHeight, BGR*& poCo
     const uint numVertBlocks  = pHeight >> 2;
 
 #pragma omp parallel for
-    for (int y = 0; y < (int)numVertBlocks; y++) {
+    for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
         for (uint x = 0; x < numHorizBlocks; x++)
         {
             const DXT3Block& block = blocks[(y * numHorizBlocks) + x];
@@ -544,21 +538,7 @@ void ImageReader::ProcessDXT5Block(BGR* pColors, uint8* pAlphas, const DXT3Block
     BGR    colors[4];
     uint8  alphas[8];
 
-    // Color 1
-    colors[0].r = pBlock.mColors.mRed1   << 3;
-    colors[0].g = pBlock.mColors.mGreen1 << 2;
-    colors[0].b = pBlock.mColors.mBlue1  << 3;
-    // Color 2
-    colors[1].r = pBlock.mColors.mRed2   << 3;
-    colors[1].g = pBlock.mColors.mGreen2 << 2;
-    colors[1].b = pBlock.mColors.mBlue2  << 3;
-    // Colors 3 and 4
-    colors[2].r = (colors[0].r * 2 + colors[1].r) / 3;
-    colors[2].g = (colors[0].g * 2 + colors[1].g) / 3;
-    colors[2].b = (colors[0].b * 2 + colors[1].b) / 3;
-    colors[3].r = (colors[0].r + colors[1].r * 2) / 3;
-    colors[3].g = (colors[0].g + colors[1].g * 2) / 3;
-    colors[3].b = (colors[0].b + colors[1].b * 2) / 3;
+    this->ProcessDXTColor(colors, NULL, pBlock.mColors, false);
 
     // Alpha 1 and 2
     alphas[0]    = (blockAlpha & 0xff);
@@ -608,7 +588,7 @@ void ImageReader::Process3DCX(BGRA* pData, uint pWidth, uint pHeight, BGR*& poCo
     const uint numVertBlocks  = pHeight >> 2;
 
 #pragma omp parallel for
-    for (int y = 0; y < (int)numVertBlocks; y++) {
+    for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
         for (uint x = 0; x < numHorizBlocks; x++)
         {
             const DCXBlock& block = blocks[(y * numHorizBlocks) + x];
@@ -620,8 +600,8 @@ void ImageReader::Process3DCX(BGRA* pData, uint pWidth, uint pHeight, BGR*& poCo
 
 void ImageReader::Process3DCXBlock(RGB* pColors, const DCXBlock& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const
 {
-    static float floatToByte = 127.5f;
-    static float byteToFloat = (1.0f / floatToByte);
+    const float floatToByte = 127.5f;
+    const float byteToFloat = (1.0f / floatToByte);
 
     uint64 red   = pBlock.mRed;
     uint64 green = pBlock.mGreen;
