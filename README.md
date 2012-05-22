@@ -2,9 +2,8 @@ Gw2Browser.1
 ============
 
 Opens a Guild Wars 2 .dat file and allows the user to browse and extract its 
-files. Currently supports viewing power-of-two textures (aside from DXTA) and
-binary files. The decompression algorithm for non-power-of-two textures is yet
-to be figured out.
+files. Currently supports viewing power-of-two textures and binary files. The 
+decompression algorithm for non-power-of-two textures is yet to be figured out.
 
 When a .dat file is opened, it will first index the file. This makes it *a lot*
 faster to re-open the same .dat. Unfortunately, every time the .dat changes it
