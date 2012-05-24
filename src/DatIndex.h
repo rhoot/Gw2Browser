@@ -117,8 +117,8 @@ class DatIndexCategory
     int                 mIndex;
     wxString            mName;
     DatIndexCategory*   mParent;
-    Array<DatIndexCategory*,false,0x3>  mSubCategories;
-    Array<DatIndexEntry*,false,0x3>     mEntries;
+    Array<DatIndexCategory*,0x3>  mSubCategories;
+    Array<DatIndexEntry*,0x3>     mEntries;
 public:
     /** Constructor. Creates a category with the given name and index. 
      *  \param[in]  pOwner  owner index.
@@ -224,8 +224,8 @@ public:
 /** Represents a .dat index, for faster lookup. */
 class DatIndex : public RefCounted
 {
-    typedef Array<DatIndexCategory*,false>  CategoryArray;
-    typedef Array<DatIndexEntry*,false>     EntryArray;
+    typedef Array<DatIndexCategory*>        CategoryArray;
+    typedef Array<DatIndexEntry*>           EntryArray;
     typedef std::set<IDatIndexListener*>    ListenerSet;
 private:
     CategoryArray       mCategories;

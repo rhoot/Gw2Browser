@@ -49,21 +49,20 @@ PreviewPanel::~PreviewPanel()
 
 bool PreviewPanel::PreviewFile(DatFile& pDatFile, const DatIndexEntry& pEntry)
 {
-    Array<byte>* entryData = pDatFile.ReadFile(pEntry.GetMftEntry());
-    if (!entryData || !entryData->GetSize()) { DeletePointer(entryData); return false; }
+    Array<byte> entryData = pDatFile.ReadFile(pEntry.GetMftEntry());
+    if (!entryData.GetSize()) { return false; }
 
     // Create file reader
     FileReaderData readerData;
-    readerData.mData = entryData->GetPointer();
-    readerData.mSize = entryData->GetSize();
+    readerData.mData = entryData.GetPointer();
+    readerData.mSize = entryData.GetSize();
     readerData.mFileType = pEntry.GetFileType();
     FileReader* reader = FileReader::GetReaderForData(readerData);
 
     if (reader) {
         // The reader is in control of the data now. Make sure entryData doesn't free
-        // it upon destruction, and then delete entryData.
-        entryData->UnWrap();
-        DeletePointer(entryData);
+        // it upon destruction.
+        entryData.UnWrap();
 
         if (mCurrentView) {
             // Check if we can re-use the current viewer
@@ -92,7 +91,6 @@ bool PreviewPanel::PreviewFile(DatFile& pDatFile, const DatIndexEntry& pEntry)
         }
     }
 
-    DeletePointer(entryData);
     return false;
 }
 

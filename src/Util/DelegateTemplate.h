@@ -45,7 +45,7 @@ template <typename ReturnType DELEGATE_SEPARATOR DELEGATE_TEMPLATE_PARAMS>
     class Delegate<ReturnType(DELEGATE_TEMPLATE_ARGS)>
 {
     struct DelegateDataBase;
-    typedef Array<DelegateDataBase*,false,0x3> CallList;
+    typedef Array<DelegateDataBase*,0x3> CallList;
 public:
     typedef ReturnType(*PointerType)(DELEGATE_TEMPLATE_ARGS);
     typedef Delegate<ReturnType(DELEGATE_TEMPLATE_ARGS)> ThisType;

@@ -83,10 +83,10 @@ wxToolBar* ImageViewer::BuildToolbar()
 
     // Load all toolbar button icons
     toolbar->SetToolBitmapSize(wxSize(16, 16));
-    mToolbarButtonIcons.Add(data::LoadPNG(data::toggle_red_png,   data::toggle_red_png_size));
-    mToolbarButtonIcons.Add(data::LoadPNG(data::toggle_green_png, data::toggle_green_png_size));
-    mToolbarButtonIcons.Add(data::LoadPNG(data::toggle_blue_png,  data::toggle_blue_png_size));
-    mToolbarButtonIcons.Add(data::LoadPNG(data::toggle_alpha_png, data::toggle_alpha_png_size));
+    mToolbarButtonIcons.push_back(data::LoadPNG(data::toggle_red_png,   data::toggle_red_png_size));
+    mToolbarButtonIcons.push_back(data::LoadPNG(data::toggle_green_png, data::toggle_green_png_size));
+    mToolbarButtonIcons.push_back(data::LoadPNG(data::toggle_blue_png,  data::toggle_blue_png_size));
+    mToolbarButtonIcons.push_back(data::LoadPNG(data::toggle_alpha_png, data::toggle_alpha_png_size));
 
     // Toggle channel buttons
     for (uint i = 0; i < 4; i++) {

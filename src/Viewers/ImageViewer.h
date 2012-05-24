@@ -27,6 +27,7 @@
 #define VIEWERS_IMAGEVIEWER_H_INCLUDED
 
 #include "Viewer.h"
+#include <vector>
 
 namespace gw2b
 {
@@ -38,7 +39,7 @@ class ImageViewer : public Viewer
     ImageControl*       mImageControl;
     wxImage             mImage;
     Array<wxWindowID>   mToolbarButtonIds;
-    Array<wxBitmap>     mToolbarButtonIcons;
+    std::vector<wxBitmap>   mToolbarButtonIcons;
     Array<wxToolBarToolBase*>   mToolbarButtons;
 public:
     ImageViewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);

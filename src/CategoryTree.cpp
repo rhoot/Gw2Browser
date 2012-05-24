@@ -246,11 +246,11 @@ void CategoryTree::ClearEntries()
     }
 }
 
-Array<const DatIndexEntry*>* CategoryTree::GetSelectedEntries() const
+Array<const DatIndexEntry*> CategoryTree::GetSelectedEntries() const
 {
     wxArrayTreeItemIds ids;
     this->GetSelections(ids);
-    if (ids.GetCount() == 0) { return new Array<const DatIndexEntry*>(); }
+    if (ids.GetCount() == 0) { return Array<const DatIndexEntry*>(); }
 
     // Doing this in two steps since reallocating takes far longer than iterating
 
@@ -266,13 +266,13 @@ Array<const DatIndexEntry*>* CategoryTree::GetSelectedEntries() const
     }
 
     // Create and populate the array to return
-    Array<const DatIndexEntry*>* retval = new Array<const DatIndexEntry*>(count);
+    Array<const DatIndexEntry*> retval(count);
     if (count) {
         uint index = 0;
         for (uint i = 0; i < ids.Count(); i++) {
             CategoryTreeItem* itemData = (CategoryTreeItem*)this->GetItemData(ids[i]);
             if (itemData->GetDataType() == CategoryTreeItem::DT_Entry) {
-                (*retval)[index++] = (const DatIndexEntry*)itemData->GetData();
+                retval[index++] = (const DatIndexEntry*)itemData->GetData();
             } else if (itemData->GetDataType() == CategoryTreeItem::DT_Category) {
                 this->AddCategoryEntriesToArray(retval, index, *(const DatIndexCategory*)itemData->GetData());
             }
@@ -283,7 +283,7 @@ Array<const DatIndexEntry*>* CategoryTree::GetSelectedEntries() const
     return retval;
 }
 
-void CategoryTree::AddCategoryEntriesToArray(Array<const DatIndexEntry*>* pArray, uint& pIndex, const DatIndexCategory& pCategory) const
+void CategoryTree::AddCategoryEntriesToArray(Array<const DatIndexEntry*>& pArray, uint& pIndex, const DatIndexCategory& pCategory) const
 {
     // Loop through subcategories
     for (uint i = 0; i < pCategory.GetNumSubCategories(); i++) {
@@ -292,7 +292,7 @@ void CategoryTree::AddCategoryEntriesToArray(Array<const DatIndexEntry*>* pArray
 
     // Loop through entries
     for (uint i = 0; i < pCategory.GetNumEntries(); i++) {
-        (*pArray)[pIndex++] = pCategory.GetEntry(i);
+        pArray[pIndex++] = pCategory.GetEntry(i);
     }
 }
 

@@ -84,10 +84,10 @@ void ExtractFilesWindow::ExtractFile(const DatIndexEntry& pEntry)
     }
 
     // Read file contents
-    Array<byte>* contents = mDatFile.ReadFile(pEntry.GetMftEntry());
-    if (!contents) { return; }
-    byte* data = contents->GetPointer();
-    uint size  = contents->GetSize();
+    Array<byte> contents = mDatFile.ReadFile(pEntry.GetMftEntry());
+    if (!contents.GetSize()) { return; }
+    byte* data = contents.GetPointer();
+    uint size  = contents.GetSize();
 
     // Should we convert the files first?
     FileReader* reader = NULL;
@@ -100,8 +100,8 @@ void ExtractFilesWindow::ExtractFile(const DatIndexEntry& pEntry)
 
         if (reader) {
             data = reader->ConvertData(size);
-            contents->UnWrap();             // Reader takes care of cleaning the data, so the array shouldn't
-            contents->Wrap(data, size);     // We should however handle the newly converted data
+            contents.UnWrap();             // Reader takes care of cleaning the data, so the array shouldn't
+            contents.Wrap(data, size);     // We should however handle the newly converted data
             filename.SetExt(reader->GetExtension());
         }
     }
@@ -114,7 +114,6 @@ void ExtractFilesWindow::ExtractFile(const DatIndexEntry& pEntry)
     file.Close();
 
     DeletePointer(reader);
-    DeletePointer(contents);
 }
 
 void ExtractFilesWindow::AppendPaths(wxFileName& pPath, const DatIndexCategory& pCategory)

@@ -146,10 +146,9 @@ public:
     wxTreeItemId EnsureHasCategory(const DatIndexCategory& pCategory, bool pForce = false);
     /** Clears all entries from the tree. */
     void ClearEntries();
-    /** Gets the currently selected objects. Caller is expected to free the
-     *  object when done with it.
-     *  \return Array<DatIndexEntry*>*  pointer to array of entries. */
-    Array<const DatIndexEntry*>* GetSelectedEntries() const;
+    /** Gets the currently selected objects.
+     *  \return Array<DatIndexEntry*>  array of entries. */
+    Array<const DatIndexEntry*> GetSelectedEntries() const;
 
     /** Gets the .dat file index represented by this tree. */
     DatIndex* GetIndex();
@@ -177,7 +176,7 @@ public:
      *  \param[in]  pIndex  Reference to the index being destroyed. */
     virtual void OnIndexDestruction(DatIndex& pIndex);
 private:
-    void AddCategoryEntriesToArray(Array<const DatIndexEntry*>* pArray, uint& pIndex, const DatIndexCategory& pCategory) const;
+    void AddCategoryEntriesToArray(Array<const DatIndexEntry*>& pArray, uint& pIndex, const DatIndexCategory& pCategory) const;
 
     /** Helper method to add an entry to the tree at the right spot, for sorting.
      *  \param[in]  pParent     Category to add the entry to.

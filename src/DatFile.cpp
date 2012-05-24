@@ -295,19 +295,18 @@ uint DatFile::PeekEntry(uint pEntryNum, uint pPeekSize, byte* poBuffer)
     }
 }
 
-Array<byte>* DatFile::PeekFile(uint pFileNum, uint pPeekSize)
+Array<byte> DatFile::PeekFile(uint pFileNum, uint pPeekSize)
 {
     return this->PeekEntry(pFileNum + MFT_FILE_OFFSET, pPeekSize);
 }
 
-Array<byte>* DatFile::PeekEntry(uint pEntryNum, uint pPeekSize)
+Array<byte> DatFile::PeekEntry(uint pEntryNum, uint pPeekSize)
 {
-    Array<byte>* output = new Array<byte>(pPeekSize);
-    uint readBytes = this->PeekEntry(pEntryNum, pPeekSize, output->GetPointer());
+    Array<byte> output = Array<byte>(pPeekSize);
+    uint readBytes = this->PeekEntry(pEntryNum, pPeekSize, output.GetPointer());
 
     if (readBytes == 0) {
-        DeletePointer(output);
-        return NULL;
+        return Array<byte>();
     }
 
     return output;
@@ -329,27 +328,26 @@ uint DatFile::ReadEntry(uint pEntryNum, byte* poBuffer)
     return 0;
 }
 
-Array<byte>* DatFile::ReadFile(uint pFileNum)
+Array<byte> DatFile::ReadFile(uint pFileNum)
 {
     return this->ReadEntry(pFileNum + MFT_FILE_OFFSET);
 }
 
-Array<byte>* DatFile::ReadEntry(uint pEntryNum)
+Array<byte> DatFile::ReadEntry(uint pEntryNum)
 {
     uint size = this->GetEntrySize(pEntryNum);
-    Array<byte>* output = NULL;
+    Array<byte> output = NULL;
 
     if (size != std::numeric_limits<uint>::max()) {
-        output = new Array<byte>(size);
-        uint readBytes = this->PeekEntry(pEntryNum, size, output->GetPointer());
+        output.SetSize(size);
+        uint readBytes = this->PeekEntry(pEntryNum, size, output.GetPointer());
 
         if (readBytes > 0) {
             return output;
         }
     }
     
-    DeletePointer(output);
-    return NULL;
+    return Array<byte>();
 }
 
 DatFile::IdentificationResult DatFile::IdentifyFileType(byte* pData, uint pSize, ANetFileType& pFileType)

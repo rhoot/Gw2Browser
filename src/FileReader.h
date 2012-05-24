@@ -52,8 +52,9 @@ public:
     enum DataType
     {
         DT_None,            /**< Invalid data. */
-        DT_Binary,          /**< Binary data. Usually for unsupported types. Data is a byte pointer. */
-        DT_Image,           /**< Image data. Data is a wxImage pointer. */
+        DT_Binary,          /**< Binary data. Usually for unsupported types. */
+        DT_Image,           /**< Image data. */
+        DT_Sound,           /**< Sound data. */
     };
 public:
     /** Constructor.

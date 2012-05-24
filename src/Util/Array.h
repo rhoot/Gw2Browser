@@ -26,44 +26,57 @@
 #ifndef UTIL_ARRAY_H_INCLUDED
 #define UTIL_ARRAY_H_INCLUDED
 
-#include <new>
-
 namespace gw2b
 {
-    /** Less than functor. */
-    struct LessThan
+    template <typename T>
+        class ArrayData : public wxRefCounter
     {
-        template <typename T>
-            bool operator()(const T& v1, const T& v2) const { return v1 < v2; }
-    };
+    public:
+        T*      mData;
+        uint    mSize;
+    public:
+        ArrayData() 
+            : mData(NULL)
+            , mSize(NULL) 
+        {
+        }
 
-    /** Less than functor, for pointer types. */
-    struct LessThanPtr
-    {
-        template <typename T>
-            bool operator()(const T& v1, const T& v2) const { return *v1 < *v2; }
+        ArrayData(const ArrayData& pOther)
+        {
+            if (pOther.mSize) {
+                mData = Alloc<T>(pOther.mSize);
+                mSize = pOther.mSize;
+                ::memcpy(mData, pOther.mData, mSize * sizeof(T));
+            } else {
+                mData = NULL;
+                mSize = 0;
+            }
+        }
+
+        virtual ~ArrayData() 
+        {
+            FreePointer(mData); 
+        }
     };
 
     /** Class representing an array of elements.
      *  \tparam T           Type of elements stored in the array.
-     *  \tparam Construct   true to construct and destruct items, false to not
      *  \tparam Granularity Mask deciding how many objects to allocate at a time. */
-    template <typename T, bool Construct=true, uint Granularity=0x7>	
+    template <typename T, uint Granularity=0x7>	
         class Array
     {
-        T*   mData;
-        uint mSize;
+        wxObjectDataPtr< ArrayData<T> >  mData;
     public:
         /** Default constructor. */
         Array()
-            : mData(NULL), mSize(0)
+            : mData(new ArrayData<T>())
         {
         }
 
         /** Constructor.
          *  \param[in]  pSize   The initial size of the array. */
         Array(uint pSize)
-            : mData(NULL), mSize(0)
+            : mData(new ArrayData<T>())
         {
             this->SetSize(pSize);
         }
@@ -71,15 +84,13 @@ namespace gw2b
         /** Copy constructor.
          *  \param[in]  pOther  Object to copy. */
         Array(const Array& pOther)
-            : mData(NULL), mSize(0)
+            : mData(pOther.mData)
         {
-            *this = pOther;
         }
 
         /** Destructor. */
         ~Array()
         {
-            this->Clear();
         }
 
         /** Assignment operator.
@@ -87,8 +98,8 @@ namespace gw2b
          *  \return Array   This array. */
         Array& operator=(const Array& pOther)
         {
-            Clear();
-            return (*this += pOther);
+            mData = pOther.mData;
+            return *this;
         }
 
         /** Addition assignment operator. Adds the elements of the other array 
@@ -97,26 +108,20 @@ namespace gw2b
          *  \return Array   This array. */
         Array& operator+=(const Array& pOther)
         {
-            uint startPos = mSize;
-            uint newSize  = mSize + pOther.GetSize();
-            SetSize(newSize);
+            this->UnShare();
 
-            for (uint i = 0; i < newSize; ++i)
-                mData[startPos + i] = pOther.mData[i];
+            uint startPos = mData.get()->mSize;
+            uint newSize  = mData.get()->mSize + pOther.GetSize();
+            this->SetSize(newSize);
+            ::memcpy(&((*this)[startPos]), pOther.GetPointer(), pOther.GetSize() * sizeof(T));
+
             return *this;
         }
 
         /** Clears this array's elements, making it an empty array. */
         void Clear()
         {
-            if (Construct)
-            {
-                for (uint i = 0; i < mSize; ++i)
-                    mData[i].~T();
-            }
-            ::free(mData);
-            mData = NULL;
-            mSize = 0;
+            this->UnShare();
         }
 
         /** Appends an item to this array.
@@ -124,9 +129,10 @@ namespace gw2b
          *  \return uint    Index of newly added item. */
         uint Add(const T& pItem)
         {
-            uint index = mSize;
-            SetSize(mSize + 1);
-            mData[index] = pItem;
+            this->UnShare();
+            uint index = mData.get()->mSize;
+            SetSize(mData.get()->mSize + 1);
+            (*this)[index] = pItem;
             return index;
         }
 
@@ -134,20 +140,21 @@ namespace gw2b
          *  \return T&  reference to newly added item. */
         T& AddNew()
         {
-            uint index = mSize;
-            SetSize(mSize + 1);
-            if (Construct) {
-                new(&mData[index]) T;
-            }
-            return mData[index];
+            this->UnShare();
+            uint index = mData.get()->mSize;
+            SetSize(mData.get()->mSize + 1);
+            return (*this)[index];
         }
 
         /** Removes the given item from this array.
          *  \param[in]  pItem   Item to remove from this array. */
         void Remove(const T& item)
         {
-            for (uint i = 0; i < mSize; i++) {
-                if (mData[i] == pItem)
+            uint& size = mData.get()->mSize;
+            T*& data   = mData.get()->mData;
+
+            for (uint i = 0; i < size; i++) {
+                if (data[i] == pItem)
                     RemoveAt(i);
             }
         }
@@ -156,69 +163,57 @@ namespace gw2b
          *  \param[in]  pIndex  Index of element to remove. */
         void RemoveAt(uint pIndex)
         {
-            wxASSERT(pIndex >= 0 && pIndex < mSize);
+            wxASSERT(pIndex >= 0 && pIndex < mData.get()->mSize);
+            this->UnShare();
 
-            if (Construct)
-                mData[pIndex].~T();
-            if (pIndex != mSize - 1)
-                ::memmove(&mData[pIndex], &mData[pIndex + 1], (mSize - pIndex - 1) * sizeof(T));
+            uint& size = mData.get()->mSize;
+            T*& data   = mData.get()->mData;
 
-            mSize--;
-            uint count = ((mSize + Granularity - 1) / Granularity) * Granularity;
-            mData = (T*)::realloc(mData, count * sizeof(T));
+            if (pIndex != size - 1) {
+                ::memmove(&data[pIndex], &(data[pIndex + 1]), (size - pIndex - 1) * sizeof(T));
+            }
+            size--;
+
+            uint count = ((size + Granularity - 1) / Granularity) * Granularity;
+            data = static_cast<T*>(::realloc(data, count * sizeof(T)));
         }
 
         /** Sets the size of the array. 
          *  \param[in]  pSize   New size of the array. */
         void SetSize(uint pSize)
         {
-            /* Destruct */
-            if (Construct)
-            {
-                for (uint i = pSize; i < mSize; ++i)
-                    mData[i].~T();
-            }
-
-            /* Realloc */
+            this->UnShare();
             uint count = (pSize + Granularity) & ~Granularity;
-            mData = (T*)::realloc(mData, count * sizeof(T));
-
-            /* Construct */
-            if (Construct)
-            {
-                for (uint i = mSize; i < pSize; ++i)
-                    new(&(mData[i])) T;
-            }
-
-            mSize = pSize;
+            mData.get()->mData = static_cast<T*>(::realloc(this->GetPointer(), count * sizeof(T)));
+            mData.get()->mSize = pSize;
         }
 
         /** Gets the size of the array.
          *  \return uint    Size of the array. */
         uint GetSize() const
         {
-            return mSize;
+            return mData.get()->mSize;
         }
 
         /** Gets the size of the array, in bytes.
          *  \return uint    Size of the array, in bytes. */
         uint GetByteSize() const
         {
-            return mSize * sizeof(T);
+            return mData.get()->mSize * sizeof(T);
         }
 
         /** Gets a pointer to this array.
          *  \return T*  Pointer to this array. */
         T* GetPointer()
         {
-            return mData;
+            return mData.get()->mData;
         }
 
         /** Gets a const pointer to this array.
          *  \return T*  Pointer to this array. */
         const T* GetPointer() const
         {
-            return mData;
+            return mData.get()->mData;
         }
 
         /** Array index operator. Returns the element at the given index.
@@ -226,8 +221,8 @@ namespace gw2b
          *  \return T&  Reference to the found item. */
         inline T& operator[](uint pIndex)
         {
-            wxASSERT(pIndex < mSize);
-            return mData[pIndex];
+            wxASSERT(pIndex < mData.get()->mSize);
+            return mData.get()->mData[pIndex];
         }
 
         /** Const array index operator. Returns the element at the given index.
@@ -235,8 +230,8 @@ namespace gw2b
          *  \return T&  Reference to the found item. */
         inline const T& operator[](uint pIndex) const
         {
-            wxASSERT(pIndex < mSize);
-            return mData[pIndex];
+            wxASSERT(pIndex < mData.get()->mSize);
+            return mData.get()->mData[pIndex];
         }
 
         /** Wraps the given array in this object, giving it control over
@@ -245,9 +240,9 @@ namespace gw2b
          *  \param[in]  pSize   Size of the array. */
         void Wrap(T* pData, uint pSize) 
         {
-            Clear();
-            mData = pData;
-            mSize = pSize;
+            this->UnShare(false);
+            mData.get()->mData = pData;
+            mData.get()->mSize = pSize;
         }
 
         /** Unwraps the data from this array object, thus freeing the data from
@@ -256,47 +251,24 @@ namespace gw2b
          *  \return T*  Unwrapped data. */
         T* UnWrap()
         {
-            T* data = mData;
-            mData = NULL;
-            mSize = 0;
+            this->UnShare();
+            T* data = mData.get()->mData;
+            mData.get()->mData = NULL;
+            mData.get()->mSize = 0;
             return data;
         }
-
-        /** Sorts this array using the provided sort function.
-         *  \tparam SortFunc    Function to use for comparing objects. */
-        template <typename SortFunc>
-            void Sort()
+    protected:
+        void UnShare(bool pCopy = true)
         {
-            SortFunc func;
-            uint lowestId;
-            uint highestId;
-
-            uint count = mSize >> 1;  // divide by 2
-            for (uint i = 0; i < count; ++i)
-            {
-                uint end = (mSize - 1) - i;
-
-                lowestId = i;
-                highestId = end;
-
-                for (uint j = i; j <= end; ++j)
-                {
-                    if (func(mData[j], mData[lowestId]))  { lowestId = j; }
-                    if (func(mData[highestId], mData[j])) { highestId = j; }
+            if (mData->GetRefCount() == 1) {
+                if (!pCopy) {
+                    FreePointer(mData.get()->mData);
+                    mData.get()->mSize = 0;
                 }
-
-                if (lowestId != highestId)
-                {
-                    if (lowestId  != i)              { Swap(mData[i], mData[lowestId]); }
-                    if (highestId != end)          
-                    {
-                        if (highestId == i)
-                            Swap(mData[end], mData[lowestId]);
-                        else
-                            Swap(mData[end], mData[highestId]); 
-                    }
-                }
+                return;
             }
+
+            mData = (pCopy ? new ArrayData<T>(*mData) : new ArrayData<T>());
         }
     };
 };

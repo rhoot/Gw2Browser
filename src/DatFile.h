@@ -42,9 +42,9 @@ class DatFile
         uint32  mFileId;
     };
 private:
-    typedef Array<ANetMftEntry,false>   EntryArray;
-    typedef Array<IdEntry,false>        EntryToIdArray;
-    typedef Array<byte,false>           InputBufferArray;
+    typedef Array<ANetMftEntry> EntryArray;
+    typedef Array<IdEntry>      EntryToIdArray;
+    typedef Array<byte>         InputBufferArray;
 private:
     wxFile              mFile;
     ANetDatHeader       mDatHead;
@@ -143,13 +143,13 @@ public:
     /** Peeks at the contents of the given MFT entry and returns the results.
      *  \param[in]  pEntryNum   MFT entry number to get contents for.
      *  \param[in]  pPeekSize   Amount of bytes to peek at.
-     *  \return Array<byte>* Object used to handle the peeked data. Must be deleted. */
-    Array<byte>* PeekEntry(uint pEntryNum, uint pPeekSize);
+     *  \return Array<byte>  Object used to handle the peeked data. */
+    Array<byte> PeekEntry(uint pEntryNum, uint pPeekSize);
     /** Peeks at the contents of the given MFT file entry and returns the results.
      *  \param[in]  pFileNum    MFT file entry number to get contents for.
      *  \param[in]  pPeekSize   Amount of bytes to peek at.
-     *  \return Array<byte>* Object used to handle the peeked data. Must be deleted. */
-    Array<byte>* PeekFile(uint pFileNum, uint pPeekSize);
+     *  \return Array<byte>  Object used to handle the peeked data. */
+    Array<byte> PeekFile(uint pFileNum, uint pPeekSize);
 
     /** Reads the contents of the given MFT entry and returns the results.
      *  \param[in]  pEntryNum   MFT entry number to get contents for.
@@ -165,12 +165,12 @@ public:
     uint ReadFile(uint pFileNum, byte* poBuffer);
     /** Reads the data contained at the given MFT entry.
      *  \param[in]  pEntryNum   MFT entry number to read.
-     *  \return Array<byte>* Object used to handle the read data. Must be deleted. */
-    Array<byte>* ReadEntry(uint pEntryNum);
+     *  \return Array<byte>  Object used to handle the read data. */
+    Array<byte> ReadEntry(uint pEntryNum);
     /** Reads the file contained at the given MFT entry.
      *  \param[in]  pFileNum    MFT file entry number to read.
-     *  \return Array<byte>* Object used to handle the read file. Must be deleted. */
-    Array<byte>* ReadFile(uint pFileNum);
+     *  \return Array<byte>  Object used to handle the read file. */
+    Array<byte> ReadFile(uint pFileNum);
 
     IdentificationResult IdentifyFileType(byte* pData, uint pSize, ANetFileType& pFileType);
 
