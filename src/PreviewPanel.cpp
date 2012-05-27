@@ -53,17 +53,9 @@ bool PreviewPanel::PreviewFile(DatFile& pDatFile, const DatIndexEntry& pEntry)
     if (!entryData.GetSize()) { return false; }
 
     // Create file reader
-    FileReaderData readerData;
-    readerData.mData = entryData.GetPointer();
-    readerData.mSize = entryData.GetSize();
-    readerData.mFileType = pEntry.GetFileType();
-    FileReader* reader = FileReader::GetReaderForData(readerData);
+    FileReader* reader = FileReader::GetReaderForData(entryData, pEntry.GetFileType());
 
     if (reader) {
-        // The reader is in control of the data now. Make sure entryData doesn't free
-        // it upon destruction.
-        entryData.UnWrap();
-
         if (mCurrentView) {
             // Check if we can re-use the current viewer
             if (mCurrentDataType == reader->GetDataType()) {

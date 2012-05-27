@@ -33,20 +33,13 @@
 namespace gw2b
 {
 
-/** Data used by the FileReader, both for creation and internal storage. */
-struct FileReaderData
-{
-    byte*        mData;         /**< Data to be read. */
-    uint         mSize;         /**< Size of the data to be read. */
-    ANetFileType mFileType;     /**< File type of the data being read. */
-};
-
 /** Base class for all supported file readers. Also handles everything
  *  unsupported by other file readers. */
 class FileReader
 {
 protected:
-    FileReaderData  mData;
+    Array<byte>     mData;
+    ANetFileType    mFileType;
 public:
     /** Type of data contained in this file. Determines how it is exported. */
     enum DataType
@@ -55,11 +48,13 @@ public:
         DT_Binary,          /**< Binary data. Usually for unsupported types. */
         DT_Image,           /**< Image data. */
         DT_Sound,           /**< Sound data. */
+        DT_Model,           /**< Model data. */
     };
 public:
     /** Constructor.
-     *  \param[in]  pData       Data to be handled by this reader. */
-    FileReader(const FileReaderData& pData);
+     *  \param[in]  pData       Data to be handled by this reader.
+     *  \param[in]  pFileType   File type of the given data. */
+    FileReader(const Array<byte>& pData, ANetFileType pFileType);
     /** Destructor. Clears all data. */
     virtual ~FileReader();
 
@@ -71,18 +66,17 @@ public:
     virtual DataType GetDataType() const        { return DT_Binary; }
     /** Gets an appropriate file extension for the contents of this reader.
      *  \return wxString    File extension. */
-    virtual const wxChar* GetExtension() const  { return wxT("raw"); }
+    virtual const wxChar* GetExtension() const  { return wxT(".raw"); }
     /** Converts the data associated with this file into a usable format.
-     *  The caller is responsible for cleanup the malloc'd data.
-     *  \param[out] pOutSize    size of converted data.
-     *  \return byte*   converted data. */
-    virtual byte* ConvertData(uint& pOutSize) const;
+     *  \return Array<byte> converted data. */
+    virtual Array<byte> ConvertData() const;
 
     /** Analyzes the given data and creates an appropriate subclass of 
      *  FileReader to handle it. Caller is responsible for freeing the reader.
      *  \param[in]  pData   Data to read.
+     *  \param[in]  pFileType   File type of the given data.
      *  \return FileReader* Newly created FileReader for the data. */
-    static FileReader* GetReaderForData(const FileReaderData& pData);
+    static FileReader* GetReaderForData(const Array<byte>& pData, ANetFileType pFileType);
 };
 
 }; // namespace gw2b

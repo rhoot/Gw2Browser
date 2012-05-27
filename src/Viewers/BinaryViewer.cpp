@@ -60,12 +60,8 @@ void BinaryViewer::SetReader(FileReader* pReader)
     Viewer::SetReader(pReader);
 
     if (pReader) {
-        uint size;
-        byte* data = pReader->ConvertData(size);
-        if (!data || !size) { return; }
-        mBinaryData.Wrap(data, size);
-        // Update hex view
-        mHexControl->SetData(data, size);
+        mBinaryData = pReader->ConvertData();
+        mHexControl->SetData(mBinaryData.GetPointer(), mBinaryData.GetSize());
     }
 }
 

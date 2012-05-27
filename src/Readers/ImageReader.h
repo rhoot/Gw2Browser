@@ -151,8 +151,9 @@ class ImageReader : public FileReader
 {
 public:
     /** Constructor.
-     *  \param[in]  pData       Data to be handled by this reader. */
-    ImageReader(const FileReaderData& pData);
+     *  \param[in]  pData       Data to be handled by this reader.
+     *  \param[in]  pFileType   File type of the given data. */
+    ImageReader(const Array<byte>& pData, ANetFileType pFileType);
     /** Destructor. Clears all data. */
     virtual ~ImageReader();
 
@@ -162,35 +163,33 @@ public:
     virtual DataType GetDataType() const        { return DT_Image; }
     /** Gets an appropriate file extension for the contents of this reader.
      *  \return wxString    File extension. */
-    virtual const wxChar* GetExtension() const  { return wxT("png"); }
+    virtual const wxChar* GetExtension() const  { return wxT(".png"); }
     /** Converts the data associated with this file into PNG.
-     *  The caller is responsible for cleanup the malloc'd data.
-     *  \param[out] poSize  size of converted data.
-     *  \return byte*   converted data. */
-    virtual byte* ConvertData(uint& poSize) const;
+     *  \return Array<byte> converted data. */
+    virtual Array<byte> ConvertData() const;
     /** Gets the image contained in the data owned by this reader.
      *  \return wxImage     Newly created image. */
     wxImage GetImage() const;
     /** Determines whether the header of this image is valid.
      *  \return bool    true if valid, false if not. */
-    static bool IsValidHeader(byte* pData, uint pSize);
+    static bool IsValidHeader(const byte* pData, uint pSize);
 private:
     bool ReadDdsData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const;
     bool ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const;
 
-    bool ProcessLuminanceDDS(DdsHeader* pHeader, RGB*& poColors) const;
-    bool ProcessUncompressedDDS(DdsHeader* pHeader, RGB*& poColors, uint8*& poAlphas) const;
+    bool ProcessLuminanceDDS(const DdsHeader* pHeader, RGB*& poColors) const;
+    bool ProcessUncompressedDDS(const DdsHeader* pHeader, RGB*& poColors, uint8*& poAlphas) const;
 
     void ProcessDXTColor(BGR* pColors, uint8* pAlphas, const DXTColor& pBlockColor, bool pIsDXT1) const;
-    void ProcessDXT1(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
+    void ProcessDXT1(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
     void ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    void ProcessDXT3(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
+    void ProcessDXT3(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
     void ProcessDXT3Block(BGR* pColors, uint8* pAlphas, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    void ProcessDXT5(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
+    void ProcessDXT5(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
     void ProcessDXT5Block(BGR* pColors, uint8* pAlphas, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    void ProcessDXTA(uint64* pData, uint pWidth, uint pHeight, BGR*& poColors) const;
+    void ProcessDXTA(const uint64* pData, uint pWidth, uint pHeight, BGR*& poColors) const;
     void ProcessDXTABlock(BGR* pColors, uint64 pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    void Process3DCX(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
+    void Process3DCX(const RGBA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
     void Process3DCXBlock(RGB* pColors, const DCXBlock& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
 }; // class ImageReader
 

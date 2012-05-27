@@ -30,39 +30,30 @@
 namespace gw2b
 {
     
-FileReader::FileReader(const FileReaderData& pData)
+FileReader::FileReader(const Array<byte>& pData, ANetFileType pFileType)
     : mData(pData)
+    , mFileType(pFileType)
 {
 }
 
 FileReader::~FileReader()
 {
-    FreePointer(mData.mData);
 }
 
 void FileReader::Clean()
 {
-    FreePointer(mData.mData);
-    ::memset(&mData, 0, sizeof(mData));
+    mData.Clear();
+    mFileType = ANFT_Unknown;
 }
 
-byte* FileReader::ConvertData(uint& pOutSize) const
+Array<byte> FileReader::ConvertData() const
 {
-    if (!mData.mData) {
-        pOutSize = 0;
-        return NULL;
-    }
-
-    byte* outData = Alloc<byte>(mData.mSize);
-    ::memcpy(outData, mData.mData, mData.mSize);
-    pOutSize = mData.mSize;
-
-    return outData;
+    return mData;
 }
 
-FileReader* FileReader::GetReaderForData(const FileReaderData& pData)
+FileReader* FileReader::GetReaderForData(const Array<byte>& pData, ANetFileType pFileType)
 {
-    switch (pData.mFileType) {
+    switch (pFileType) {
     case ANFT_ATEX:
     case ANFT_ATTX:
     case ANFT_ATEC:
@@ -70,14 +61,14 @@ FileReader* FileReader::GetReaderForData(const FileReaderData& pData)
     case ANFT_ATEU:
     case ANFT_ATET:
     case ANFT_DDS:
-        if (ImageReader::IsValidHeader(pData.mData, pData.mSize)) {
-            return new ImageReader(pData);
+        if (ImageReader::IsValidHeader(pData.GetPointer(), pData.GetSize())) {
+            return new ImageReader(pData, pFileType);
         }
         break;
     default:
         break;
     }
-    return new FileReader(pData);
+    return new FileReader(pData, pFileType);
 }
 
 }; // namespace gw2b

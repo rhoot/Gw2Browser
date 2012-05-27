@@ -86,22 +86,16 @@ void ExtractFilesWindow::ExtractFile(const DatIndexEntry& pEntry)
     // Read file contents
     Array<byte> contents = mDatFile.ReadFile(pEntry.GetMftEntry());
     if (!contents.GetSize()) { return; }
-    byte* data = contents.GetPointer();
-    uint size  = contents.GetSize();
 
     // Should we convert the files first?
     FileReader* reader = NULL;
     if (mMode == EM_Converted) {
-        FileReaderData readerData;
-        readerData.mData = data;
-        readerData.mSize = size;
-        mDatFile.IdentifyFileType(data, size, readerData.mFileType);
-        reader = FileReader::GetReaderForData(readerData);
+        ANetFileType fileType = ANFT_Unknown;
+        mDatFile.IdentifyFileType(contents.GetPointer(), contents.GetSize(), fileType);
+        reader = FileReader::GetReaderForData(contents, fileType);
 
         if (reader) {
-            data = reader->ConvertData(size);
-            contents.UnWrap();             // Reader takes care of cleaning the data, so the array shouldn't
-            contents.Wrap(data, size);     // We should however handle the newly converted data
+            contents = reader->ConvertData();
             filename.SetExt(reader->GetExtension());
         }
     }
@@ -109,7 +103,7 @@ void ExtractFilesWindow::ExtractFile(const DatIndexEntry& pEntry)
     // Open file for writing
     wxFile file(filename.GetFullPath(), wxFile::write);
     if (file.IsOpened()) {
-        file.Write(data, size);
+        file.Write(contents.GetPointer(), contents.GetSize());
     }
     file.Close();
 

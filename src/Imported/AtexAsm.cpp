@@ -1924,10 +1924,11 @@ void AtexSubCode2_(unsigned int a, unsigned int b, unsigned int c, unsigned int 
 
 struct SImageData
 {
-	unsigned int *DataPos,*EndPos,_44,_40,_3C,xres,yres;
+	const unsigned int *DataPos,*EndPos;
+    unsigned int _44,_40,_3C,xres,yres;
 };
 
-bool AtexDecompress(unsigned int *InputBuffer, unsigned int BufferSize, unsigned int ImageFormat, SImageDescriptor ImageDescriptor, unsigned int *OutBuffer)
+bool AtexDecompress(const unsigned int *InputBuffer, unsigned int BufferSize, unsigned int ImageFormat, SImageDescriptor ImageDescriptor, unsigned int *OutBuffer)
 {
 	unsigned int HeaderSize=12;
 
@@ -2003,7 +2004,7 @@ bool AtexDecompress(unsigned int *InputBuffer, unsigned int BufferSize, unsigned
 		ImageData.DataPos--;
 	}
 
-	unsigned int *DataEnd=InputBuffer+((HeaderSize+DataSize)>>2);
+	const unsigned int *DataEnd=InputBuffer+((HeaderSize+DataSize)>>2);
 
 	if ((AlphaDataSize || AlphaDataSize2) && BlockCount)
 	{

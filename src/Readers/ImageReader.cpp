@@ -56,8 +56,8 @@ enum FourCC
     FCC_DXTA  = 0x41545844,
 };
 
-ImageReader::ImageReader(const FileReaderData& pData)
-    : FileReader(pData)
+ImageReader::ImageReader(const Array<byte>& pData, ANetFileType pFileType)
+    : FileReader(pData, pFileType)
 {
 }
 
@@ -67,14 +67,14 @@ ImageReader::~ImageReader()
 
 wxImage ImageReader::GetImage() const
 {
-    wxASSERT(mData.mSize >= 4);
+    wxASSERT(mData.GetSize() >= 4);
 
     wxSize size;
     BGR* colors   = NULL;
     uint8* alphas = NULL;
 
     // Read the correct type of data
-    uint32 fourcc = *reinterpret_cast<uint32*>(mData.mData);
+    uint32 fourcc = *reinterpret_cast<const uint32*>(mData.GetPointer());
     if (fourcc != FCC_DDS) {
         if (!this->ReadAtexData(size, colors, alphas)) {
             return wxImage();
@@ -97,21 +97,19 @@ wxImage ImageReader::GetImage() const
     return image;
 }
 
-byte* ImageReader::ConvertData(uint& poSize) const
+Array<byte> ImageReader::ConvertData() const
 {
     wxImage image = this->GetImage();
 
     // Bail if invalid
     if (!image.IsOk()) {
-        poSize = 0;
-        return NULL;
+        return Array<byte>();
     }
 
     // Write the png to memory
     wxMemoryOutputStream stream;
     if (!image.SaveFile(stream, wxBITMAP_TYPE_PNG)) {
-        poSize = 0;
-        return NULL;
+        return Array<byte>();
     }
 
     // Reset the position of the stream
@@ -119,9 +117,8 @@ byte* ImageReader::ConvertData(uint& poSize) const
     buffer->Seek(0, wxFromStart);
 
     // Read the data from the stream and into a buffer
-    poSize     = buffer->GetBytesLeft();
-    byte* data = Alloc<byte>(poSize);
-    buffer->Read(data, poSize);
+    Array<byte> data = Array<byte>(buffer->GetBytesLeft());
+    buffer->Read(data.GetPointer(), data.GetSize());
 
     // Return the PNG data
     return data;
@@ -130,8 +127,8 @@ byte* ImageReader::ConvertData(uint& poSize) const
 bool ImageReader::ReadDdsData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const
 {
     // Get header
-    if (mData.mSize < sizeof(DdsHeader)) { return false; }
-    DdsHeader* header = reinterpret_cast<DdsHeader*>(mData.mData);
+    if (mData.GetSize() < sizeof(DdsHeader)) { return false; }
+    const DdsHeader* header = reinterpret_cast<const DdsHeader*>(mData.GetPointer());
     
     // Ensure some of the values are correct
     if (header->mMagic != FCC_DDS || 
@@ -147,7 +144,7 @@ bool ImageReader::ReadDdsData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) 
             return false;
         }
     } else if (header->mPixelFormat.mFlags & 0x4) {         // 0x4 = DDPF_FOURCC, compressed
-        BGRA* data = reinterpret_cast<BGRA*>(mData.mData + sizeof(*header));
+        const BGRA* data = reinterpret_cast<const BGRA*>(&mData[sizeof(*header)]);
         switch (header->mPixelFormat.mFourCC) {
         case FCC_DXT1:
             this->ProcessDXT1(data, header->mWidth, header->mHeight, poColors, poAlphas);
@@ -174,7 +171,7 @@ bool ImageReader::ReadDdsData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) 
     return !!poColors;
 }
 
-bool ImageReader::ProcessLuminanceDDS(DdsHeader* pHeader, RGB*& poColors) const
+bool ImageReader::ProcessLuminanceDDS(const DdsHeader* pHeader, RGB*& poColors) const
 {
     // Ensure the image is 8-bit
     if (pHeader->mPixelFormat.mRGBBitCount != 8) { return false; }
@@ -184,10 +181,10 @@ bool ImageReader::ProcessLuminanceDDS(DdsHeader* pHeader, RGB*& poColors) const
     uint dataSize  = (numPixels * pHeader->mPixelFormat.mRGBBitCount) >> 3;
 
     // Image data buffer too small?
-    if (mData.mSize < (sizeof(*pHeader) + dataSize)) { return false; }
+    if (mData.GetSize() < (sizeof(*pHeader) + dataSize)) { return false; }
 
     // Read the data (we've already determined that the data is 8bpp above)
-    const uint8* pixelData = static_cast<uint8*>(&mData.mData[sizeof(*pHeader)]);
+    const uint8* pixelData = static_cast<const uint8*>(&mData[sizeof(*pHeader)]);
 
 #pragma omp parallel for
     for (int y = 0; y < static_cast<int>(pHeader->mHeight); y++) {
@@ -202,7 +199,7 @@ bool ImageReader::ProcessLuminanceDDS(DdsHeader* pHeader, RGB*& poColors) const
     return true;
 }
 
-bool ImageReader::ProcessUncompressedDDS(DdsHeader* pHeader, RGB*& poColors, uint8*& poAlphas) const
+bool ImageReader::ProcessUncompressedDDS(const DdsHeader* pHeader, RGB*& poColors, uint8*& poAlphas) const
 {
     // Ensure the image is 32-bit. Until a non-32 bit texture is found,
     // there's no point adding support for it
@@ -213,7 +210,7 @@ bool ImageReader::ProcessUncompressedDDS(DdsHeader* pHeader, RGB*& poColors, uin
     uint dataSize  = (numPixels * pHeader->mPixelFormat.mRGBBitCount) >> 3;
 
     // Image data buffer too small?
-    if (mData.mSize < (sizeof(*pHeader) + dataSize)) { return false; }
+    if (mData.GetSize() < (sizeof(*pHeader) + dataSize)) { return false; }
 
     // Color data
     RGBA shift;
@@ -230,7 +227,7 @@ bool ImageReader::ProcessUncompressedDDS(DdsHeader* pHeader, RGB*& poColors, uin
     }
 
     // Read the data (we've already determined that the data is 32bpp)
-    const uint32* pixelData = reinterpret_cast<uint32*>(&mData.mData[sizeof(*pHeader)]);
+    const uint32* pixelData = reinterpret_cast<const uint32*>(&mData[sizeof(*pHeader)]);
 
 #pragma omp parallel for
     for (int y = 0; y < static_cast<int>(pHeader->mHeight); y++) {
@@ -254,14 +251,14 @@ bool ImageReader::ProcessUncompressedDDS(DdsHeader* pHeader, RGB*& poColors, uin
 
 bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const
 {
-    wxASSERT(IsValidHeader(mData.mData, mData.mSize));
-    ANetAtexHeader* atex = reinterpret_cast<ANetAtexHeader*>(mData.mData);
+    wxASSERT(IsValidHeader(mData.GetPointer(), mData.GetSize()));
+    const ANetAtexHeader* atex = reinterpret_cast<const ANetAtexHeader*>(mData.GetPointer());
 
     // Determine mipmap0 size and bail if the file is too small
-    if (mData.mSize >= sizeof(ANetAtexHeader) + sizeof(uint32)) {
-        uint32 mipMap0Size = *reinterpret_cast<uint32*>(mData.mData + sizeof(ANetAtexHeader));
+    if (mData.GetSize() >= sizeof(ANetAtexHeader) + sizeof(uint32)) {
+        uint32 mipMap0Size = *reinterpret_cast<const uint32*>(&mData[sizeof(ANetAtexHeader)]);
 
-        if (mipMap0Size + sizeof(ANetAtexHeader) > mData.mSize) {
+        if (mipMap0Size + sizeof(ANetAtexHeader) > mData.GetSize()) {
             poSize.Set(0, 0);
             return false;
         }
@@ -274,14 +271,14 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
     ::SImageDescriptor descriptor;
     descriptor.xres = atex->mWidth;
     descriptor.yres = atex->mHeight;
-    descriptor.Data = mData.mData;
+    descriptor.Data = mData.GetPointer();
     descriptor.imageformat = 0xf;
-    descriptor.a = mData.mSize;
+    descriptor.a = mData.GetSize();
     descriptor.b = 6;
     descriptor.c = 0;
 
     // Init some fields
-    uint* data = reinterpret_cast<uint*>(mData.mData);
+    const uint* data = reinterpret_cast<const uint*>(mData.GetPointer());
     poColors = NULL;
     poAlphas = NULL;
 
@@ -292,30 +289,30 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
     // Uncompress
     switch (atex->mFormatInteger) {
     case FCC_DXT1:
-        if (::AtexDecompress(data, mData.mSize, 0xf, descriptor, reinterpret_cast<uint*>(output))) {
+        if (::AtexDecompress(data, mData.GetSize(), 0xf, descriptor, reinterpret_cast<uint*>(output))) {
             this->ProcessDXT1(output, atex->mWidth, atex->mHeight, poColors, poAlphas);
         }
         break;
     case FCC_DXT2:
     case FCC_DXT3:
     case FCC_DXTN:
-        if (::AtexDecompress(data, mData.mSize, 0x11, descriptor, reinterpret_cast<uint*>(output))) {
+        if (::AtexDecompress(data, mData.GetSize(), 0x11, descriptor, reinterpret_cast<uint*>(output))) {
             this->ProcessDXT3(output, atex->mWidth, atex->mHeight, poColors, poAlphas);
         }
         break;
     case FCC_DXT4:
     case FCC_DXT5:
-        if (::AtexDecompress(data, mData.mSize, 0x13, descriptor, reinterpret_cast<uint*>(output))) {
+        if (::AtexDecompress(data, mData.GetSize(), 0x13, descriptor, reinterpret_cast<uint*>(output))) {
             this->ProcessDXT5(output, atex->mWidth, atex->mHeight, poColors, poAlphas);
         }
         break;
     case FCC_DXTA:
-        if (::AtexDecompress(data, mData.mSize, 0x14, descriptor, reinterpret_cast<uint*>(output))) {
+        if (::AtexDecompress(data, mData.GetSize(), 0x14, descriptor, reinterpret_cast<uint*>(output))) {
             this->ProcessDXTA(reinterpret_cast<uint64*>(output), atex->mWidth, atex->mHeight, poColors);
         }
         break;
     case FCC_DXTL:
-        if (::AtexDecompress(data, mData.mSize, 0x12, descriptor, reinterpret_cast<uint*>(output))) {
+        if (::AtexDecompress(data, mData.GetSize(), 0x12, descriptor, reinterpret_cast<uint*>(output))) {
             this->ProcessDXT5(output, atex->mWidth, atex->mHeight, poColors, poAlphas);
 
             for (uint i = 0; i < (static_cast<uint>(atex->mWidth) * static_cast<uint>(atex->mHeight)); i++) {
@@ -326,8 +323,8 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
         }
         break;
     case FCC_3DCX:
-        if (::AtexDecompress(data, mData.mSize, 0x13, descriptor, reinterpret_cast<uint*>(output))) {
-            this->Process3DCX(output, atex->mWidth, atex->mHeight, poColors, poAlphas);
+        if (::AtexDecompress(data, mData.GetSize(), 0x13, descriptor, reinterpret_cast<uint*>(output))) {
+            this->Process3DCX(reinterpret_cast<RGBA*>(output), atex->mWidth, atex->mHeight, poColors, poAlphas);
         }
         break;
     default:
@@ -345,15 +342,15 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
     return false;
 }
 
-bool ImageReader::IsValidHeader(byte* pData, uint pSize)
+bool ImageReader::IsValidHeader(const byte* pData, uint pSize)
 {
     if (pSize < 0x10) { return false; }
-    uint32 fourcc = *reinterpret_cast<uint32*>(pData);
+    uint32 fourcc = *reinterpret_cast<const uint32*>(pData);
 
     // Is this a DDS file?
     if (fourcc == FCC_DDS) {
         if (pSize < sizeof(DdsHeader)) { return false; }
-        DdsHeader* dds = reinterpret_cast<DdsHeader*>(pData);
+        const DdsHeader* dds = reinterpret_cast<const DdsHeader*>(pData);
 
         bool isUncompressedRgb  = !!(dds->mPixelFormat.mFlags &    0x40);
         bool isCompressedRgb    = !!(dds->mPixelFormat.mFlags &     0x4);
@@ -364,7 +361,7 @@ bool ImageReader::IsValidHeader(byte* pData, uint pSize)
         return (isCompressedRgb || (isLuminanceTexture && is8Bit) || (isUncompressedRgb && is32Bit));
     }
 
-    ANetAtexHeader* atex = reinterpret_cast<ANetAtexHeader*>(pData);
+    const ANetAtexHeader* atex = reinterpret_cast<const ANetAtexHeader*>(pData);
     uint32 compression   = atex->mFormatInteger;
 
     // The compression algorithm for non-power-of-two textures is unknown
@@ -422,10 +419,10 @@ void ImageReader::ProcessDXTColor(BGR* pColors, uint8* pAlphas, const DXTColor& 
     }
 }
 
-void ImageReader::ProcessDXT1(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const {
-    uint numPixels    = (pWidth * pHeight);
-    uint numBlocks    = numPixels >> 4;
-    DXT1Block* blocks = reinterpret_cast<DXT1Block*>(pData);
+void ImageReader::ProcessDXT1(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const {
+    uint numPixels  = (pWidth * pHeight);
+    uint numBlocks  = numPixels >> 4;
+    const DXT1Block* blocks = reinterpret_cast<const DXT1Block*>(pData);
 
     poColors = Alloc<BGR>(numPixels);
     poAlphas = Alloc<uint8>(numPixels);
@@ -468,7 +465,7 @@ void ImageReader::ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block
     }
 }
 
-void ImageReader::ProcessDXTA(uint64* pData, uint pWidth, uint pHeight, BGR*& poColors) const
+void ImageReader::ProcessDXTA(const uint64* pData, uint pWidth, uint pHeight, BGR*& poColors) const
 {
     uint numPixels    = (pWidth * pHeight);
     uint numBlocks    = numPixels >> 4;
@@ -520,11 +517,11 @@ void ImageReader::ProcessDXTABlock(BGR* pColors, uint64 pBlock, uint pBlockX, ui
     }
 }
 
-void ImageReader::ProcessDXT3(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
+void ImageReader::ProcessDXT3(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
 {
-    uint numPixels    = (pWidth * pHeight);
-    uint numBlocks    = numPixels >> 4;
-    DXT3Block* blocks = reinterpret_cast<DXT3Block*>(pData);
+    uint numPixels  = (pWidth * pHeight);
+    uint numBlocks  = numPixels >> 4;
+    const DXT3Block* blocks = reinterpret_cast<const DXT3Block*>(pData);
 
     poColors = Alloc<BGR>(numPixels);
     poAlphas = Alloc<uint8>(numPixels);
@@ -568,11 +565,11 @@ void ImageReader::ProcessDXT3Block(BGR* pColors, uint8* pAlphas, const DXT3Block
     }
 }
 
-void ImageReader::ProcessDXT5(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
+void ImageReader::ProcessDXT5(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
 {
     uint numPixels    = (pWidth * pHeight);
     uint numBlocks    = numPixels >> 4;
-    DXT3Block* blocks = reinterpret_cast<DXT3Block*>(pData);
+    const DXT3Block* blocks = reinterpret_cast<const DXT3Block*>(pData);
 
     poColors = Alloc<BGR>(numPixels);
     poAlphas = Alloc<uint8>(numPixels);
@@ -634,11 +631,11 @@ void ImageReader::ProcessDXT5Block(BGR* pColors, uint8* pAlphas, const DXT3Block
     }
 }
 
-void ImageReader::Process3DCX(BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
+void ImageReader::Process3DCX(const RGBA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
 {
-    uint numPixels    = (pWidth * pHeight);
-    uint numBlocks    = numPixels >> 4;
-    DCXBlock* blocks  = reinterpret_cast<DCXBlock*>(pData);
+    uint numPixels  = (pWidth * pHeight);
+    uint numBlocks  = numPixels >> 4;
+    const DCXBlock* blocks = reinterpret_cast<const DCXBlock*>(pData);
 
     poColors = Alloc<BGR>(numPixels);
     poAlphas = NULL; // 3DCX does not use alpha

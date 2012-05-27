@@ -371,23 +371,15 @@ void BrowserWindow::OnTreeExtractConverted(CategoryTree& pTree)
                 wxMessageBox(wxT("Failed to extract the file, most likely due to a decompression error."), wxT("Error"), wxOK | wxICON_ERROR);
                 return;
             }
-
-            byte* data   = entryData.GetPointer();
-            uint size    = entryData.GetSize();
-            wxString ext = wxEmptyString;
-
             // Convert to a usable format
-            FileReaderData readerData;
-            readerData.mData = data;
-            readerData.mSize = size;
-            mDatFile.IdentifyFileType(data, size, readerData.mFileType);
-            FileReader* reader = FileReader::GetReaderForData(readerData);
+            ANetFileType fileType = ANFT_Unknown;
+            mDatFile.IdentifyFileType(entryData.GetPointer(), entryData.GetSize(), fileType);
+            FileReader* reader = FileReader::GetReaderForData(entryData, fileType);
 
+            wxString ext = wxEmptyString;
             if (reader) {
-                data = reader->ConvertData(size);
-                entryData.UnWrap();            // The reader claims ownership of the data so the array should no longer have it
-                entryData.Wrap(data, size);    // The newly converted data should be handled by us however
-                ext = wxString(wxT(".")) + reader->GetExtension();
+                entryData = reader->ConvertData();
+                ext       = reader->GetExtension();
             }
 
             // Ask for location
