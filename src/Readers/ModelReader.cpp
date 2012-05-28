@@ -347,7 +347,7 @@ void ModelReader::ReadVertexBuffer(Array<Vertex>& pVertices, const byte* pData, 
                 if (((uvFlag >> i) & 1) == 0) { continue; }
                 if (vertex.mHasUV == 0) {
                     vertex.mUV.x = *reinterpret_cast<const half*>(pos + 0);
-                    vertex.mUV.y = *reinterpret_cast<const half*>(pos + 2);
+                    vertex.mUV.y = 1 - *reinterpret_cast<const half*>(pos + 2);
                     vertex.mHasUV = 1;
                 }
                 pos += sizeof(half) * 2;
