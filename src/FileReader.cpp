@@ -26,6 +26,7 @@
 #include "FileReader.h"
 
 #include "Readers/ImageReader.h"
+#include "Readers/ModelReader.h"
 
 namespace gw2b
 {
@@ -64,6 +65,9 @@ FileReader* FileReader::GetReaderForData(const Array<byte>& pData, ANetFileType 
         if (ImageReader::IsValidHeader(pData.GetPointer(), pData.GetSize())) {
             return new ImageReader(pData, pFileType);
         }
+        break;
+    case ANFT_Model:
+        return new ModelReader(pData, pFileType);
         break;
     default:
         break;

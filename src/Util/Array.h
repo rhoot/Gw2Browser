@@ -29,9 +29,8 @@
 namespace gw2b
 {
     template <typename T>
-        class ArrayData : public wxRefCounter
+        struct ArrayData : public wxRefCounter
     {
-    public:
         T*      mData;
         uint    mSize;
     public:

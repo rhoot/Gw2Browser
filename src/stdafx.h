@@ -35,6 +35,9 @@
 // gw2CoreTools
 #include <gw2DatTools/compression/inflateDatFileBuffer.h>
 
+// 16-bit floats
+#include "Imported/half.h"
+
 // Handy defines
 #define ArraySize(x)        (sizeof(x) / sizeof(*x))
 
@@ -49,25 +52,30 @@
 
 namespace gw2b
 {
-    typedef wxInt8          int8;       /**< Signed 8-bit integer. */  
-    typedef wxInt16         int16;      /**< Signed 16-bit integer. */
-    typedef wxInt32         int32;      /**< Signed 32-bit integer. */
-    typedef wxInt64         int64;      /**< Signed 64-bit integer. */
+    typedef wxInt8                  int8;       /**< Signed 8-bit integer. */  
+    typedef wxInt16                 int16;      /**< Signed 16-bit integer. */
+    typedef wxInt32                 int32;      /**< Signed 32-bit integer. */
+    typedef wxInt64                 int64;      /**< Signed 64-bit integer. */
 
-    typedef wxUint8         uint8;      /**< Unsigned 8-bit integer. */
-    typedef wxUint16        uint16;     /**< Unsigned 16-bit integer. */
-    typedef wxUint32        uint32;     /**< Unsigned 32-bit integer. */
-    typedef wxUint64        uint64;     /**< Unsigned 64-bit integer. */
+    typedef wxUint8                 uint8;      /**< Unsigned 8-bit integer. */
+    typedef wxUint16                uint16;     /**< Unsigned 16-bit integer. */
+    typedef wxUint32                uint32;     /**< Unsigned 32-bit integer. */
+    typedef wxUint64                uint64;     /**< Unsigned 64-bit integer. */
 
-    typedef uint8           byte;       /**< Unsigned byte. */
-    typedef int8            sbyte;      /**< Signed byte. */
-    typedef char            char8;      /**< 8-bit character. */    
-    typedef wxChar16        char16;     /**< 16-bit character. */
-    typedef wxChar32        char32;     /**< 32-bit character. */
+    typedef uint8                   byte;       /**< Unsigned byte. */
+    typedef int8                    sbyte;      /**< Signed byte. */
+    typedef char                    char8;      /**< 8-bit character. */    
+    typedef wxChar16                char16;     /**< 16-bit character. */
+    typedef wxChar32                char32;     /**< 32-bit character. */
 
-    typedef unsigned short  ushort;     /**< Short for 'unsigned short'. */
-    typedef unsigned int    uint;       /**< Short for 'unsigned int'. */
-    typedef unsigned long   ulong;      /**< Short for 'unsigned long'. */
+    typedef unsigned short          ushort;     /**< Short for 'unsigned short'. */
+    typedef unsigned int            uint;       /**< Short for 'unsigned int'. */
+    typedef unsigned long           ulong;      /**< Short for 'unsigned long'. */
+
+    typedef neo::math::HalfFloat    half;       /**< 16-bit IEEE floating point number. */
+    typedef neo::math::HalfFloat    float16;    /**< 16-bit IEEE floating point number. */
+    typedef float                   float32;    /**< 32-bit IEEE floating point number. */
+    typedef double                  float64;    /**< 64-bit IEEE floating point number. */
 }; // namespace gw2b
 
 #include "Util/Array.h"

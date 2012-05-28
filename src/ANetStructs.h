@@ -88,6 +88,27 @@ enum ANetMftEntryFlags
     ANMEF_InUse         = 1,    /**< Entry is in use. */
 };
 
+/** GW2 FVF fields. */
+enum ANetFlexibleVertexFormat
+{
+    ANFVF_Position              = 0x00000001,   /**< 12 bytes. Position as three 32-bit floats in the order x, y, z. */
+    ANFVF_Weights               = 0x00000002,   /**< 4 bytes. Contains bone weights. */
+    ANFVF_Group                 = 0x00000004,   /**< 4 bytes. Related to bone weights. */
+    ANFVF_Normal                = 0x00000008,   /**< 12 bytes. Normal as three 32-bit floats in the order x, y, z. */
+    ANFVF_Color                 = 0x00000010,   /**< 4 bytes. Vertex color. */
+    ANFVF_Tangent               = 0x00000020,   /**< 12 bytes. Tangent as three 32-bit floats in the order x, y, z. */
+    ANFVF_Bitangent             = 0x00000040,   /**< 12 bytes. Bitangent as three 32-bit floats in the order x, y, z. */
+    ANFVF_TangentFrame          = 0x00000080,   /**< 12 bytes. */
+    ANFVF_UV32Mask              = 0x0000ff00,   /**< 8 bytes for each set bit. Contains UV-coords as two 32-bit floats in the order u, v. */
+    ANFVF_UV16Mask              = 0x00ff0000,   /**< 4 bytes for each set bit. Contains UV-coords as two 16-bit floats in the order u, v. */
+    ANFVF_Unknown1              = 0x01000000,   /**< 48 bytes. Unknown data. */
+    ANFVF_Unknown2              = 0x02000000,   /**< 4 bytes. Unknown data. */
+    ANFVF_Unknown3              = 0x04000000,   /**< 4 bytes. Unknown data. */
+    ANFVF_Unknown4              = 0x08000000,   /**< 16 bytes. Unknown data. */
+    ANFVF_PositionCompressed    = 0x10000000,   /**< 6 bytes. Position as three 16-bit floats in the order x, y, z. */
+    ANFVF_Unknown5              = 0x20000000,   /**< 12 bytes. Unknown data. */
+};
+
 #pragma pack(push, 1)
 
 /** Gw2.dat file header. */
@@ -161,7 +182,7 @@ struct ANetPfHeader
     };
 };
 
-/** PF file chunk header. **/
+/** PF file chunk header. */
 struct ANetPfChunkHeader
 {
     union {
@@ -172,6 +193,37 @@ struct ANetPfChunkHeader
     uint16 mChunkVersion;           /**< Version of this chunk. */
     uint16 mChunkHeaderSize;        /**< Size of the chunk header. */
     uint32 mOffsetTableOffset;      /**< Offset to the offset table. */
+};
+
+/** MODL file, GEOM chunk mesh info data. */
+struct ANetModelMeshInfo
+{
+    uint32 mUnknown1[5];            /**< Unknown fields. Seems to always be zero. */
+    uint32 mUnknownData1Count;      /**< Amount of fields pointed to by mUnknownData1Offset. */
+    uint32 mUnknownData1Offset;     /**< Offset to unknown data. */
+    float mUnknownFloats[8];        /**< Eight unknown 32-bit float values. */
+    uint32 mUnknownData2Count;      /**< Amount of fields pointed to by mUnknownData2Offset. Each field is 28 bytes. */
+    uint32 mUnknownData2Offset;     /**< Offset to unknown data. Each field in the pointed-to data is 28 bytes. */
+    uint32 mMaterialId;             /**< Material ID. */
+    uint32 mMaterialNameOffset;     /**< Offset to null-terminated material name. */
+    uint32 mUnknownData3Count;      /**< Amount of fields pointed to by mUnknownData3Offset. Each field is 8 bytes. */
+    uint32 mUnknownData3Offset;     /**< Offset to unknown data. Each field in the pointed-to data is 8 bytes. */
+    uint32 mBufferInfoOffset;       /**< Offset to this mesh's buffer info. */
+};
+
+/** MODL file, GEOM chunk buffer info data. */
+struct ANetModelBufferInfo
+{
+    uint32 mVertexCount;            /**< Amount of vertices in this mesh. */
+    uint32 mVertexFormat;           /**< Vertex format used by this mesh. */
+    uint32 mVertexBufferSize;       /**< Total size of the vertex buffer. */
+    uint32 mVertexBufferOffset;     /**< Offset to the vertex buffer. */
+    uint32 mIndexCount;             /**< Amount of indices in this mesh's LOD0. */
+    uint32 mIndexBufferOffset;      /**< Offset to the index data used by LOD0. */
+    uint32 mLodLevelCount;          /**< Amount of additional LOD levels for this mesh. */
+    uint32 mLodLevelOffset;         /**< Offset to the first LOD level's data. */
+    uint32 mUnknownDataCount;       /**< Amount of fields pointed to by mUnknownDataOffset. Each field is a uint32. */
+    uint32 mUnknownDataOffset;      /**< Offset to unknown data. Each field in the pointed-to data is a uint32. */
 };
 
 #pragma pack(pop)

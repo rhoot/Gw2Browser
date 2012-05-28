@@ -119,11 +119,17 @@ void HexControl::DrawHexArea(wxDC& pDC, RedrawState& pState)
         firstChar = wxMax(0, firstChar);
         lastChar  = wxMin(BYTES_PER_LINE - 1, lastChar);
 
+        if (firstChar >= static_cast<int>(mDataSize)) {
+            break;
+        }
+
         // Display the byte
         for (int j = firstChar; j <= lastChar; j++) {
-            uint left = pState.mHexArea.x + (j * byteWidth);
-            uint top  = pState.mHexArea.y + (i * pState.mLineHeight);
-            pDC.DrawText(wxString::Format(wxT("%02x"), mData[(i * BYTES_PER_LINE) + j]), left, top);
+            uint index = (i * BYTES_PER_LINE) + j;
+            if (index >= mDataSize) { break; }
+            uint left  = pState.mHexArea.x + (j * byteWidth);
+            uint top   = pState.mHexArea.y + (i * pState.mLineHeight);
+            pDC.DrawText(wxString::Format(wxT("%02x"), mData[index]), left, top);
         }
     }
 }
@@ -141,10 +147,16 @@ void HexControl::DrawTextArea(wxDC& pDC, RedrawState& pState)
         firstChar = wxMax(0, firstChar);
         lastChar  = wxMin(BYTES_PER_LINE - 1, lastChar);
 
+        if (firstChar >= static_cast<int>(mDataSize)) {
+            break;
+        }
+
         // Build the ouput string
         wxString output;
         for (int j = firstChar; j <= lastChar; j++) {
-            char sign = this->FilterTextChar(mData[(i * BYTES_PER_LINE) + j]);
+            uint index = (i * BYTES_PER_LINE) + j;
+            if (index >= mDataSize) { break; }
+            char sign = this->FilterTextChar(mData[index]);
             output.Append(sign);
         }
 

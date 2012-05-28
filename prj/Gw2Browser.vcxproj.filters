@@ -58,6 +58,9 @@
     <Filter Include="Source Files\Util">
       <UniqueIdentifier>{59e1e936-b1c8-48f4-8de9-9a86162e6754}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Identifiers">
+      <UniqueIdentifier>{f4c9e898-dfd2-4461-a335-53c815a9ecaf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\stdafx.h">
@@ -177,6 +180,15 @@
     <ClInclude Include="..\src\Readers\SoundReader.h">
       <Filter>Header Files\Readers</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Identifiers\BaseIdentifier.h">
+      <Filter>Header Files\Identifiers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Util\Vector2.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Imported\half.h">
+      <Filter>Header Files\Imported</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\stdafx.cpp">
@@ -260,8 +272,29 @@
     <ClCompile Include="..\src\Readers\SoundReader.cpp">
       <Filter>Source Files\Readers</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Util\Vector3.cpp">
+      <Filter>Source Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Util\Vector2.cpp">
+      <Filter>Source Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PackFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Imported\half.cpp">
+      <Filter>Source Files\Imported</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+    <None Include="..\src\Util\Vector3.inl">
+      <Filter>Header Files\Util</Filter>
+    </None>
+    <None Include="..\src\Util\Vector2.inl">
+      <Filter>Header Files\Util</Filter>
+    </None>
+    <None Include="..\src\Imported\half.inl">
+      <Filter>Header Files\Imported</Filter>
+    </None>
   </ItemGroup>
 </Project>

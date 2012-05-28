@@ -23,8 +23,10 @@
     <ClInclude Include="..\src\DatFile.h" />
     <ClInclude Include="..\src\DatIndex.h" />
     <ClInclude Include="..\src\Gw2Browser.h" />
+    <ClInclude Include="..\src\Identifiers\BaseIdentifier.h" />
     <ClInclude Include="..\src\Imported\AtexAsm.h" />
     <ClInclude Include="..\src\Imported\crc.h" />
+    <ClInclude Include="..\src\Imported\half.h" />
     <ClInclude Include="..\src\PackFile.h" />
     <ClInclude Include="..\src\PreviewPanel.h" />
     <ClInclude Include="..\src\ProgressStatusBar.h" />
@@ -44,6 +46,7 @@
     <ClInclude Include="..\src\Util\Matrix.h" />
     <ClInclude Include="..\src\Util\Misc.h" />
     <ClInclude Include="..\src\Util\RefCounted.h" />
+    <ClInclude Include="..\src\Util\Vector2.h" />
     <ClInclude Include="..\src\Util\Vector3.h" />
     <ClInclude Include="..\src\Viewer.h" />
     <ClInclude Include="..\src\Viewers\BinaryViewer.h" />
@@ -64,6 +67,8 @@
     <ClCompile Include="..\src\Gw2Browser.cpp" />
     <ClCompile Include="..\src\Imported\AtexAsm.cpp" />
     <ClCompile Include="..\src\Imported\crc.cpp" />
+    <ClCompile Include="..\src\Imported\half.cpp" />
+    <ClCompile Include="..\src\PackFile.cpp" />
     <ClCompile Include="..\src\PreviewPanel.cpp" />
     <ClCompile Include="..\src\ProgressStatusBar.cpp" />
     <ClCompile Include="..\src\Readers\ImageReader.cpp" />
@@ -77,6 +82,8 @@
     <ClCompile Include="..\src\Tasks\ScanDatTask.cpp" />
     <ClCompile Include="..\src\Tasks\WriteIndexTask.cpp" />
     <ClCompile Include="..\src\Util\Misc.cpp" />
+    <ClCompile Include="..\src\Util\Vector2.cpp" />
+    <ClCompile Include="..\src\Util\Vector3.cpp" />
     <ClCompile Include="..\src\Viewer.cpp" />
     <ClCompile Include="..\src\Viewers\BinaryViewer.cpp" />
     <ClCompile Include="..\src\Viewers\BinaryViewer\HexControl.cpp" />
@@ -85,6 +92,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+    <None Include="..\src\Imported\half.inl" />
+    <None Include="..\src\Util\Vector2.inl" />
+    <None Include="..\src\Util\Vector3.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}</ProjectGuid>
