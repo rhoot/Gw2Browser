@@ -76,6 +76,10 @@ ModelViewer::~ModelViewer()
         if (mMeshCache[i].mIndexBuffer)  { mMeshCache[i].mIndexBuffer->Release();  }
         if (mMeshCache[i].mVertexBuffer) { mMeshCache[i].mVertexBuffer->Release(); }
     }
+    for (uint i = 0; i < mTextureCache.GetSize(); i++) {
+        if (mTextureCache[i].mDiffuseMap) { mTextureCache[i].mDiffuseMap->Release(); }
+        if (mTextureCache[i].mNormalMap)  { mTextureCache[i].mNormalMap->Release();  }
+    }
 }
 
 void ModelViewer::Clear()
@@ -276,8 +280,7 @@ void ModelViewer::EndFrame()
 
 void ModelViewer::Render()
 {
-    mDevice->SetRenderState(D3DRS_LIGHTING, 0);
-    mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+    mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
     this->UpdateMatrices();
 
     this->BeginFrame(0x353535);
