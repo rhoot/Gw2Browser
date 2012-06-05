@@ -28,7 +28,22 @@
 
 namespace gw2b
 {
+class DatFile;
 class FileReader;
+
+
+class INeedDatFile
+{
+    DatFile* mDatFile;
+protected:
+    INeedDatFile() {}
+public:
+    virtual ~INeedDatFile() {}
+    // I know interfaces per definition aren't supposed to have implementation, but screw that
+    DatFile* GetDatFile() { return mDatFile; }
+    const DatFile* GetDatFile() const { return mDatFile; }
+    void SetDatFile(DatFile* pDatFile) { mDatFile = pDatFile; }
+};
 
 /** Panel used to view the contents of a file. */
 class Viewer : public wxPanel

@@ -26,6 +26,7 @@
 #ifndef VIEWERS_MODELVIEWER_H_INCLUDED
 #define VIEWERS_MODELVIEWER_H_INCLUDED
 
+#include "ModelViewer/Camera.h"
 #include "Readers/ModelReader.h"
 #include "Viewer.h"
 
@@ -51,7 +52,13 @@ struct MeshCache
     IDirect3DVertexBuffer9* mVertexBuffer;
 };
 
-class ModelViewer : public Viewer
+struct TextureCache
+{
+    IDirect3DTexture9*  mDiffuseMap;
+    IDirect3DTexture9*  mNormalMap;
+};
+
+class ModelViewer : public Viewer, public INeedDatFile
 {
     AutoPtr<IDirect3D9>         mD3D;
     AutoPtr<IDirect3DDevice9>   mDevice;
@@ -59,6 +66,9 @@ class ModelViewer : public Viewer
     D3DPRESENT_PARAMETERS       mPresentParams;
     Model                       mModel;
     Array<MeshCache>            mMeshCache;
+    Array<TextureCache>         mTextureCache;
+    Camera                      mCamera;
+    wxPoint                     mLastMousePos;
 public:
     ModelViewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
     virtual ~ModelViewer();
@@ -72,16 +82,22 @@ public:
      *  \return ModelReader*    Reader containing the data. */
     const ModelReader* GetModelReader() const   { return (const ModelReader*)this->GetReader(); }
 
+    void Focus();
+
     void DrawMesh(uint pMeshIndex);
 
 private:
     void OnPaintEvt(wxPaintEvent& pEvent);
+    void OnMotionEvt(wxMouseEvent& pEvent);
+    void OnMouseWheelEvt(wxMouseEvent& pEvent);
+    void OnKeyDownEvt(wxKeyEvent& pEvent);
     void BeginFrame(uint32 pClearColor);
     void EndFrame();
     void Render();
     bool CreateBuffers(MeshCache& pCache, uint pVertexCount, uint pVertexSize, uint pIndexCount, uint pIndexSize);
     bool PopulateBuffers(const Mesh& pMesh, MeshCache& pCache);
     void UpdateMatrices();
+    IDirect3DTexture9* LoadTexture(uint pFileId);
 }; // class ImageViewer
 
 }; // namespace gw2b

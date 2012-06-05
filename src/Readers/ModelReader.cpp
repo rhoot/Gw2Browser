@@ -29,6 +29,7 @@
 
 #include "ModelReader.h"
 
+#include "DatFile.h"
 #include "PackFile.h"
 
 namespace gw2b
@@ -37,6 +38,7 @@ namespace gw2b
 enum FourCC
 {
     FCC_GEOM    = 0x4d4f4547,
+    FCC_MODL    = 0x4c444f4d,
 };
 
 //----------------------------------------------------------------------------
@@ -50,6 +52,7 @@ ModelData::ModelData()
 ModelData::ModelData(const ModelData& pOther)
 {
     mMeshes.assign(pOther.mMeshes.begin(), pOther.mMeshes.end());
+    mMaterialData.assign(pOther.mMaterialData.begin(), pOther.mMaterialData.end());
 }
 
 ModelData::~ModelData()
@@ -85,12 +88,6 @@ uint Model::GetNumMeshes() const
     return mData->mMeshes.size();
 }
 
-Mesh& Model::GetMesh(uint pIndex)
-{
-    wxASSERT(pIndex < this->GetNumMeshes());
-    return mData->mMeshes[pIndex];
-}
-
 const Mesh& Model::GetMesh(uint pIndex) const
 {
     wxASSERT(pIndex < this->GetNumMeshes());
@@ -102,6 +99,35 @@ Mesh& Model::AddMesh()
     this->UnShare();
     mData->mMeshes.push_back(Mesh());
     return mData->mMeshes[mData->mMeshes.size() - 1];
+}
+
+uint Model::GetNumMaterialData() const
+{
+    return mData->mMaterialData.size();
+}
+
+MaterialData& Model::GetMaterialData(uint pIndex)
+{
+    wxASSERT(pIndex < this->GetNumMaterialData());
+    return mData->mMaterialData[pIndex];
+}
+
+const MaterialData& Model::GetMaterialData(uint pIndex) const
+{
+    wxASSERT(pIndex < this->GetNumMaterialData());
+    return mData->mMaterialData[pIndex];
+}
+
+MaterialData& Model::AddMaterialData()
+{
+    this->UnShare();
+
+    MaterialData newData;
+    newData.mDiffuseTexture = 0;
+    newData.mNormalMap      = 0;
+    mData->mMaterialData.push_back(newData);
+
+    return mData->mMaterialData[mData->mMaterialData.size() - 1];
 }
 
 void Model::UnShare()   
@@ -136,9 +162,9 @@ Array<byte> ModelReader::ConvertData() const
     stream << "# " << model.GetNumMeshes() << " meshes" << std::endl;
 
     for (uint i = 0; i < model.GetNumMeshes(); i++){
-        Mesh& mesh     = model.GetMesh(i);
-        bool hasUV     = true;
-        bool hasNormal = true;
+        const Mesh& mesh = model.GetMesh(i);
+        bool hasUV       = true;
+        bool hasNormal   = true;
 
         // Write header
         stream << std::endl << "# Mesh " << i << ": " << mesh.mVertices.GetSize() << " vertices, " << mesh.mTriangles.GetSize() << " triangles" << std::endl;
@@ -166,7 +192,7 @@ Array<byte> ModelReader::ConvertData() const
 
         // Write faces
         for (uint j = 0; j < mesh.mTriangles.GetSize(); j++) {
-            Triangle& triangle = mesh.mTriangles[j];
+            const Triangle& triangle = mesh.mTriangles[j];
             
             stream << 'f';
             for (uint k = 0; k < 3; k++) { 
@@ -216,6 +242,7 @@ Model ModelReader::GetModel() const
     // Populate the model
     PackFile packFile(mData);
     this->ReadGeometry(newModel, packFile);
+    this->ReadMaterialData(newModel, packFile);
 
     return newModel;
 }
@@ -252,7 +279,7 @@ void ModelReader::ReadGeometry(Model& pModel, PackFile& pPackFile) const
         // Add new mesh
         Mesh& mesh = pModel.AddMesh();
         // Material data
-        mesh.mMaterialId = meshInfo->mMaterialId;
+        mesh.mMaterialIndex = meshInfo->mMaterialIndex;
         pos  = reinterpret_cast<const byte*>(&meshInfo->mMaterialNameOffset);
         pos += meshInfo->mMaterialNameOffset;
         mesh.mMaterialName = wxString::FromUTF8(reinterpret_cast<const char*>(pos));
@@ -260,26 +287,48 @@ void ModelReader::ReadGeometry(Model& pModel, PackFile& pPackFile) const
         if (bufferInfo->mVertexCount) {
             pos  = reinterpret_cast<const byte*>(&bufferInfo->mVertexBufferOffset);
             pos += bufferInfo->mVertexBufferOffset;
-            this->ReadVertexBuffer(mesh.mVertices, pos, bufferInfo->mVertexCount, static_cast<ANetFlexibleVertexFormat>(bufferInfo->mVertexFormat));
+            this->ReadVertexBuffer(mesh, pos, bufferInfo->mVertexCount, static_cast<ANetFlexibleVertexFormat>(bufferInfo->mVertexFormat));
         }
         // Index data
         if (bufferInfo->mIndexCount) {
             pos  = reinterpret_cast<const byte*>(&bufferInfo->mIndexBufferOffset);
             pos += bufferInfo->mIndexBufferOffset;
-            this->ReadIndexBuffer(mesh.mTriangles, pos, bufferInfo->mIndexCount);
+            this->ReadIndexBuffer(mesh, pos, bufferInfo->mIndexCount);
         }
     }
 }
 
-void ModelReader::ReadIndexBuffer(Array<Triangle>& pTriangles, const byte* pData, uint pIndexCount) const
+void ModelReader::ReadIndexBuffer(Mesh& pMesh, const byte* pData, uint pIndexCount) const
 {
-    pTriangles.SetSize(pIndexCount / 3);
-    ::memcpy(pTriangles.GetPointer(), pData, pTriangles.GetSize() * sizeof(Triangle));
+    pMesh.mTriangles.SetSize(pIndexCount / 3);
+    ::memcpy(pMesh.mTriangles.GetPointer(), pData, pMesh.mTriangles.GetSize() * sizeof(Triangle));
+
+    // Calculate bounds
+    pMesh.mBounds.mMinX = std::numeric_limits<float>::max();
+    pMesh.mBounds.mMinY = std::numeric_limits<float>::max();
+    pMesh.mBounds.mMinZ = std::numeric_limits<float>::max();
+    pMesh.mBounds.mMaxX = std::numeric_limits<float>::min();
+    pMesh.mBounds.mMaxY = std::numeric_limits<float>::min();
+    pMesh.mBounds.mMaxZ = std::numeric_limits<float>::min();
+
+    const uint16* indices = reinterpret_cast<const uint16*>(pData);
+    for (uint i = 0; i < pIndexCount; i++) {
+        const Vertex& vertex = pMesh.mVertices[indices[i]];
+        // X axis
+        if (vertex.mPosition.x < pMesh.mBounds.mMinX) { pMesh.mBounds.mMinX = vertex.mPosition.x; }
+        if (vertex.mPosition.x > pMesh.mBounds.mMaxX) { pMesh.mBounds.mMaxX = vertex.mPosition.x; }
+        // Y axis
+        if (vertex.mPosition.y < pMesh.mBounds.mMinY) { pMesh.mBounds.mMinY = vertex.mPosition.y; }
+        if (vertex.mPosition.y > pMesh.mBounds.mMaxY) { pMesh.mBounds.mMaxY = vertex.mPosition.y; }
+        // Z axis
+        if (vertex.mPosition.z < pMesh.mBounds.mMinZ) { pMesh.mBounds.mMinZ = vertex.mPosition.z; }
+        if (vertex.mPosition.z > pMesh.mBounds.mMaxZ) { pMesh.mBounds.mMaxZ = vertex.mPosition.z; }
+    }
 }
 
-void ModelReader::ReadVertexBuffer(Array<Vertex>& pVertices, const byte* pData, uint pVertexCount, ANetFlexibleVertexFormat pVertexFormat) const
+void ModelReader::ReadVertexBuffer(Mesh& pMesh, const byte* pData, uint pVertexCount, ANetFlexibleVertexFormat pVertexFormat) const
 {
-    pVertices.SetSize(pVertexCount);
+    pMesh.mVertices.SetSize(pVertexCount);
     uint vertexSize = this->GetVertexSize(pVertexFormat);
 
 #pragma omp parallel for
@@ -287,7 +336,7 @@ void ModelReader::ReadVertexBuffer(Array<Vertex>& pVertices, const byte* pData, 
         const byte* pos = &pData[i * vertexSize];
 
         // Init vertex
-        Vertex& vertex    = pVertices[i];
+        Vertex& vertex    = pMesh.mVertices[i];
         vertex.mHasColor  = 0;
         vertex.mHasNormal = 0;
         vertex.mHasUV     = 0;
@@ -416,6 +465,69 @@ uint ModelReader::GetVertexSize(ANetFlexibleVertexFormat pVertexFormat) const
         + (((pVertexFormat & ANFVF_Unknown4) >> 27) * 16)
         + (((pVertexFormat & ANFVF_PositionCompressed) >> 28) * 6)
         + (((pVertexFormat & ANFVF_Unknown5) >> 29) * 12);
+}
+
+void ModelReader::ReadMaterialData(Model& pModel, PackFile& pPackFile) const
+{
+    uint size;
+    const byte* data = pPackFile.GetChunk(FCC_MODL, size);
+
+    // Bail if no data
+    if (!data) {
+        return;
+    }
+
+    // Read some necessary data
+    const ANetPfChunkHeader* header                 = reinterpret_cast<const ANetPfChunkHeader*>(data);
+    uint32 numMaterialInfo                          = *reinterpret_cast<const uint32*>(&data[sizeof(*header)]);
+    uint32 materialInfoOffset                       = *reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4]);
+    const ANetModelMaterialArray* materialInfoArray = reinterpret_cast<const ANetModelMaterialArray*>(&data[sizeof(*header) + 4 + materialInfoOffset]);
+
+    // Loop through each material info
+    for (uint i = 0; i < numMaterialInfo; i++) {
+        // Bail if no offset or count
+        if (!materialInfoArray[i].mMaterialCount || !materialInfoArray[i].mMaterialsOffset) { continue; }
+
+        // Read the offset table for this set of materials
+        const byte* pos = materialInfoArray[i].mMaterialsOffset + reinterpret_cast<const byte*>(&materialInfoArray[i].mMaterialsOffset);
+        const int32* offsetTable = reinterpret_cast<const int32*>(pos);
+
+        // Loop through each material in these material infos
+        for (uint j = 0; j < materialInfoArray->mMaterialCount; j++) {
+            MaterialData& data = (pModel.GetNumMaterialData() <= j ? pModel.AddMaterialData() : pModel.GetMaterialData(j));
+
+            // Bail if offset is NULL
+            if (offsetTable[j] == 0) { continue; }
+
+            // Bail if this material index already has data
+            if (data.mDiffuseTexture && data.mNormalMap) { continue; }
+
+            // Read material info
+            const byte* pos = offsetTable[j] + reinterpret_cast<const byte*>(&offsetTable[j]);
+            const ANetModelMaterialInfo* materialInfo = reinterpret_cast<const ANetModelMaterialInfo*>(pos);
+
+            // We are *only* interested in textures
+            if (materialInfo->mTextureCount == 0) { continue; }
+            pos = materialInfo->mTexturesOffset + reinterpret_cast<const byte*>(&materialInfo->mTexturesOffset);
+            const ANetModelTextureReference* textures = reinterpret_cast<const ANetModelTextureReference*>(pos);
+
+            // Out of these, we only care about the diffuse and normal maps
+            for (uint t = 0; t < materialInfo->mTextureCount; t++) {
+                // Get file reference
+                pos = textures[t].mOffsetToFileReference + reinterpret_cast<const byte*>(&textures[t].mOffsetToFileReference);
+                const ANetFileReference* fileReference = reinterpret_cast<const ANetFileReference*>(pos);
+
+                // Diffuse?
+                if (textures[t].mHash == 0x67531924) {
+                    data.mDiffuseTexture = DatFile::GetFileNumFromFileReference(*fileReference);
+                }
+                // Normal?
+                else if (textures[t].mHash == 0x1816C9EE) {
+                    data.mNormalMap = DatFile::GetFileNumFromFileReference(*fileReference);
+                }
+            }
+        }
+    }
 }
 
 }; // namespace gw2b

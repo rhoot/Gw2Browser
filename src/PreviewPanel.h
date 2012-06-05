@@ -56,8 +56,9 @@ private:
     /** Helper method to create a viewer control to handle the given data type.
      *  The caller is responsible for freeing the viewer.
      *  \param[in]  pDataType   Type of data to create a viewer for.
+     *  \param[in]  pDatFile    Reference to an instance of DatFile.
      *  \return Viewer* Newly created viewer. */
-    Viewer* CreateViewerForDataType(FileReader::DataType pDataType);
+    Viewer* CreateViewerForDataType(FileReader::DataType pDataType, DatFile& pDatFile);
 }; // class PreviewPanel
 
 }; // namespace gw2b

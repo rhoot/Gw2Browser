@@ -487,4 +487,10 @@ DatFile::IdentificationResult DatFile::IdentifyFileType(byte* pData, uint pSize,
     return IR_Success;
 }
 
+uint DatFile::GetFileNumFromFileReference(const ANetFileReference& pFileRef)
+{
+    wxASSERT(pFileRef.mParts[2] == 0);
+    return 0xFF00 * (pFileRef.mParts[1] - 0x100) + (pFileRef.mParts[0] - 0x100) + 1;
+}
+
 }; // namespace gw2b

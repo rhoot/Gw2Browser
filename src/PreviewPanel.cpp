@@ -71,7 +71,7 @@ bool PreviewPanel::PreviewFile(DatFile& pDatFile, const DatIndexEntry& pEntry)
             }
         }
 
-        mCurrentView = this->CreateViewerForDataType(reader->GetDataType());
+        mCurrentView = this->CreateViewerForDataType(reader->GetDataType(), pDatFile);
         if (mCurrentView) {
             // Workaround for wxWidgets fuckups
             this->GetSizer()->Add(mCurrentView, wxSizerFlags().Expand().Proportion(1));
@@ -87,17 +87,27 @@ bool PreviewPanel::PreviewFile(DatFile& pDatFile, const DatIndexEntry& pEntry)
     return false;
 }
 
-Viewer* PreviewPanel::CreateViewerForDataType(FileReader::DataType pDataType)
+Viewer* PreviewPanel::CreateViewerForDataType(FileReader::DataType pDataType, DatFile& pDatFile)
 {
+    Viewer* newViewer = NULL;
+
     switch (pDataType) {
     case FileReader::DT_Image:
-        return new ImageViewer(this);
+        newViewer = new ImageViewer(this);
+        break;
     case FileReader::DT_Model:
-        return new ModelViewer(this);
+        newViewer = new ModelViewer(this);
+        break;
     case FileReader::DT_Binary:
     default:
-        return new BinaryViewer(this);
+        newViewer = new BinaryViewer(this);
+        break;
     }
+
+    INeedDatFile* needer = dynamic_cast<INeedDatFile*>(newViewer);
+    if (needer) { needer->SetDatFile(&pDatFile); }
+
+    return newViewer;
 }
 
 }; // namespace gw2b

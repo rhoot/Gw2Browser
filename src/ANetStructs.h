@@ -153,6 +153,12 @@ struct ANetFileIdEntry
     uint32 mMftEntryIndex;          /**< Index of the file in the mft. */
 };
 
+/** ANet file reference data. */
+struct ANetFileReference
+{
+    uint16 mParts[3];               /**< Part1 is always above 0x100, Part2 is always between 0x100 and 0x101, Part3 is always 0x00 */
+};
+
 /** ATEX file header. */
 struct ANetAtexHeader
 {
@@ -204,7 +210,7 @@ struct ANetModelMeshInfo
     float mUnknownFloats[8];        /**< Eight unknown 32-bit float values. */
     uint32 mUnknownData2Count;      /**< Amount of fields pointed to by mUnknownData2Offset. Each field is 28 bytes. */
     uint32 mUnknownData2Offset;     /**< Offset to unknown data. Each field in the pointed-to data is 28 bytes. */
-    uint32 mMaterialId;             /**< Material ID. */
+    int32 mMaterialIndex;          /**< Index into the material data array. */
     uint32 mMaterialNameOffset;     /**< Offset to null-terminated material name. */
     uint32 mUnknownData3Count;      /**< Amount of fields pointed to by mUnknownData3Offset. Each field is 8 bytes. */
     uint32 mUnknownData3Offset;     /**< Offset to unknown data. Each field in the pointed-to data is 8 bytes. */
@@ -224,6 +230,45 @@ struct ANetModelBufferInfo
     uint32 mLodLevelOffset;         /**< Offset to the first LOD level's data. */
     uint32 mUnknownDataCount;       /**< Amount of fields pointed to by mUnknownDataOffset. Each field is a uint32. */
     uint32 mUnknownDataOffset;      /**< Offset to unknown data. Each field in the pointed-to data is a uint32. */
+};
+
+/** MODL file, MODL chunk material array. */
+struct ANetModelMaterialArray
+{
+    uint32 mUnknown1;
+    uint32 mUnknown2;
+    uint32 mMaterialCount;
+    int32 mMaterialsOffset;
+};
+
+/** MODL file, MODL chunk material info data. */
+struct ANetModelMaterialInfo
+{
+    uint32 mUnknown1[3];            /**< Unknown data. */
+    int32 mMaterialFileOffset;      /**< Offset to material file reference. */
+    uint32 mFlags;                  /**< Mesh flags. */
+    uint32 mUnknown2;               /**< Unknown data. */
+    uint32 mTextureCount;           /**< Amount of texture references. */
+    int32 mTexturesOffset;          /**< Offset to texture references. */
+    uint32 mVectorCount;            /**< Amount of vectors for use by the material. */
+    int32 mVectorsOffset;           /**< Offset to vector data. */
+    uint32 mHashCount;              /**< Amount of hashes pointed to by mHashesOffset. Only contains hashes used by vectors. */
+    int32 mHashesOffset;            /**< Offset to hashes. */
+    uint32 mUnknown3Count;
+    int32 mUnknown3Offset;
+    uint32 mUnknown4Count;
+    int32 mUnknown4Offset;
+    uint32 mUnknown5;
+};
+
+/** MODL file, MODL chunk texture reference data. */
+struct ANetModelTextureReference
+{
+    int32 mOffsetToFileReference;   /**< Offset to the texture file reference. */
+    uint32 mUnknown1;               /**< Unknown data. */
+    uint32 mHash;                   /**< Hash used to associate the texture with a variable in the material. */
+    uint32 mUnknown2;               /**< Could potentially be part of the hash, but doesn't seem like it. */
+    byte mUnknown3[13];             /**< Unknown data. */
 };
 
 #pragma pack(pop)

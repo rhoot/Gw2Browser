@@ -58,6 +58,16 @@ union Triangle
     uint16 mIndices[3];
 };
 
+struct Bounds
+{
+    float mMinX;
+    float mMinY;
+    float mMinZ;
+    float mMaxX;
+    float mMaxY;
+    float mMaxZ;
+};
+
 #pragma pack(pop)
 
 struct Mesh
@@ -65,13 +75,21 @@ struct Mesh
     Array<Vertex>   mVertices;
     Array<Triangle> mTriangles;
     wxString        mMaterialName;
-    uint            mMaterialId;
+    int             mMaterialIndex;
+    Bounds          mBounds;
+};
+
+struct MaterialData
+{
+    uint32 mDiffuseTexture;
+    uint32 mNormalMap;
 };
 
 class ModelData : public wxRefCounter
 {
 public:
     std::vector<Mesh> mMeshes;
+    std::vector<MaterialData> mMaterialData;
 public:
     ModelData();
     ModelData(const ModelData& pOther);
@@ -88,10 +106,16 @@ public:
 
     Model& operator=(const Model& pOther);
 
+    // Submeshes
     uint GetNumMeshes() const;
-    Mesh& GetMesh(uint pIndex);
     const Mesh& GetMesh(uint pIndex) const;
     Mesh& AddMesh();
+
+    // Material data
+    uint GetNumMaterialData() const;
+    MaterialData& GetMaterialData(uint pIndex);
+    const MaterialData& GetMaterialData(uint pIndex) const;
+    MaterialData& AddMaterialData();
 private:
     void UnShare();
 };
@@ -122,9 +146,10 @@ public:
 
 private:
     void ReadGeometry(Model& pModel, PackFile& pPackFile) const;
-    void ReadVertexBuffer(Array<Vertex>& pVertices, const byte* pData, uint pVertexCount, ANetFlexibleVertexFormat pVertexFormat) const;
-    void ReadIndexBuffer(Array<Triangle>& pTriangles, const byte* pData, uint pIndexCount) const;
+    void ReadVertexBuffer(Mesh& pMesh, const byte* pData, uint pVertexCount, ANetFlexibleVertexFormat pVertexFormat) const;
+    void ReadIndexBuffer(Mesh& pMesh, const byte* pData, uint pIndexCount) const;
     uint GetVertexSize(ANetFlexibleVertexFormat pVertexFormat) const;
+    void ReadMaterialData(Model& pModel, PackFile& pPackFile) const;
 }; // class ModelReader
 
 }; // namespace gw2b

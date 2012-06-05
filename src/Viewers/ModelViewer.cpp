@@ -23,6 +23,8 @@
 
 #include "stdafx.h"
 #include "ModelViewer.h"
+#include "DatFile.h"
+#include "Readers/ImageReader.h"
 
 namespace gw2b
 {
@@ -31,6 +33,7 @@ uint32 VertexDefinition::sFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DF
 
 ModelViewer::ModelViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& pSize)
     : Viewer(pParent, pPos, pSize)
+    , mLastMousePos(std::numeric_limits<int>::min(), std::numeric_limits<int>::min())
 {
     ::memset(&mPresentParams, 0, sizeof(mPresentParams));
     mPresentParams.PresentationInterval    = D3DPRESENT_INTERVAL_IMMEDIATE;
@@ -62,6 +65,9 @@ ModelViewer::ModelViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& p
 
     // Hook up events
     this->Connect(wxEVT_PAINT, wxPaintEventHandler(ModelViewer::OnPaintEvt));
+    this->Connect(wxEVT_MOTION, wxMouseEventHandler(ModelViewer::OnMotionEvt));
+    this->Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(ModelViewer::OnMouseWheelEvt));
+    this->Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(ModelViewer::OnKeyDownEvt));
 }
 
 ModelViewer::~ModelViewer()
@@ -78,6 +84,11 @@ void ModelViewer::Clear()
         if (mMeshCache[i].mIndexBuffer)  { mMeshCache[i].mIndexBuffer->Release();  }
         if (mMeshCache[i].mVertexBuffer) { mMeshCache[i].mVertexBuffer->Release(); }
     }
+    for (uint i = 0; i < mTextureCache.GetSize(); i++) {
+        if (mTextureCache[i].mDiffuseMap) { mTextureCache[i].mDiffuseMap->Release(); }
+        if (mTextureCache[i].mNormalMap)  { mTextureCache[i].mNormalMap->Release();  }
+    }
+    mTextureCache.Clear();
     mMeshCache.Clear();
     mModel = Model();
     Viewer::Clear();
@@ -113,6 +124,33 @@ void ModelViewer::SetReader(FileReader* pReader)
             continue;
         }
     }
+
+    // Create DX texture cache
+    mTextureCache.SetSize(mModel.GetNumMaterialData());
+
+    // Load textures
+    for (uint i = 0; i < mModel.GetNumMaterialData(); i++) {
+        const MaterialData& material = mModel.GetMaterialData(i);
+        TextureCache& cache = mTextureCache[i];
+
+        // Load diffuse texture
+        if (material.mDiffuseTexture) {
+            cache.mDiffuseMap = this->LoadTexture(material.mDiffuseTexture);
+        } else {
+            cache.mDiffuseMap = NULL;
+        }
+
+        // Load normal map
+        if (material.mNormalMap) {
+            cache.mNormalMap = this->LoadTexture(material.mNormalMap);
+        } else {
+            cache.mNormalMap = NULL;
+        }
+    }
+
+    // Re-focus and re-render
+    this->Focus();
+    this->Refresh(false);
 }
 
 bool ModelViewer::CreateBuffers(MeshCache& pCache, uint pVertexCount, uint pVertexSize, uint pIndexCount, uint pIndexSize)
@@ -266,6 +304,7 @@ void ModelViewer::DrawMesh(uint pMeshIndex)
     // Count vertices / primitives
     uint vertexCount    = mModel.GetMesh(pMeshIndex).mVertices.GetSize();
     uint primitiveCount = mModel.GetMesh(pMeshIndex).mTriangles.GetSize();
+    int  materialIndex  = mModel.GetMesh(pMeshIndex).mMaterialIndex;
     
     // Set buffers
     if (FAILED(mDevice->SetFVF(VertexDefinition::sFVF))) { return; }
@@ -276,6 +315,11 @@ void ModelViewer::DrawMesh(uint pMeshIndex)
     uint numPasses;
     mEffect->SetTechnique("RenderScene");
     mEffect->Begin(&numPasses, 0);
+
+    // Update texture
+    if (materialIndex >= 0 && mTextureCache[materialIndex].mDiffuseMap) {
+        mEffect->SetTexture("g_DiffuseTex", mTextureCache[materialIndex].mDiffuseMap);
+    }
 
     // Draw each shader pass
     for (uint i = 0; i < numPasses; i++) {
@@ -296,26 +340,141 @@ void ModelViewer::UpdateMatrices()
     XMMATRIX projectionMatrix;
 
     // View matrix
-    D3DXVECTOR3 eyeLocation;
-    eyeLocation.x = 0;
-    eyeLocation.y = -100;
-    eyeLocation.z = 0;
-    D3DXVECTOR3 eyeLookAt;
-    ::memset(&eyeLookAt, 0, sizeof(eyeLookAt));
-    D3DXVECTOR3 eyeUp;
-    eyeUp.x = 0;
-    eyeUp.y = 0;
-    eyeUp.z = -1;
-    ::D3DXMatrixLookAtLH(reinterpret_cast<D3DXMATRIX*>(&viewMatrix), &eyeLocation, &eyeLookAt, &eyeUp);
+    viewMatrix = mCamera.CalculateViewMatrix();
 
     // Projection matrix
     wxSize clientSize = this->GetClientSize();
-    float aspectRatio = (static_cast<float>(clientSize.y) / static_cast<float>(clientSize.x));
-    ::D3DXMatrixPerspectiveLH(reinterpret_cast<D3DXMATRIX*>(&projectionMatrix), XM_PIDIV4, aspectRatio, 0.1f, 2000);
+    float aspectRatio = (static_cast<float>(clientSize.x) / static_cast<float>(clientSize.y));
+    projectionMatrix  = ::XMMatrixPerspectiveFovLH((5.0f / 12.0f) * XM_PI, aspectRatio, 0.1f, 2000);
 
     // WorldViewProjection matrix
-    XMMATRIX worldViewProjMatrix = ::XMMatrixMultiply(viewMatrix, projectionMatrix);
+    XMFLOAT4X4 worldViewProjMatrix;
+    ::XMStoreFloat4x4(&worldViewProjMatrix, ::XMMatrixMultiply(viewMatrix, projectionMatrix));
+
     mEffect->SetMatrix("g_WorldViewProjMatrix", reinterpret_cast<D3DXMATRIX*>(&worldViewProjMatrix));
+}
+
+IDirect3DTexture9* ModelViewer::LoadTexture(uint pFileId)
+{
+    uint entryNumber      = this->GetDatFile()->GetEntryNumFromFileId(pFileId);
+    Array<byte> fileData  = this->GetDatFile()->ReadEntry(entryNumber);
+
+    // Bail if read failed
+    if (fileData.GetSize() == 0) { return NULL; }
+
+    // Convert to image
+    ANetFileType fileType;
+    this->GetDatFile()->IdentifyFileType(fileData.GetPointer(), fileData.GetSize(), fileType);
+    FileReader* reader = FileReader::GetReaderForData(fileData, fileType);
+    
+    // Bail if not an image
+    ImageReader* imgReader = dynamic_cast<ImageReader*>(reader);
+    if (!imgReader) {
+        DeletePointer(reader);
+        return NULL;
+    }
+
+    // Convert to PNG and bail if invalid
+    Array<byte> pngData = imgReader->ConvertData();
+    if (pngData.GetSize() == 0) {
+        DeletePointer(reader);
+        return NULL;
+    }
+
+    // Finally, load texture from in-memory PNG.
+    IDirect3DTexture9* texture = NULL;
+    ::D3DXCreateTextureFromFileInMemory(mDevice, pngData.GetPointer(), pngData.GetSize(), &texture);
+
+    // Delete reader and return
+    DeletePointer(reader);
+    return texture;
+}
+
+void ModelViewer::Focus()
+{
+    float fov      = (5.0f / 12.0f) * XM_PI;
+    uint meshCount = mModel.GetNumMeshes();
+    
+    if (!meshCount) { return; }
+
+    // Calculate complete bounds
+    Bounds bounds;
+    for (uint i = 0; i < meshCount; i++) {
+        const Bounds& meshBounds = mModel.GetMesh(i).mBounds;
+
+        if (i > 0) {
+            bounds.mMinX = wxMin(bounds.mMinX, meshBounds.mMinX);
+            bounds.mMinY = wxMin(bounds.mMinY, meshBounds.mMinY);
+            bounds.mMinZ = wxMin(bounds.mMinZ, meshBounds.mMinZ);
+            bounds.mMaxX = wxMax(bounds.mMaxX, meshBounds.mMaxX);
+            bounds.mMaxY = wxMax(bounds.mMaxY, meshBounds.mMaxY);
+            bounds.mMaxZ = wxMax(bounds.mMaxZ, meshBounds.mMaxZ);
+        } else {
+            bounds = meshBounds;
+        }
+    }
+
+    float height = bounds.mMaxZ - bounds.mMinZ;
+    if (height <= 0) { return; }
+
+    float distance = bounds.mMinY - ((height * 0.5f) / ::tanf(fov * 0.5f));
+    if (distance < 0) { distance *= -1; }
+
+    // Calculate new pivot point
+    XMFLOAT3 min(bounds.mMinX, bounds.mMinY, bounds.mMinZ);
+    XMFLOAT3 max(bounds.mMaxX, bounds.mMaxY, bounds.mMaxZ);
+    XMVECTOR minVector    = ::XMLoadFloat3(&min);
+    XMVECTOR maxVector    = ::XMLoadFloat3(&max);
+    XMVECTOR centerVector = ::XMVectorScale(::XMVectorAdd(minVector, maxVector), 0.5f);
+
+    XMFLOAT3 center;
+    ::XMStoreFloat3(&center, centerVector);
+
+    // Update camera and re-render
+    mCamera.SetPivot(center);
+    mCamera.SetDistance(distance);
+    this->Refresh(false);
+}
+
+void ModelViewer::OnMotionEvt(wxMouseEvent& pEvent)
+{
+    if (mLastMousePos.x == std::numeric_limits<int>::min() && 
+        mLastMousePos.y == std::numeric_limits<int>::min()) 
+    {
+        mLastMousePos = pEvent.GetPosition();
+    }
+
+    // Yaw/Pitch
+    if (pEvent.LeftIsDown()) {
+        float rotateSpeed = (XM_PI / 180.0f);   // 1 degree per pixel
+        mCamera.RotateYaw(rotateSpeed * -(pEvent.GetX() - mLastMousePos.x));
+        mCamera.RotatePitch(rotateSpeed * (pEvent.GetY() - mLastMousePos.y));
+        this->Refresh(false);
+    }
+
+    // Pan
+    if (pEvent.MiddleIsDown()) {
+        float xPan = -(pEvent.GetX() - mLastMousePos.x);
+        float yPan = -(pEvent.GetY() - mLastMousePos.y);
+        mCamera.Pan(xPan, yPan);
+        this->Refresh(false);
+    }
+
+    mLastMousePos = pEvent.GetPosition();
+}
+
+void ModelViewer::OnMouseWheelEvt(wxMouseEvent& pEvent)
+{
+    float zoomSteps = static_cast<float>(pEvent.GetWheelRotation()) / static_cast<float>(pEvent.GetWheelDelta());
+    mCamera.MultiplyDistance(-zoomSteps);
+    this->Refresh(false);
+}
+
+void ModelViewer::OnKeyDownEvt(wxKeyEvent& pEvent)
+{
+    if (pEvent.GetKeyCode() == 'F') {
+        this->Focus();
+    }
 }
 
 }; // namespace gw2b

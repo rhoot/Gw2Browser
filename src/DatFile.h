@@ -173,6 +173,7 @@ public:
     Array<byte> ReadFile(uint pFileNum);
 
     IdentificationResult IdentifyFileType(byte* pData, uint pSize, ANetFileType& pFileType);
+    static uint GetFileNumFromFileReference(const ANetFileReference& pFileRef);
 
 }; // class DatFile
 

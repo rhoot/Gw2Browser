@@ -38,7 +38,7 @@ struct PS_OUTPUT
 PS_OUTPUT RenderScenePS(VS_OUTPUT In)
 {
     PS_OUTPUT o;
-    o.RGBColor.rgb = float3(1, 0, 1); //;tex2D(g_DiffuseTexSampler, In.TextureUV1).rgb * In.Diffuse.rgb;
+    o.RGBColor.rgb = tex2D(g_DiffuseTexSampler, In.TextureUV1).rgb * In.Diffuse.rgb;
     o.RGBColor.a   = 1;
     return o;
 };
