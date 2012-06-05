@@ -61,6 +61,15 @@
     <Filter Include="Header Files\Identifiers">
       <UniqueIdentifier>{f4c9e898-dfd2-4461-a335-53c815a9ecaf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Viewers\ModelViewer">
+      <UniqueIdentifier>{d293abf8-036c-421e-a05e-2f01952102f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Viewers\ModelViewer">
+      <UniqueIdentifier>{e242d328-e3f4-42e6-9eb2-a7659b6aa336}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Files">
+      <UniqueIdentifier>{23b9757c-35cd-4b7f-aed7-714e50ee51f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\stdafx.h">
@@ -165,12 +174,6 @@
     <ClInclude Include="..\src\Util\Misc.h">
       <Filter>Header Files\Util</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Util\Vector3.h">
-      <Filter>Header Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Util\Matrix.h">
-      <Filter>Header Files\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Readers\ModelReader.h">
       <Filter>Header Files\Readers</Filter>
     </ClInclude>
@@ -183,11 +186,14 @@
     <ClInclude Include="..\src\Identifiers\BaseIdentifier.h">
       <Filter>Header Files\Identifiers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Util\Vector2.h">
-      <Filter>Header Files\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Imported\half.h">
       <Filter>Header Files\Imported</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer.h">
+      <Filter>Header Files\Viewers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer\Camera.h">
+      <Filter>Header Files\Viewers\ModelViewer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -272,29 +278,26 @@
     <ClCompile Include="..\src\Readers\SoundReader.cpp">
       <Filter>Source Files\Readers</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Util\Vector3.cpp">
-      <Filter>Source Files\Util</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Util\Vector2.cpp">
-      <Filter>Source Files\Util</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\PackFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Imported\half.cpp">
       <Filter>Source Files\Imported</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer.cpp">
+      <Filter>Source Files\Viewers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp">
+      <Filter>Source Files\Viewers\ModelViewer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
-    <None Include="..\src\Util\Vector3.inl">
-      <Filter>Header Files\Util</Filter>
-    </None>
-    <None Include="..\src\Util\Vector2.inl">
-      <Filter>Header Files\Util</Filter>
-    </None>
     <None Include="..\src\Imported\half.inl">
       <Filter>Header Files\Imported</Filter>
+    </None>
+    <None Include="..\data\model_view.hlsl">
+      <Filter>Data Files</Filter>
     </None>
   </ItemGroup>
 </Project>

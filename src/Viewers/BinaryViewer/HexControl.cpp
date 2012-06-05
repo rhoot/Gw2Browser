@@ -26,6 +26,11 @@
 
 #include "HexControl.h"
 
+// GOD DAMNIT MICROSOFT, STOP DEFINING RANDOM DEFINES
+#ifdef DrawText
+#  undef DrawText
+#endif
+
 namespace gw2b
 {
 

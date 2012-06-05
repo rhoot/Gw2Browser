@@ -99,6 +99,7 @@ const Mesh& Model::GetMesh(uint pIndex) const
 
 Mesh& Model::AddMesh()
 {
+    this->UnShare();
     mData->mMeshes.push_back(Mesh());
     return mData->mMeshes[mData->mMeshes.size() - 1];
 }
@@ -153,7 +154,7 @@ Array<byte> ModelReader::ConvertData() const
         for (uint j = 0; j < mesh.mVertices.GetSize(); j++) {
             // If the first vertex does not have UV, none of them do
             if (mesh.mVertices[j].mHasUV == 0) { hasUV = false; break; }
-            stream << "vt " << mesh.mVertices[j].mUV.x << ' ' << mesh.mVertices[j].mUV.y << std::endl;
+            stream << "vt " << mesh.mVertices[j].mUV[0].x << ' ' << mesh.mVertices[j].mUV[0].y << std::endl;
         }
         
         // Write normals
@@ -293,8 +294,8 @@ void ModelReader::ReadVertexBuffer(Array<Vertex>& pVertices, const byte* pData, 
 
         // Bit 0: Position
         if (pVertexFormat & ANFVF_Position) {
-            ::memcpy(&vertex.mPosition, pos, sizeof(Vector3));
-            pos += sizeof(Vector3);
+            ::memcpy(&vertex.mPosition, pos, sizeof(vertex.mPosition));
+            pos += sizeof(vertex.mPosition);
         }
         // Bit 1: Weights
         if (pVertexFormat & ANFVF_Weights) {
@@ -306,9 +307,9 @@ void ModelReader::ReadVertexBuffer(Array<Vertex>& pVertices, const byte* pData, 
         }
         // Bit 3: Normal
         if (pVertexFormat & ANFVF_Normal) {
-            ::memcpy(&vertex.mNormal, pos, sizeof(Vector3));
+            ::memcpy(&vertex.mNormal, pos, sizeof(vertex.mNormal));
             vertex.mHasNormal = 1;
-            pos += sizeof(Vector3);
+            pos += sizeof(vertex.mNormal);
         }
         // Bit 4: Color
         if (pVertexFormat & ANFVF_Color) {
@@ -318,26 +319,25 @@ void ModelReader::ReadVertexBuffer(Array<Vertex>& pVertices, const byte* pData, 
         }
         // Bit 5: Tangent
         if (pVertexFormat & ANFVF_Tangent) {
-            pos += sizeof(Vector3);
+            pos += sizeof(XMFLOAT3);
         }
         // Bit 6: Bitangent
         if (pVertexFormat & ANFVF_Bitangent) {
-            pos += sizeof(Vector3);
+            pos += sizeof(XMFLOAT3);
         }
         // Bit 7: Tangent frame
         if (pVertexFormat & ANFVF_TangentFrame) {
-            pos += sizeof(Vector3);
+            pos += sizeof(XMFLOAT3);
         }
         // Bit 8-15: 32-bit UV
         uint uvFlag = (pVertexFormat & ANFVF_UV32Mask) >> 8;
         if (uvFlag) {
             for (uint i = 0; i < 7; i++) {
                 if (((uvFlag >> i) & 1) == 0) { continue; }
-                if (vertex.mHasUV == 0) {
-                    ::memcpy(&vertex.mUV, pos, sizeof(Vector2));
-                    vertex.mHasUV = 1;
+                if (vertex.mHasUV < 2) {
+                    ::memcpy(&vertex.mUV[vertex.mHasUV++], pos, sizeof(vertex.mUV[0]));
                 }
-                pos += sizeof(Vector2);
+                pos += sizeof(vertex.mUV[0]);
             }
         }
         // Bit 16-23: 16-bit UV
@@ -345,10 +345,11 @@ void ModelReader::ReadVertexBuffer(Array<Vertex>& pVertices, const byte* pData, 
         if (uvFlag) {
             for (uint i = 0; i < 7; i++) {
                 if (((uvFlag >> i) & 1) == 0) { continue; }
-                if (vertex.mHasUV == 0) {
-                    vertex.mUV.x = *reinterpret_cast<const half*>(pos + 0);
-                    vertex.mUV.y = 1 - *reinterpret_cast<const half*>(pos + 2);
-                    vertex.mHasUV = 1;
+                if (vertex.mHasUV < 2) {
+                    const half* uv = reinterpret_cast<const half*>(pos);
+                    vertex.mUV[vertex.mHasUV].x = uv[0];
+                    vertex.mUV[vertex.mHasUV].y = uv[1];
+                    vertex.mHasUV++;
                 }
                 pos += sizeof(half) * 2;
             }

@@ -29,8 +29,6 @@
 #include <vector>
 
 #include "FileReader.h"
-#include "Util/Vector2.h"
-#include "Util/Vector3.h"
 #include "ANetStructs.h"
 
 namespace gw2b
@@ -41,13 +39,13 @@ class PackFile;
 
 struct Vertex
 {
-    Vector3 mPosition;
-    Vector3 mNormal;
+    XMFLOAT3 mPosition;
+    XMFLOAT3 mNormal;
     uint32 mColor;
-    Vector2 mUV;
+    XMFLOAT2 mUV[2];
     byte mHasNormal   : 1;
     byte mHasColor    : 1;
-    byte mHasUV       : 1;
+    byte mHasUV       : 2;
 };
 
 union Triangle
@@ -111,7 +109,7 @@ public:
     /** Gets the type of data contained in this file. Not to be confused with
      *  file type.
      *  \return DataType    type of data. */
-    virtual DataType GetDataType() const        { return DT_Binary; }
+    virtual DataType GetDataType() const        { return DT_Model; }
     /** Gets an appropriate file extension for the contents of this reader.
      *  \return wxString    File extension. */
     virtual const wxChar* GetExtension() const  { return wxT(".obj"); }

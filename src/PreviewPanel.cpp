@@ -29,6 +29,7 @@
 
 #include "Viewers/BinaryViewer.h"
 #include "Viewers/ImageViewer.h"
+#include "Viewers/ModelViewer.h"
 
 namespace gw2b
 {
@@ -91,6 +92,8 @@ Viewer* PreviewPanel::CreateViewerForDataType(FileReader::DataType pDataType)
     switch (pDataType) {
     case FileReader::DT_Image:
         return new ImageViewer(this);
+    case FileReader::DT_Model:
+        return new ModelViewer(this);
     case FileReader::DT_Binary:
     default:
         return new BinaryViewer(this);

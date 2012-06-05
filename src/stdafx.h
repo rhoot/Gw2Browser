@@ -35,6 +35,11 @@
 // gw2CoreTools
 #include <gw2DatTools/compression/inflateDatFileBuffer.h>
 
+// DirectX9
+#include <d3d9.h>
+#include <d3dx9.h>
+#include <xnamath.h>
+
 // 16-bit floats
 #include "Imported/half.h"
 
@@ -116,6 +121,19 @@ namespace gw2b
         pArray = NULL;
     }
 
+    /** Calls Release() on the given pointer, to ensure it is being released
+     *  properly. Also sets the given pointer to NULL.
+     *  \param[in]  pPointer        Object to release and set to NULL.
+     *  \tparam T                   Type of the pointer. */
+    template <typename T>
+        void ReleasePointer(T*& pPointer)
+    {
+        if (pPointer) {
+            pPointer->Release();
+            pPointer = NULL;
+        }
+    }
+
     /** Swaps values of the two provided variables.
      *  \param[in,out]  pItem1  First item.
      *  \param[in,out]  pItem2  Second item.
@@ -146,6 +164,20 @@ namespace gw2b
         bool IsPowerOfTwo(T pValue)
     {
         return !(pValue & (pValue - 1));
+    }
+
+    /** Determines whether the program was compiled in debug mode. Returns
+     *  pTrue if it was, pFalse if it wasn't.
+     *  \param[in]  pTrue   Value to return if in debug mode.
+     *  \param[in]  pFalse  Value to return if not in debug mode. */
+    template <typename T>
+        T IfDebug(T pTrue, T pFalse)
+    {
+#ifdef _DEBUG
+        return pTrue;
+#else
+        return pFalse;
+#endif
     }
 
 }; // namespace gw2b

@@ -43,16 +43,15 @@
     <ClInclude Include="..\src\Util\Delegate.h" />
     <ClInclude Include="..\src\Util\DelegateTemplate.h" />
     <ClInclude Include="..\src\Util\Ensure.h" />
-    <ClInclude Include="..\src\Util\Matrix.h" />
     <ClInclude Include="..\src\Util\Misc.h" />
     <ClInclude Include="..\src\Util\RefCounted.h" />
-    <ClInclude Include="..\src\Util\Vector2.h" />
-    <ClInclude Include="..\src\Util\Vector3.h" />
     <ClInclude Include="..\src\Viewer.h" />
     <ClInclude Include="..\src\Viewers\BinaryViewer.h" />
     <ClInclude Include="..\src\Viewers\BinaryViewer\HexControl.h" />
     <ClInclude Include="..\src\Viewers\ImageViewer.h" />
     <ClInclude Include="..\src\Viewers\ImageViewer\ImageControl.h" />
+    <ClInclude Include="..\src\Viewers\ModelViewer.h" />
+    <ClInclude Include="..\src\Viewers\ModelViewer\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\AboutBox.cpp" />
@@ -82,19 +81,18 @@
     <ClCompile Include="..\src\Tasks\ScanDatTask.cpp" />
     <ClCompile Include="..\src\Tasks\WriteIndexTask.cpp" />
     <ClCompile Include="..\src\Util\Misc.cpp" />
-    <ClCompile Include="..\src\Util\Vector2.cpp" />
-    <ClCompile Include="..\src\Util\Vector3.cpp" />
     <ClCompile Include="..\src\Viewer.cpp" />
     <ClCompile Include="..\src\Viewers\BinaryViewer.cpp" />
     <ClCompile Include="..\src\Viewers\BinaryViewer\HexControl.cpp" />
     <ClCompile Include="..\src\Viewers\ImageViewer.cpp" />
     <ClCompile Include="..\src\Viewers\ImageViewer\ImageControl.cpp" />
+    <ClCompile Include="..\src\Viewers\ModelViewer.cpp" />
+    <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\data\model_view.hlsl" />
     <None Include="..\README.md" />
     <None Include="..\src\Imported\half.inl" />
-    <None Include="..\src\Util\Vector2.inl" />
-    <None Include="..\src\Util\Vector3.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}</ProjectGuid>
@@ -146,7 +144,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>wxbase29ud.lib;wxpngd.lib;gw2DatToolsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase29ud.lib;wxpngd.lib;gw2DatToolsd.lib;dxguid.lib;d3d9.lib;d3dx9d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>
@@ -169,7 +167,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>wxbase29u.lib;wxpng.lib;gw2DatTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxbase29u.lib;wxpng.lib;gw2DatTools.lib;dxguid.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>
