@@ -41,18 +41,18 @@ Camera::~Camera()
 
 XMMATRIX Camera::calculateViewMatrix() const
 {
-    auto eyePosition       = XMFLOAT4(0, -m_distance, 0, 0);
-    auto eyePositionVector = ::XMLoadFloat4(&eyePosition);
+    auto eyePosition           = XMFLOAT4(0, -m_distance, 0, 0);
+    XMVECTOR eyePositionVector = ::XMLoadFloat4(&eyePosition);
 
     // Apply rotations to position
-    auto rotationMatrix    = this->calculateRotationMatrix();
-    eyePositionVector      = ::XMVector4Transform(eyePositionVector, rotationMatrix);
+    XMMATRIX rotationMatrix    = this->calculateRotationMatrix();
+    eyePositionVector          = ::XMVector4Transform(eyePositionVector, rotationMatrix);
 
     // Create the view matrix
-    auto up                = XMFLOAT4(0, 0, -1, 0);
-    auto upVector          = ::XMLoadFloat4(&up);
-    auto pivotVector       = ::XMLoadFloat3(&m_pivot);
-    eyePositionVector      = ::XMVectorAdd(eyePositionVector, pivotVector);
+    auto up                    = XMFLOAT4(0, 0, -1, 0);
+    XMVECTOR upVector          = ::XMLoadFloat4(&up);
+    XMVECTOR pivotVector       = ::XMLoadFloat3(&m_pivot);
+    eyePositionVector          = ::XMVectorAdd(eyePositionVector, pivotVector);
 
     return ::XMMatrixLookAtLH(eyePositionVector, pivotVector, upVector);
 }
@@ -60,14 +60,14 @@ XMMATRIX Camera::calculateViewMatrix() const
 XMMATRIX Camera::calculateRotationMatrix() const
 {
     // Yaw
-    auto yawAxis       = XMFLOAT4(0, 0, 1, 0);
-    auto yawAxisVector = ::XMLoadFloat4(&yawAxis);
-    auto yawMatrix     = ::XMMatrixRotationNormal(yawAxisVector, m_yaw);
+    auto yawAxis             = XMFLOAT4(0, 0, 1, 0);
+    XMVECTOR yawAxisVector   = ::XMLoadFloat4(&yawAxis);
+    XMMATRIX yawMatrix       = ::XMMatrixRotationNormal(yawAxisVector, m_yaw);
 
     // Pitch
-    auto pitchAxis       = XMFLOAT4(1, 0, 0, 0);
-    auto pitchAxisVector = ::XMLoadFloat4(&pitchAxis);
-    auto pitchMatrix     = ::XMMatrixRotationNormal(pitchAxisVector, m_pitch);
+    auto pitchAxis           = XMFLOAT4(1, 0, 0, 0);
+    XMVECTOR pitchAxisVector = ::XMLoadFloat4(&pitchAxis);
+    XMMATRIX pitchMatrix     = ::XMMatrixRotationNormal(pitchAxisVector, m_pitch);
 
     return ::XMMatrixMultiply(pitchMatrix, yawMatrix);
 }
@@ -130,7 +130,7 @@ const XMFLOAT3& Camera::pivot() const
 
 void Camera::pan(float p_x, float p_y)
 {
-    auto rotationMatrix = this->calculateRotationMatrix();
+    XMMATRIX rotationMatrix = this->calculateRotationMatrix();
 
     // Pan speed is based on distance from pivot, so the user doesn't have to move the mouse like 
     // a madman for big meshes
@@ -138,21 +138,21 @@ void Camera::pan(float p_x, float p_y)
 
     // X axis
     XMFLOAT4 right(1, 0, 0, 0);
-    auto rightVector = ::XMLoadFloat4(&right);
-    rightVector      = ::XMVector4Transform(rightVector, rotationMatrix);
+    XMVECTOR rightVector = ::XMLoadFloat4(&right);
+    rightVector          = ::XMVector4Transform(rightVector, rotationMatrix);
 
     // Y axis
     XMFLOAT4 up(0, 0, 1, 0);
-    auto upVector    = ::XMLoadFloat4(&up);
-    upVector         = ::XMVector4Transform(upVector, rotationMatrix);
+    XMVECTOR upVector    = ::XMLoadFloat4(&up);
+    upVector             = ::XMVector4Transform(upVector, rotationMatrix);
 
     // Perform the panning
-    auto pivotVector = ::XMLoadFloat3(&m_pivot);
+    XMVECTOR pivotVector = ::XMLoadFloat3(&m_pivot);
 
-    rightVector      = ::XMVectorScale(rightVector, p_x * panSpeed);
-    upVector         = ::XMVectorScale(upVector, p_y * panSpeed);
-    pivotVector      = ::XMVectorAdd(pivotVector, rightVector);
-    pivotVector      = ::XMVectorAdd(pivotVector, upVector);
+    rightVector          = ::XMVectorScale(rightVector, p_x * panSpeed);
+    upVector             = ::XMVectorScale(upVector, p_y * panSpeed);
+    pivotVector          = ::XMVectorAdd(pivotVector, rightVector);
+    pivotVector          = ::XMVectorAdd(pivotVector, upVector);
 
     ::XMStoreFloat3(&m_pivot, pivotVector);
 }
