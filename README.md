@@ -14,15 +14,24 @@ or while an index is being read, the process is *a lot* slower.
 
 The latest Win32 binary can always be found at http://skold.cc/gw2browser/
 
+Usage
+-----
+
+It can be started with:
+
+    Gw2Browser <input dat>
+
+If `<input dat>` is given, the program will open the file as soon as it starts.
+
 Known issues
 ------------
 
-* **Model rendering is currently experimental.** Viewing one may crash the 
+* **Model rendering is very experimental.** Viewing one may crash the 
 browser, or it may not. It might also use the wrong texture, or it might not.
 It entirely depends on what model you view, as some models don't have any 
 references to textures (mostly equipment models). Some models also use the 
 second UV channel for rendering while the shader in the browser only uses the
-first. Loading them is also unoptimized as hell!
+first. Loading any model is also *far* from optimized!
 
 * **Non-power-of-two dimensions on non-DDS textures are unsupported at the 
 moment.** Decompressing one produces garbage blocks, so viewing them is 
@@ -32,25 +41,6 @@ disabled until the reason has been determined.
 application architecture designer. Plus I'm learning wxWidgets as I go along. I
 am working on refactoring chunks of it however, most notably reducing the god
 objects and moving privates out of the header files.
-
-Authors
--------
-
-* [Rhoot](https://github.com/rhoot): Main author.
-
-Also contains some code by:
-
-* Xtridence: AtexAsm
-* David Dantowitz: Simple CRC
-
-Usage
------
-
-It can be started as:
-
-    Gw2Browser <input dat>
-
-If `<input dat>` is given, the program will open the file as soon as it starts.
 
 Libraries and restrictions
 --------------------------
@@ -74,6 +64,16 @@ be necessary to compile.
 
 If you do not want to use Visual Leak Detector, remove the include for vld.h
 in Gw2Browser.cpp.
+
+Authors
+-------
+
+* [Rhoot](https://github.com/rhoot): Main author.
+
+Also contains some code by:
+
+* Xtridence: AtexAsm
+* David Dantowitz: Simple CRC
 
 Contributing
 ------------
