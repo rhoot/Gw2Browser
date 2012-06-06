@@ -46,8 +46,8 @@ Libraries and restrictions
 --------------------------
 
 The application is written specifically for MSVC10+, as it links with DirectX9
-and gw2DatTools. It features some C++11 features available in said compiler,
-since gw2DatTools won't compile without those C++11 features anyway.
+and gw2DatTools. It also uses some C++11 features available in said compiler, 
+since gw2DatTools won't compile without those features anyway.
 
 ### Required libraries
 
