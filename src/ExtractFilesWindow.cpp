@@ -32,71 +32,71 @@
 namespace gw2b
 {
 
-ExtractFilesWindow::ExtractFilesWindow(const Array<const DatIndexEntry*>& pEntries, DatFile& pDatFile, const wxString& pPath, ExtractionMode pMode)
-    : wxFrame(NULL, wxID_ANY, wxT("ProxyWindow"))
-    , mDatFile(pDatFile)
-    , mEntries(pEntries)
-    , mProgress(NULL)
-    , mPath(pPath)
-    , mCurrentProgress(0)
-    , mMode(pMode)
+ExtractFilesWindow::ExtractFilesWindow(const Array<const DatIndexEntry*>& p_entries, DatFile& p_datFile, const wxString& p_path, ExtractionMode p_mode)
+    : wxFrame(nullptr, wxID_ANY, wxT("ProxyWindow"))
+    , m_datFile(p_datFile)
+    , m_entries(p_entries)
+    , m_progress(nullptr)
+    , m_path(p_path)
+    , m_currentProgress(0)
+    , m_mode(p_mode)
 {
     this->Hide();
-    if (pEntries.GetSize() == 0) {
+    if (p_entries.GetSize() == 0) {
         this->Destroy();
         return;
     }
 
     // Init progress dialog
-    wxString title = wxString::Format(wxT("Extracting %d %s..."), pEntries.GetSize(), (pEntries.GetSize() == 1 ? wxT("file") : wxT("files")));
-    mProgress = new wxProgressDialog(title, wxT("Preparing to extract..."), pEntries.GetSize(), this, wxPD_SMOOTH | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME);
-    mProgress->Show();
+    auto title = wxString::Format(wxT("Extracting %d %s..."), p_entries.GetSize(), (p_entries.GetSize() == 1 ? wxT("file") : wxT("files")));
+    m_progress = new wxProgressDialog(title, wxT("Preparing to extract..."), p_entries.GetSize(), this, wxPD_SMOOTH | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME);
+    m_progress->Show();
 
     // Register the idle event
-    this->Connect(wxEVT_IDLE, wxIdleEventHandler(ExtractFilesWindow::OnIdleEvt));
+    this->Connect(wxEVT_IDLE, wxIdleEventHandler(ExtractFilesWindow::onIdleEvt));
 }
 
-void ExtractFilesWindow::OnIdleEvt(wxIdleEvent& pEvent)
+void ExtractFilesWindow::onIdleEvt(wxIdleEvent& p_event)
 {
     // DONE
-    if (mCurrentProgress >= mEntries.GetSize()) {
-        DeletePointer(mProgress);
-        this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(ExtractFilesWindow::OnIdleEvt));
+    if (m_currentProgress >= m_entries.GetSize()) {
+        deletePointer(m_progress);
+        this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(ExtractFilesWindow::onIdleEvt));
         this->Destroy();
         return;
     }
 
     // Extract current file
-    this->ExtractFile(*mEntries[mCurrentProgress]);
-    mProgress->Update(mCurrentProgress, wxString::Format(wxT("Extracting file %d/%d..."), mCurrentProgress, mEntries.GetSize()));
-    mCurrentProgress++;
-    pEvent.RequestMore();
+    this->extractFile(*m_entries[m_currentProgress]);
+    m_progress->Update(m_currentProgress, wxString::Format(wxT("Extracting file %d/%d..."), m_currentProgress, m_entries.GetSize()));
+    m_currentProgress++;
+    p_event.RequestMore();
 }
 
-void ExtractFilesWindow::ExtractFile(const DatIndexEntry& pEntry)
+void ExtractFilesWindow::extractFile(const DatIndexEntry& p_entry)
 {
-    wxFileName filename(mPath, pEntry.GetName());
-    this->AppendPaths(filename, *pEntry.GetCategory());
+    wxFileName filename(m_path, p_entry.name());
+    this->appendPaths(filename, *p_entry.category());
 
-    // Create directory if inexistant
+    // Create directory if in-existant
     if (!filename.DirExists()) {
         filename.Mkdir(511, wxPATH_MKDIR_FULL);
     }
 
     // Read file contents
-    Array<byte> contents = mDatFile.ReadFile(pEntry.GetMftEntry());
+    auto contents = m_datFile.readFile(p_entry.mftEntry());
     if (!contents.GetSize()) { return; }
 
     // Should we convert the files first?
-    FileReader* reader = NULL;
-    if (mMode == EM_Converted) {
-        ANetFileType fileType = ANFT_Unknown;
-        mDatFile.IdentifyFileType(contents.GetPointer(), contents.GetSize(), fileType);
-        reader = FileReader::GetReaderForData(contents, fileType);
+    FileReader* reader = nullptr;
+    if (m_mode == EM_Converted) {
+        auto fileType = ANFT_Unknown;
+        m_datFile.identifyFileType(contents.GetPointer(), contents.GetSize(), fileType);
+        reader = FileReader::readerForData(contents, fileType);
 
         if (reader) {
-            contents = reader->ConvertData();
-            filename.SetExt(reader->GetExtension());
+            contents = reader->convertData();
+            filename.SetExt(reader->extension());
         }
     }
 
@@ -107,14 +107,14 @@ void ExtractFilesWindow::ExtractFile(const DatIndexEntry& pEntry)
     }
     file.Close();
 
-    DeletePointer(reader);
+    deletePointer(reader);
 }
 
-void ExtractFilesWindow::AppendPaths(wxFileName& pPath, const DatIndexCategory& pCategory)
+void ExtractFilesWindow::appendPaths(wxFileName& p_path, const DatIndexCategory& p_category)
 {
-    const DatIndexCategory* parent = pCategory.GetParent();
-    if (parent) { this->AppendPaths(pPath, *parent); }
-    pPath.AppendDir(pCategory.GetName());
+    auto parent = p_category.parent();
+    if (parent) { this->appendPaths(p_path, *parent); }
+    p_path.AppendDir(p_category.name());
 }
 
 }; // namespace gw2b

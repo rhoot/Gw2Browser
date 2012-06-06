@@ -26,22 +26,17 @@
 #ifndef GW2BROWSER_H_INCLUDED
 #define GW2BROWSER_H_INCLUDED
 
-#include <wx/progdlg.h>
-#include "DatFile.h"
-
 namespace gw2b
 {
 
 /** Represents the Gw2Browser application. */
 class Gw2Browser : public wxApp
 {
-    wxString    mDatPath;
 public:
-    /** Initializes the application (acts as the application entry-point). */
-    virtual bool OnInit();
-private:
-    /** Parses the command line arguments for valid switches. */
-    void ParseArguments();
+    /** Initializes the application (acts as the application entry-point). 
+     *  \return bool    True if initialization was successful, false if not. */
+    virtual bool OnInit() override;
+
 }; // class Gw2Browser
 
 }; // namespace gw2b

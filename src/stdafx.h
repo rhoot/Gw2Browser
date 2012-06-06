@@ -26,6 +26,9 @@
 #ifndef STDAFX_H_INCLUDED
 #define STDAFX_H_INCLUDED
 
+// STL includes
+#include <memory>
+
 // wxWidgets
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
@@ -44,28 +47,25 @@
 #include "Imported/half.h"
 
 // Handy defines
-#define ArraySize(x)        (sizeof(x) / sizeof(*x))
+#define ArraySize(x)                (sizeof(x) / sizeof(*x))
+#define Assert                      wxASSERT
 
 // Compiler specific
-#ifdef _MSC_VER
-#  define NakedCall           __declspec(naked)
-#  define InlineAsm           __asm
-#  define ZeroSizeArray       1
-#else
-#  error  Compiler not yet supported in 'stdafx.h'.
-#endif
+#define NakedCall                   __declspec(naked)
+#define InlineAsm                   __asm
+#define ZeroSizeArray               1
 
 namespace gw2b
 {
-    typedef wxInt8                  int8;       /**< Signed 8-bit integer. */  
-    typedef wxInt16                 int16;      /**< Signed 16-bit integer. */
-    typedef wxInt32                 int32;      /**< Signed 32-bit integer. */
-    typedef wxInt64                 int64;      /**< Signed 64-bit integer. */
+    typedef int8_t                  int8;       /**< Signed 8-bit integer. */  
+    typedef int16_t                 int16;      /**< Signed 16-bit integer. */
+    typedef int32_t                 int32;      /**< Signed 32-bit integer. */
+    typedef int64_t                 int64;      /**< Signed 64-bit integer. */
 
-    typedef wxUint8                 uint8;      /**< Unsigned 8-bit integer. */
-    typedef wxUint16                uint16;     /**< Unsigned 16-bit integer. */
-    typedef wxUint32                uint32;     /**< Unsigned 32-bit integer. */
-    typedef wxUint64                uint64;     /**< Unsigned 64-bit integer. */
+    typedef uint8_t                 uint8;      /**< Unsigned 8-bit integer. */
+    typedef uint16_t                uint16;     /**< Unsigned 16-bit integer. */
+    typedef uint32_t                uint32;     /**< Unsigned 32-bit integer. */
+    typedef uint64_t                uint64;     /**< Unsigned 64-bit integer. */
 
     typedef uint8                   byte;       /**< Unsigned byte. */
     typedef int8                    sbyte;      /**< Signed byte. */
@@ -81,105 +81,12 @@ namespace gw2b
     typedef neo::math::HalfFloat    float16;    /**< 16-bit IEEE floating point number. */
     typedef float                   float32;    /**< 32-bit IEEE floating point number. */
     typedef double                  float64;    /**< 64-bit IEEE floating point number. */
+
 }; // namespace gw2b
 
+// Gw2Browser includes
 #include "Util/Array.h"
-#include "Util/AutoPtr.h"
-#include "Util/Delegate.h"
 #include "Util/Ensure.h"
 #include "Util/Misc.h"
-
-namespace gw2b
-{
-    /** Frees the given pointer (allocated by malloc) and sets it to NULL.
-     *  \param[in,out]  pPointer    Pointer to free and set to NULL.
-     *  \tparam T           Type of the pointer. */
-    template <typename T>
-        void FreePointer(T*& pPointer)
-    {
-        ::free(pPointer);
-        pPointer = NULL;
-    }
-
-    /** Frees the given pointer (allocated by new) and sets it to NULL.
-     *  \param[in,out]  pPointer    Pointer to free and set to NULL.
-     *  \tparam T           Type of the pointer. */
-    template <typename T>
-        void DeletePointer(T*& pPointer)
-    {
-        delete pPointer;
-        pPointer = NULL;
-    }
-
-    /** Frees the given pointer (allocated by new[]) and sets it to NULL.
-     *  \param[in,out]  pPointer    Pointer to free and set to NULL.
-     *  \tparam T           Type of the pointer. */
-    template <typename T>
-        void DeleteArray(T*& pArray)
-    {
-        delete[] pArray;
-        pArray = NULL;
-    }
-
-    /** Calls Release() on the given pointer, to ensure it is being released
-     *  properly. Also sets the given pointer to NULL.
-     *  \param[in]  pPointer        Object to release and set to NULL.
-     *  \tparam T                   Type of the pointer. */
-    template <typename T>
-        void ReleasePointer(T*& pPointer)
-    {
-        if (pPointer) {
-            pPointer->Release();
-            pPointer = NULL;
-        }
-    }
-
-    /** Swaps values of the two provided variables.
-     *  \param[in,out]  pItem1  First item.
-     *  \param[in,out]  pItem2  Second item.
-     *  \tparam T   Type of the items. */
-    template <typename T>
-        void Swap(T& pItem1, T& pItem2)
-    {
-        T temp = pItem1;
-        pItem1 = pItem2;
-        pItem2 = temp;
-    }
-
-    /** Allocates memory to hold the given amount of elements, using malloc.
-     *  \param[in]  pCount  amount of elements needed.
-     *  \tparam     T       type of elements to allocate memory for.
-     *  \return T*  pointer to newly allocated data. */
-    template <typename T>
-        T* Alloc(uint pCount)
-    {
-        return (T*)::malloc(pCount * sizeof(T));
-    }
-
-    /** Determines whether the given value is a power of two.
-     *  \param[in]  pValue  Value to check.
-     *  \tparam     T       Type of value.
-     *  \return bool    true if power of two, false if not. */
-    template <typename T>
-        bool IsPowerOfTwo(T pValue)
-    {
-        return !(pValue & (pValue - 1));
-    }
-
-    /** Determines whether the program was compiled in debug mode. Returns
-     *  pTrue if it was, pFalse if it wasn't.
-     *  \param[in]  pTrue   Value to return if in debug mode.
-     *  \param[in]  pFalse  Value to return if not in debug mode. */
-    template <typename T>
-        T IfDebug(T pTrue, T pFalse)
-    {
-#ifdef _DEBUG
-        return pTrue;
-#else
-        return pFalse;
-#endif
-    }
-
-}; // namespace gw2b
 
 #endif // STDAFX_H_INCLUDED

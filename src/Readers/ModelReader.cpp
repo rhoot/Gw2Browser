@@ -90,7 +90,7 @@ uint Model::GetNumMeshes() const
 
 const Mesh& Model::GetMesh(uint pIndex) const
 {
-    wxASSERT(pIndex < this->GetNumMeshes());
+    Assert(pIndex < this->GetNumMeshes());
     return mData->mMeshes[pIndex];
 }
 
@@ -108,13 +108,13 @@ uint Model::GetNumMaterialData() const
 
 MaterialData& Model::GetMaterialData(uint pIndex)
 {
-    wxASSERT(pIndex < this->GetNumMaterialData());
+    Assert(pIndex < this->GetNumMaterialData());
     return mData->mMaterialData[pIndex];
 }
 
 const MaterialData& Model::GetMaterialData(uint pIndex) const
 {
-    wxASSERT(pIndex < this->GetNumMaterialData());
+    Assert(pIndex < this->GetNumMaterialData());
     return mData->mMaterialData[pIndex];
 }
 
@@ -151,7 +151,7 @@ ModelReader::~ModelReader()
 {
 }
 
-Array<byte> ModelReader::ConvertData() const
+Array<byte> ModelReader::convertData() const
 {
     Model model = this->GetModel();
     std::ostringstream stream;
@@ -235,12 +235,12 @@ Model ModelReader::GetModel() const
     Model newModel;
 
     // Bail if there is no data to read
-    if (mData.GetSize() == 0) {
+    if (m_data.GetSize() == 0) {
         return newModel;
     }
 
     // Populate the model
-    PackFile packFile(mData);
+    PackFile packFile(m_data);
     this->ReadGeometry(newModel, packFile);
     this->ReadMaterialData(newModel, packFile);
 
@@ -250,7 +250,7 @@ Model ModelReader::GetModel() const
 void ModelReader::ReadGeometry(Model& pModel, PackFile& pPackFile) const
 {
     uint size;
-    const byte* data = pPackFile.GetChunk(FCC_GEOM, size);
+    const byte* data = pPackFile.findChunk(FCC_GEOM, size);
 
     // Bail if no data
     if (!data) {
@@ -272,28 +272,28 @@ void ModelReader::ReadGeometry(Model& pModel, PackFile& pPackFile) const
         const ANetModelMeshInfo* meshInfo = reinterpret_cast<const ANetModelMeshInfo*>(pos);
 
         // Fetch buffer info
-        pos  = reinterpret_cast<const byte*>(&meshInfo->mBufferInfoOffset);
-        pos += meshInfo->mBufferInfoOffset;
+        pos  = reinterpret_cast<const byte*>(&meshInfo->bufferInfoOffset);
+        pos += meshInfo->bufferInfoOffset;
         const ANetModelBufferInfo* bufferInfo = reinterpret_cast<const ANetModelBufferInfo*>(pos);
 
         // Add new mesh
         Mesh& mesh = pModel.AddMesh();
         // Material data
-        mesh.mMaterialIndex = meshInfo->mMaterialIndex;
-        pos  = reinterpret_cast<const byte*>(&meshInfo->mMaterialNameOffset);
-        pos += meshInfo->mMaterialNameOffset;
+        mesh.mMaterialIndex = meshInfo->materialIndex;
+        pos  = reinterpret_cast<const byte*>(&meshInfo->materialNameOffset);
+        pos += meshInfo->materialNameOffset;
         mesh.mMaterialName = wxString::FromUTF8(reinterpret_cast<const char*>(pos));
         // Vertex data
-        if (bufferInfo->mVertexCount) {
-            pos  = reinterpret_cast<const byte*>(&bufferInfo->mVertexBufferOffset);
-            pos += bufferInfo->mVertexBufferOffset;
-            this->ReadVertexBuffer(mesh, pos, bufferInfo->mVertexCount, static_cast<ANetFlexibleVertexFormat>(bufferInfo->mVertexFormat));
+        if (bufferInfo->vertexCount) {
+            pos  = reinterpret_cast<const byte*>(&bufferInfo->vertexBufferOffset);
+            pos += bufferInfo->vertexBufferOffset;
+            this->ReadVertexBuffer(mesh, pos, bufferInfo->vertexCount, static_cast<ANetFlexibleVertexFormat>(bufferInfo->vertexFormat));
         }
         // Index data
-        if (bufferInfo->mIndexCount) {
-            pos  = reinterpret_cast<const byte*>(&bufferInfo->mIndexBufferOffset);
-            pos += bufferInfo->mIndexBufferOffset;
-            this->ReadIndexBuffer(mesh, pos, bufferInfo->mIndexCount);
+        if (bufferInfo->indexCount) {
+            pos  = reinterpret_cast<const byte*>(&bufferInfo->indexBufferOffset);
+            pos += bufferInfo->indexBufferOffset;
+            this->ReadIndexBuffer(mesh, pos, bufferInfo->indexCount);
         }
     }
 }
@@ -470,7 +470,7 @@ uint ModelReader::GetVertexSize(ANetFlexibleVertexFormat pVertexFormat) const
 void ModelReader::ReadMaterialData(Model& pModel, PackFile& pPackFile) const
 {
     uint size;
-    const byte* data = pPackFile.GetChunk(FCC_MODL, size);
+    const byte* data = pPackFile.findChunk(FCC_MODL, size);
 
     // Bail if no data
     if (!data) {
@@ -486,17 +486,17 @@ void ModelReader::ReadMaterialData(Model& pModel, PackFile& pPackFile) const
     // Loop through each material info
     for (uint i = 0; i < numMaterialInfo; i++) {
         // Bail if no offset or count
-        if (!materialInfoArray[i].mMaterialCount || !materialInfoArray[i].mMaterialsOffset) { continue; }
+        if (!materialInfoArray[i].materialCount || !materialInfoArray[i].materialsOffset) { continue; }
 
         // Read the offset table for this set of materials
-        const byte* pos = materialInfoArray[i].mMaterialsOffset + reinterpret_cast<const byte*>(&materialInfoArray[i].mMaterialsOffset);
+        const byte* pos = materialInfoArray[i].materialsOffset + reinterpret_cast<const byte*>(&materialInfoArray[i].materialsOffset);
         const int32* offsetTable = reinterpret_cast<const int32*>(pos);
 
         // Loop through each material in these material infos
-        for (uint j = 0; j < materialInfoArray->mMaterialCount; j++) {
+        for (uint j = 0; j < materialInfoArray->materialCount; j++) {
             MaterialData& data = (pModel.GetNumMaterialData() <= j ? pModel.AddMaterialData() : pModel.GetMaterialData(j));
 
-            // Bail if offset is NULL
+            // Bail if offset is nullptr
             if (offsetTable[j] == 0) { continue; }
 
             // Bail if this material index already has data
@@ -507,23 +507,23 @@ void ModelReader::ReadMaterialData(Model& pModel, PackFile& pPackFile) const
             const ANetModelMaterialInfo* materialInfo = reinterpret_cast<const ANetModelMaterialInfo*>(pos);
 
             // We are *only* interested in textures
-            if (materialInfo->mTextureCount == 0) { continue; }
-            pos = materialInfo->mTexturesOffset + reinterpret_cast<const byte*>(&materialInfo->mTexturesOffset);
+            if (materialInfo->textureCount == 0) { continue; }
+            pos = materialInfo->texturesOffset + reinterpret_cast<const byte*>(&materialInfo->texturesOffset);
             const ANetModelTextureReference* textures = reinterpret_cast<const ANetModelTextureReference*>(pos);
 
             // Out of these, we only care about the diffuse and normal maps
-            for (uint t = 0; t < materialInfo->mTextureCount; t++) {
+            for (uint t = 0; t < materialInfo->textureCount; t++) {
                 // Get file reference
-                pos = textures[t].mOffsetToFileReference + reinterpret_cast<const byte*>(&textures[t].mOffsetToFileReference);
+                pos = textures[t].offsetToFileReference + reinterpret_cast<const byte*>(&textures[t].offsetToFileReference);
                 const ANetFileReference* fileReference = reinterpret_cast<const ANetFileReference*>(pos);
 
                 // Diffuse?
-                if (textures[t].mHash == 0x67531924) {
-                    data.mDiffuseTexture = DatFile::GetFileNumFromFileReference(*fileReference);
+                if (textures[t].hash == 0x67531924) {
+                    data.mDiffuseTexture = DatFile::fileIdFromFileReference(*fileReference);
                 }
                 // Normal?
-                else if (textures[t].mHash == 0x1816C9EE) {
-                    data.mNormalMap = DatFile::GetFileNumFromFileReference(*fileReference);
+                else if (textures[t].hash == 0x1816C9EE) {
+                    data.mNormalMap = DatFile::fileIdFromFileReference(*fileReference);
                 }
             }
         }

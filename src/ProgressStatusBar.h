@@ -32,39 +32,39 @@ namespace gw2b
 /** Status bar with a progress bar built in. */
 class ProgressStatusBar : public wxStatusBar
 {
-    wxGauge     mProgress;
+    wxGauge     m_progress;
 public:
     /** Constructor. Creates the status bar with the given parent.
-     *  \param[in]  pParent     Parent of the control. */
-    ProgressStatusBar(wxWindow* pParent);
+     *  \param[in]  p_parent     Parent of the control. */
+    ProgressStatusBar(wxWindow* p_parent);
 
     /** Shows the progress bar. */
-    void ShowProgressBar();
+    void showProgressBar();
     /** Hides the progress bar. */
-    void HideProgressBar();
+    void hideProgressBar();
 
     /** Gets the current max value for the progress bar.
      *  \return uint    current max value. */
-    uint GetMaxValue() const;
+    uint maxValue() const;
     /** Sets the current max value for the progress bar.
-     *  \param[in]  pValue  current max value. */
-    void SetMaxValue(uint pValue);
+     *  \param[in]  p_value  current max value. */
+    void setMaxValue(uint p_value);
     /** Gets the current value for the progress bar.
      *  \return uint    current value. */
-    uint GetCurrentValue() const;
+    uint currentValue() const;
     /** Sets the current value for the progress bar.
-     *  \param[in]  pValue  current value. */
-    void SetCurrentValue(uint pValue);
+     *  \param[in]  p_value  current value. */
+    void setCurrentValue(uint p_value);
 
     /** Updates the progress bar with the given value and sets the status text
      *  to the given label.
-     *  \param[in]  pValue  Value to update to.
-     *  \param[in]  pLabel  Text to use as status text. */
-    void Update(uint pValue, const wxString& pLabel);
+     *  \param[in]  p_value  Value to update to.
+     *  \param[in]  p_label  Text to use as status text. */
+    void update(uint p_value, const wxString& p_label);
 private:
     /** Resizes and repositions the progress bar to stay within the second pane.
-     *  \param[in]  pEvent  Event object handed to us by wxWidgets. */
-    void OnSize(wxSizeEvent& pEvent);
+     *  \param[in]  p_event  Event object handed to us by wxWidgets. */
+    void onSize(wxSizeEvent& p_event);
 };
 
 }; // namespace gw2b

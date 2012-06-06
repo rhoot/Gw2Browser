@@ -35,20 +35,20 @@ class DatIndex;
 
 class ReadIndexTask : public Task
 {
-    AutoPtr<DatIndex>   mIndex;
-    DatIndexReader      mReader;
-    wxString            mFilename;
-    bool                mErrorOccured;
-    uint64              mDatTimeStamp;
+    std::shared_ptr<DatIndex>   mIndex;
+    DatIndexReader              mReader;
+    wxString                    mFilename;
+    bool                        mErrorOccured;
+    uint64                      mDatTimeStamp;
 public:
-    ReadIndexTask(DatIndex* pIndex, const wxString& pFilename, uint64 pDatTimeStamp);
+    ReadIndexTask(const std::shared_ptr<DatIndex>& pIndex, const wxString& pFilename, uint64 pDatTimeStamp);
 
-    virtual bool Init();
-    virtual void Perform();
-    virtual void Abort();
-    virtual void Clean();
+    virtual bool init();
+    virtual void perform();
+    virtual void abort();
+    virtual void clean();
 
-    virtual bool IsDone() const;
+    virtual bool isDone() const;
 }; // class ReadIndexTask
 
 }; // namespace gw2b

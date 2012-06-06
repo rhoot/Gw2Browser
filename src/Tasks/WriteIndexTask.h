@@ -37,20 +37,20 @@ class DatIndex;
 
 class WriteIndexTask : public Task
 {
-    AutoPtr<DatIndex>   mIndex;
-    DatIndexWriter      mWriter;
-    wxFileName          mFilename;
-    bool                mErrorOccured;
+    std::shared_ptr<DatIndex>   mIndex;
+    DatIndexWriter              mWriter;
+    wxFileName                  mFilename;
+    bool                        mErrorOccured;
 public:
-    WriteIndexTask(DatIndex* pIndex, const wxFileName& pFilename);
+    WriteIndexTask(const std::shared_ptr<DatIndex>& pIndex, const wxFileName& pFilename);
 
-    virtual bool Init();
-    virtual void Perform();
-    virtual void Abort();
-    virtual void Clean();
+    virtual bool init();
+    virtual void perform();
+    virtual void abort();
+    virtual void clean();
 
-    virtual bool CanAbort() const   { return false; }
-    virtual bool IsDone() const;
+    virtual bool canAbort() const   { return false; }
+    virtual bool isDone() const;
 }; // class WriteIndexTask
 
 }; // namespace gw2b

@@ -35,26 +35,26 @@ namespace gw2b
         uint    mSize;
     public:
         ArrayData() 
-            : mData(NULL)
-            , mSize(NULL) 
+            : mData(nullptr)
+            , mSize(0) 
         {
         }
 
         ArrayData(const ArrayData& pOther)
         {
             if (pOther.mSize) {
-                mData = Alloc<T>(pOther.mSize);
+                mData = allocate<T>(pOther.mSize);
                 mSize = pOther.mSize;
                 ::memcpy(mData, pOther.mData, mSize * sizeof(T));
             } else {
-                mData = NULL;
+                mData = nullptr;
                 mSize = 0;
             }
         }
 
         virtual ~ArrayData() 
         {
-            FreePointer(mData); 
+            freePointer(mData); 
         }
     };
 
@@ -162,7 +162,7 @@ namespace gw2b
          *  \param[in]  pIndex  Index of element to remove. */
         void RemoveAt(uint pIndex)
         {
-            wxASSERT(pIndex >= 0 && pIndex < mData.get()->mSize);
+            Assert(pIndex >= 0 && pIndex < mData.get()->mSize);
             this->UnShare();
 
             uint& size = mData.get()->mSize;
@@ -220,7 +220,7 @@ namespace gw2b
          *  \return T&  Reference to the found item. */
         inline T& operator[](uint pIndex)
         {
-            wxASSERT(pIndex < mData.get()->mSize);
+            Assert(pIndex < mData.get()->mSize);
             return mData.get()->mData[pIndex];
         }
 
@@ -229,7 +229,7 @@ namespace gw2b
          *  \return T&  Reference to the found item. */
         inline const T& operator[](uint pIndex) const
         {
-            wxASSERT(pIndex < mData.get()->mSize);
+            Assert(pIndex < mData.get()->mSize);
             return mData.get()->mData[pIndex];
         }
 
@@ -252,7 +252,7 @@ namespace gw2b
         {
             this->UnShare();
             T* data = mData.get()->mData;
-            mData.get()->mData = NULL;
+            mData.get()->mData = nullptr;
             mData.get()->mSize = 0;
             return data;
         }
@@ -261,7 +261,7 @@ namespace gw2b
         {
             if (mData->GetRefCount() == 1) {
                 if (!pCopy) {
-                    FreePointer(mData.get()->mData);
+                    freePointer(mData.get()->mData);
                     mData.get()->mSize = 0;
                 }
                 return;

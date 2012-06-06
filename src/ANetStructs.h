@@ -114,77 +114,77 @@ enum ANetFlexibleVertexFormat
 /** Gw2.dat file header. */
 struct ANetDatHeader
 {
-    byte mVersion;                  /**< Version of the .dat file format. */
-    byte mIdentifier[3];            /**< 0x41 0x4e 0x1a */
-    uint32 mHeaderSize;             /**< Size of this header. */
-    uint32 mUnknownField1;          
-    uint32 mChunkSize;              /**< Size of each chunk in the file. */
-    uint32 mCRC;                    /**< CRC of the 16 first bytes of the header. */
-    uint32 mUnknownField2;          
-    uint64 mMftOffset;              /**< Offset to the MFT, from the start of the file. */
-    uint32 mMftSize;                /**< Size of the MFT, in bytes. */
-    uint32 mFlags;                  
+    byte version;                   /**< Version of the .dat file format. */
+    byte identifier[3];             /**< 0x41 0x4e 0x1a */
+    uint32 headerSize;              /**< Size of this header. */
+    uint32 unknownField1;          
+    uint32 chunkSize;               /**< Size of each chunk in the file. */
+    uint32 cRC;                     /**< CRC of the 16 first bytes of the header. */
+    uint32 unknownField2;          
+    uint64 mftOffset;               /**< Offset to the MFT, from the start of the file. */
+    uint32 mftSize;                 /**< Size of the MFT, in bytes. */
+    uint32 flags;                  
 };
 
 /** Gw2.dat file MFT header (entry 0). */
 struct ANetMftHeader
 {
-    byte mIdentifier[4];            /**< 'Mft' 0x1a */
-    uint64 mUnknownField1;           
-    uint32 mNumEntries;             /**< Amount of entries in the MFT, including this. */
-    uint64 mUnknownField2;
+    byte identifier[4];             /**< 'Mft' 0x1a */
+    uint64 unknownField1;           
+    uint32 numEntries;              /**< Amount of entries in the MFT, including this. */
+    uint64 unknownField2;
 };
 
 /** Gw2.dat file MFT entry. */
 struct ANetMftEntry
 {
-    uint64 mOffset;                 /**< Location in the dat that the file is stored at. */
-    uint32 mSize;                   /**< Uncompressed size of the file. */
-    uint16 mCompressionFlag;        /**< Entry compression flags. See ANetCompressionFlags. */
-    uint16 mEntryFlags;             /**< Entry flags. See ANetMftEntryFlags. */
-    uint32 mCounter;                /**< Was 'counter' in GW1, seems unused in GW1. */
-    uint32 mCRC;                    /**< Was 'crc' in GW1, seems to have different usage in GW2. */
+    uint64 offset;                  /**< Location in the dat that the file is stored at. */
+    uint32 size;                    /**< Uncompressed size of the file. */
+    uint16 compressionFlag;         /**< Entry compression flags. See ANetCompressionFlags. */
+    uint16 entryFlags;              /**< Entry flags. See ANetMftEntryFlags. */
+    uint32 counter;                 /**< Was 'counter' in GW1, seems unused in GW1. */
+    uint32 crc;                     /**< Was 'crc' in GW1, seems to have different usage in GW2. */
 };
 
 /** Gw2.dat fileId->mftEntry table entry. */
 struct ANetFileIdEntry
 {
-    uint32 mFileId;                 /**< File ID. */
-    uint32 mMftEntryIndex;          /**< Index of the file in the mft. */
+    uint32 fileId;                  /**< File ID. */
+    uint32 mftEntryIndex;           /**< Index of the file in the mft. */
 };
 
 /** ANet file reference data. */
 struct ANetFileReference
 {
-    uint16 mParts[3];               /**< Part1 is always above 0x100, Part2 is always between 0x100 and 0x101, Part3 is always 0x00 */
+    uint16 parts[3];                /**< Part1 is always above 0x100, Part2 is always between 0x100 and 0x101, Part3 is always 0x00 */
 };
 
 /** ATEX file header. */
 struct ANetAtexHeader
 {
     union {
-        byte mIdentifier[4];        /**< File identifier (FourCC). */
-        uint32 mIdentifierInteger;  /**< File identifier (FourCC), as integer. */
+        byte identifier[4];         /**< File identifier (FourCC). */
+        uint32 identifierInteger;   /**< File identifier (FourCC), as integer. */
     };
     union {
-        byte mFormat[4];            /**< Format of the contained data. */
-        uint32 mFormatInteger;      /**< Format of the contained data, as integer. */
+        byte format[4];             /**< Format of the contained data. */
+        uint32 formatInteger;       /**< Format of the contained data, as integer. */
     };
-    uint16  mWidth;                 /**< Width of the texture, in pixels. */
-    uint16  mHeight;                /**< Height of the texture, in pixels. */
+    uint16 width;                   /**< Width of the texture, in pixels. */
+    uint16 height;                  /**< Height of the texture, in pixels. */
 };
 
 /** PF file header. */
 struct ANetPfHeader
 {
-    byte mIdentifier[2];            /**< Always 'PF'. */
-    uint16 mUnknownField1;
-    uint16 mUnknownField2;          /**< Must always be 0 according to the exe. */
-    uint16 mPkFileVersion;          /**< PF-version of this file (0xc). */
+    byte identifier[2];             /**< Always 'PF'. */
+    uint16 unknownField1;
+    uint16 unknownField2;           /**< Must always be 0 according to the exe. */
+    uint16 pkFileVersion;           /**< PF-version of this file (0xc). */
 
     union {
-        byte mType[4];              /**< Type of data contained in this PF file. */
-        uint32 mTypeInteger;        /**< Type of data contained in this PF file, as integer for easy comparison. */
+        byte type[4];               /**< Type of data contained in this PF file. */
+        uint32 typeInteger;         /**< Type of data contained in this PF file, as integer for easy comparison. */
     };
 };
 
@@ -192,83 +192,83 @@ struct ANetPfHeader
 struct ANetPfChunkHeader
 {
     union {
-        byte mChunkType[4];         /**< Identifies the chunk type. */
-        uint32 mChunkTypeInteger;   /**< Identifies the chunk type, as integer for easy comparison. */
+        byte chunkType[4];          /**< Identifies the chunk type. */
+        uint32 chunkTypeInteger;    /**< Identifies the chunk type, as integer for easy comparison. */
     };
-    uint32 mChunkDataSize;          /**< Total size of this chunk, excluding this field and mChunkType, but \e including the remaining fields. */
-    uint16 mChunkVersion;           /**< Version of this chunk. */
-    uint16 mChunkHeaderSize;        /**< Size of the chunk header. */
-    uint32 mOffsetTableOffset;      /**< Offset to the offset table. */
+    uint32 chunkDataSize;           /**< Total size of this chunk, excluding this field and mChunkType, but \e including the remaining fields. */
+    uint16 chunkVersion;            /**< Version of this chunk. */
+    uint16 chunkHeaderSize;         /**< Size of the chunk header. */
+    uint32 offsetTableOffset;       /**< Offset to the offset table. */
 };
 
 /** MODL file, GEOM chunk mesh info data. */
 struct ANetModelMeshInfo
 {
-    uint32 mUnknown1[5];            /**< Unknown fields. Seems to always be zero. */
-    uint32 mUnknownData1Count;      /**< Amount of fields pointed to by mUnknownData1Offset. */
-    uint32 mUnknownData1Offset;     /**< Offset to unknown data. */
-    float mUnknownFloats[8];        /**< Eight unknown 32-bit float values. */
-    uint32 mUnknownData2Count;      /**< Amount of fields pointed to by mUnknownData2Offset. Each field is 28 bytes. */
-    uint32 mUnknownData2Offset;     /**< Offset to unknown data. Each field in the pointed-to data is 28 bytes. */
-    int32 mMaterialIndex;          /**< Index into the material data array. */
-    uint32 mMaterialNameOffset;     /**< Offset to null-terminated material name. */
-    uint32 mUnknownData3Count;      /**< Amount of fields pointed to by mUnknownData3Offset. Each field is 8 bytes. */
-    uint32 mUnknownData3Offset;     /**< Offset to unknown data. Each field in the pointed-to data is 8 bytes. */
-    uint32 mBufferInfoOffset;       /**< Offset to this mesh's buffer info. */
+    uint32 unknown1[5];             /**< Unknown fields. Seems to always be zero. */
+    uint32 unknownData1Count;       /**< Amount of fields pointed to by mUnknownData1Offset. */
+    uint32 unknownData1Offset;      /**< Offset to unknown data. */
+    float unknownFloats[8];         /**< Eight unknown 32-bit float values. */
+    uint32 unknownData2Count;       /**< Amount of fields pointed to by mUnknownData2Offset. Each field is 28 bytes. */
+    uint32 unknownData2Offset;      /**< Offset to unknown data. Each field in the pointed-to data is 28 bytes. */
+    int32 materialIndex;            /**< Index into the material data array. */
+    uint32 materialNameOffset;      /**< Offset to null-terminated material name. */
+    uint32 unknownData3Count;       /**< Amount of fields pointed to by mUnknownData3Offset. Each field is 8 bytes. */
+    uint32 unknownData3Offset;      /**< Offset to unknown data. Each field in the pointed-to data is 8 bytes. */
+    uint32 bufferInfoOffset;        /**< Offset to this mesh's buffer info. */
 };
 
 /** MODL file, GEOM chunk buffer info data. */
 struct ANetModelBufferInfo
 {
-    uint32 mVertexCount;            /**< Amount of vertices in this mesh. */
-    uint32 mVertexFormat;           /**< Vertex format used by this mesh. */
-    uint32 mVertexBufferSize;       /**< Total size of the vertex buffer. */
-    uint32 mVertexBufferOffset;     /**< Offset to the vertex buffer. */
-    uint32 mIndexCount;             /**< Amount of indices in this mesh's LOD0. */
-    uint32 mIndexBufferOffset;      /**< Offset to the index data used by LOD0. */
-    uint32 mLodLevelCount;          /**< Amount of additional LOD levels for this mesh. */
-    uint32 mLodLevelOffset;         /**< Offset to the first LOD level's data. */
-    uint32 mUnknownDataCount;       /**< Amount of fields pointed to by mUnknownDataOffset. Each field is a uint32. */
-    uint32 mUnknownDataOffset;      /**< Offset to unknown data. Each field in the pointed-to data is a uint32. */
+    uint32 vertexCount;             /**< Amount of vertices in this mesh. */
+    uint32 vertexFormat;            /**< Vertex format used by this mesh. */
+    uint32 vertexBufferSize;        /**< Total size of the vertex buffer. */
+    uint32 vertexBufferOffset;      /**< Offset to the vertex buffer. */
+    uint32 indexCount;              /**< Amount of indices in this mesh's LOD0. */
+    uint32 indexBufferOffset;       /**< Offset to the index data used by LOD0. */
+    uint32 lodLevelCount;           /**< Amount of additional LOD levels for this mesh. */
+    uint32 lodLevelOffset;          /**< Offset to the first LOD level's data. */
+    uint32 unknownDataCount;        /**< Amount of fields pointed to by mUnknownDataOffset. Each field is a uint32. */
+    uint32 unknownDataOffset;       /**< Offset to unknown data. Each field in the pointed-to data is a uint32. */
 };
 
 /** MODL file, MODL chunk material array. */
 struct ANetModelMaterialArray
 {
-    uint32 mUnknown1;
-    uint32 mUnknown2;
-    uint32 mMaterialCount;
-    int32 mMaterialsOffset;
+    uint32 unknown1;
+    uint32 unknown2;
+    uint32 materialCount;
+    int32 materialsOffset;
 };
 
 /** MODL file, MODL chunk material info data. */
 struct ANetModelMaterialInfo
 {
-    uint32 mUnknown1[3];            /**< Unknown data. */
-    int32 mMaterialFileOffset;      /**< Offset to material file reference. */
-    uint32 mFlags;                  /**< Mesh flags. */
-    uint32 mUnknown2;               /**< Unknown data. */
-    uint32 mTextureCount;           /**< Amount of texture references. */
-    int32 mTexturesOffset;          /**< Offset to texture references. */
-    uint32 mVectorCount;            /**< Amount of vectors for use by the material. */
-    int32 mVectorsOffset;           /**< Offset to vector data. */
-    uint32 mHashCount;              /**< Amount of hashes pointed to by mHashesOffset. Only contains hashes used by vectors. */
-    int32 mHashesOffset;            /**< Offset to hashes. */
-    uint32 mUnknown3Count;
-    int32 mUnknown3Offset;
-    uint32 mUnknown4Count;
-    int32 mUnknown4Offset;
-    uint32 mUnknown5;
+    uint32 unknown1[3];             /**< Unknown data. */
+    int32 materialFileOffset;       /**< Offset to material file reference. */
+    uint32 flags;                   /**< Mesh flags. */
+    uint32 unknown2;                /**< Unknown data. */
+    uint32 textureCount;            /**< Amount of texture references. */
+    int32 texturesOffset;           /**< Offset to texture references. */
+    uint32 vectorCount;             /**< Amount of vectors for use by the material. */
+    int32 vectorsOffset;            /**< Offset to vector data. */
+    uint32 hashCount;               /**< Amount of hashes pointed to by mHashesOffset. Only contains hashes used by vectors. */
+    int32 hashesOffset;             /**< Offset to hashes. */
+    uint32 unknown3Count;
+    int32 unknown3Offset;
+    uint32 unknown4Count;
+    int32 unknown4Offset;
+    uint32 unknown5;
 };
 
 /** MODL file, MODL chunk texture reference data. */
 struct ANetModelTextureReference
 {
-    int32 mOffsetToFileReference;   /**< Offset to the texture file reference. */
-    uint32 mUnknown1;               /**< Unknown data. */
-    uint32 mHash;                   /**< Hash used to associate the texture with a variable in the material. */
-    uint32 mUnknown2;               /**< Could potentially be part of the hash, but doesn't seem like it. */
-    byte mUnknown3[13];             /**< Unknown data. */
+    int32 offsetToFileReference;    /**< Offset to the texture file reference. */
+    uint32 unknown1;                /**< Unknown data. */
+    uint32 hash;                    /**< Hash used to associate the texture with a variable in the material. */
+    uint32 unknown2;                /**< Could potentially be part of the hash, but doesn't seem like it. */
+    byte unknown3[13];              /**< Unknown data. */
 };
 
 #pragma pack(pop)

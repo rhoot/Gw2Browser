@@ -33,17 +33,21 @@ namespace gw2b
 namespace data
 {
 
-wxBitmap LoadPNG(const byte* pData, uint pSize)
+wxBitmap loadPNG(const byte* p_data, uint p_size)
 {
-    wxMemoryInputStream stream(pData, pSize);
+    wxMemoryInputStream stream(p_data, p_size);
     return wxBitmap(stream, wxBITMAP_TYPE_PNG);
 }
 
-wxBitmap LoadJPG(const byte* pData, uint pSize)
+//============================================================================/
+
+wxBitmap loadJPG(const byte* p_data, uint p_size)
 {
-    wxMemoryInputStream stream(pData, pSize);
+    wxMemoryInputStream stream(p_data, p_size);
     return wxBitmap(stream, wxBITMAP_TYPE_JPEG);
 }
+
+//============================================================================/
 
 // PRO-TIP: Use Ctrl+F for the filename!
 
@@ -57,6 +61,8 @@ const byte checkers_png[checkers_png_size] = {
     0xCF, 0x80, 0x15, 0xE1, 0x10, 0x06, 0x00, 0x7E, 0xBF, 0x0F, 0xF1, 0x5A, 0xCD, 0x7A, 0x9A, 0x00,
     0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 
 };
+
+//============================================================================/
 
 // File: data/closed_folder.png
 const uint closed_folder_png_size = 423;
@@ -89,6 +95,8 @@ const byte closed_folder_png[closed_folder_png_size] = {
     0xAF, 0xFE, 0x00, 0x83, 0x9F, 0xBB, 0xE8, 0x28, 0xE7, 0xA9, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x49,
     0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 
 };
+
+//============================================================================/
 
 // File: data/dll.png
 const uint dll_png_size = 459;
@@ -124,6 +132,8 @@ const byte dll_png[dll_png_size] = {
     0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 
 };
 
+//============================================================================/
+
 // File: data/exe.png
 const uint exe_png_size = 370;
 const byte exe_png[exe_png_size] = {
@@ -152,6 +162,8 @@ const byte exe_png[exe_png_size] = {
     0x37, 0xBF, 0xA4, 0x5E, 0x17, 0x71, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42,
     0x60, 0x82 
 };
+
+//============================================================================/
 
 // File: data/image.png
 const uint image_png_size = 547;
@@ -193,6 +205,8 @@ const byte image_png[image_png_size] = {
     0x42, 0x60, 0x82 
 };
 
+//============================================================================/
+
 // File: data/open_folder.png
 const uint open_folder_png_size = 559;
 const byte open_folder_png[open_folder_png_size] = {
@@ -233,6 +247,8 @@ const byte open_folder_png[open_folder_png_size] = {
     0xFB, 0xA9, 0x49, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 
 };
 
+//============================================================================/
+
 // File: data/text.png
 const uint text_png_size = 383;
 const byte text_png[text_png_size] = {
@@ -262,7 +278,7 @@ const byte text_png[text_png_size] = {
     0x8B, 0x7C, 0xDD, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 
 };
 
-
+//============================================================================/
 
 // File data/toggle_alpha.png
 const uint toggle_alpha_png_size = 187;
@@ -280,6 +296,8 @@ const byte toggle_alpha_png[toggle_alpha_png_size] = {
     0x0C, 0xC8, 0x1E, 0xC3, 0x2A, 0x00, 0x00, 0xBF, 0x02, 0x6C, 0xAE, 0x93, 0xEE, 0x82, 0x08, 0x00,
     0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 
 };
+
+//============================================================================/
 
 // File: data/toggle_blue.png
 const uint toggle_blue_png_size = 244;
@@ -302,6 +320,8 @@ const byte toggle_blue_png[toggle_blue_png_size] = {
     0xAE, 0x42, 0x60, 0x82 
 };
 
+//============================================================================/
+
 // File: data/toggle_green.png
 const uint toggle_green_png_size = 242;
 const byte toggle_green_png[toggle_green_png_size] = {
@@ -323,6 +343,8 @@ const byte toggle_green_png[toggle_green_png_size] = {
     0x60, 0x82 
 };
 
+//============================================================================/
+
 // File: data/toggle_red.png
 const uint toggle_red_png_size = 232;
 const byte toggle_red_png[toggle_red_png_size] = {
@@ -342,6 +364,8 @@ const byte toggle_red_png[toggle_red_png_size] = {
     0x40, 0x80, 0x01, 0x00, 0x65, 0xA0, 0x19, 0xE4, 0x92, 0xD6, 0xE0, 0xD4, 0x00, 0x00, 0x00, 0x00,
     0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 
 };
+
+//============================================================================/
 
 // File: data/unknown.png
 const uint unknown_png_size = 387;
@@ -372,6 +396,8 @@ const byte unknown_png[unknown_png_size] = {
     0x09, 0x0B, 0x6F, 0x2F, 0x56, 0x21, 0x31, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
     0x42, 0x60, 0x82 
 };
+
+//============================================================================/
 
 // File: data/about_box.jpg
 const uint about_box_jpg_size = 86426;

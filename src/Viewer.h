@@ -34,42 +34,42 @@ class FileReader;
 
 class INeedDatFile
 {
-    DatFile* mDatFile;
+    DatFile* m_datFile;
 protected:
     INeedDatFile() {}
 public:
     virtual ~INeedDatFile() {}
-    // I know interfaces per definition aren't supposed to have implementation, but screw that
-    DatFile* GetDatFile() { return mDatFile; }
-    const DatFile* GetDatFile() const { return mDatFile; }
-    void SetDatFile(DatFile* pDatFile) { mDatFile = pDatFile; }
+    // I know interfaces per definition aren't supposed to have implementation, but screw that. /rebelyell
+    DatFile* datFile() { return m_datFile; }
+    const DatFile* datFile() const { return m_datFile; }
+    void setDatFile(DatFile* p_datFile) { m_datFile = p_datFile; }
 };
 
 /** Panel used to view the contents of a file. */
 class Viewer : public wxPanel
 {
-    FileReader*     mReader;
+    FileReader*     m_reader;
 public:
     /** Constructor. Creates the viewer with the given parent.
-     *  \param[in]  pParent Parent of the control.
-     *  \param[in]  pPos    Optional location of the control. 
-     *  \param[in]  pSize   Optional size of the control. */
-    Viewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
+     *  \param[in]  p_parent Parent of the control.
+     *  \param[in]  p_pos    Optional location of the control. 
+     *  \param[in]  p_size   Optional size of the control. */
+    Viewer(wxWindow* p_parent, const wxPoint& p_pos = wxDefaultPosition, const wxSize& p_size = wxDefaultSize);
     /** Destructor. */
     virtual ~Viewer();
 
     /** Clears all data in this viewer. */
-    virtual void Clear();
+    virtual void clear();
 
     /** Sets the reader containing the data displayed by this viewer.
-     *  \param[in]  pReader     Reader to get data from. */
-    virtual void SetReader(FileReader* pReader);
+     *  \param[in]  p_reader     Reader to get data from. */
+    virtual void setReader(FileReader* p_reader);
     /** Gets the reader containing the data displayed by this viewer.
      *  \return FileReader*     Reader containing the data. */
-    FileReader* GetReader()                 { return mReader; }
+    FileReader* reader()                    { return m_reader; }
     /** Gets the reader containing the data displayed by this viewer.
      *  \return FileReader*     Reader containing the data. */
-    const FileReader* GetReader() const     { return mReader; }
+    const FileReader* reader() const        { return m_reader; }
 }; // class Viewer
 
 }; // namespace gw2b

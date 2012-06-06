@@ -27,52 +27,52 @@
 namespace gw2b
 {
 
-ReadIndexTask::ReadIndexTask(DatIndex* pIndex, const wxString& pFilename, uint64 pDatTimeStamp)
-    : mIndex(pIndex, true)
+ReadIndexTask::ReadIndexTask(const std::shared_ptr<DatIndex>& pIndex, const wxString& pFilename, uint64 pDatTimeStamp)
+    : mIndex(pIndex)
     , mReader(*pIndex)
     , mFilename(pFilename)
     , mErrorOccured(false)
     , mDatTimeStamp(pDatTimeStamp)
 {
-    Ensure::NotNull(pIndex);
+    Ensure::notNull(pIndex.get());
 }
 
-bool ReadIndexTask::Init()
+bool ReadIndexTask::init()
 {
-    mIndex->Clear();
-    mIndex->SetDirty(false);
+    mIndex->clear();
+    mIndex->setDirty(false);
 
-    bool result = mReader.Open(mFilename);
-    if (result) { result = (mIndex->GetDatTimeStamp() == mDatTimeStamp); }
-    if (result) { this->SetMaxProgress(mReader.GetNumEntries() + mReader.GetNumCategories()); }
+    bool result = mReader.open(mFilename);
+    if (result) { result = (mIndex->datTimestamp() == mDatTimeStamp); }
+    if (result) { this->setMaxProgress(mReader.numEntries() + mReader.numCategories()); }
 
     return result;
 }
 
-void ReadIndexTask::Perform()
+void ReadIndexTask::perform()
 {
-    if (!this->IsDone()) {
-        mErrorOccured = !(mReader.Read(7) & DatIndexReader::RR_Success);
-        if (mErrorOccured) { mIndex->Clear(); }
-        uint progress = mReader.GetCurrentEntry() + mReader.GetCurrentCategory();
-        this->SetCurrentProgress(progress);
-        this->SetText(wxT("Reading .dat index..."));
+    if (!this->isDone()) {
+        mErrorOccured = !(mReader.read(7) & DatIndexReader::RR_Success);
+        if (mErrorOccured) { mIndex->clear(); }
+        uint progress = mReader.currentEntry() + mReader.currentCategory();
+        this->setCurrentProgress(progress);
+        this->setText(wxT("Reading .dat index..."));
     }
 }
 
-void ReadIndexTask::Abort()
+void ReadIndexTask::abort()
 {
-    this->Clean();
+    this->clean();
 }
 
-void ReadIndexTask::Clean()
+void ReadIndexTask::clean()
 {
-    mReader.Close();
+    mReader.close();
 }
 
-bool ReadIndexTask::IsDone() const
+bool ReadIndexTask::isDone() const
 {
-    return (mErrorOccured || !mReader.IsOpen() || mReader.IsDone());
+    return (mErrorOccured || !mReader.isOpen() || mReader.isDone());
 }
 
 }; // namespace gw2b

@@ -25,9 +25,6 @@
 
 #ifndef ABOUTBOX_H_INCLUDED
 #define ABOUTBOX_H_INCLUDED
- 
-#include <wx/gbsizer.h>
-#include <wx/statline.h>
 
 namespace gw2b
 {
@@ -35,7 +32,7 @@ namespace gw2b
 class AboutBox : public wxDialog
 {
 public:
-    AboutBox(wxWindow* pParent);
+    AboutBox(wxWindow* p_parent);
     virtual ~AboutBox();
 };
 

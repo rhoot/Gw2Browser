@@ -1,4 +1,4 @@
-/** \file       Viewer.h
+/** \file       Viewer.cpp
  *  \brief      Contains definition of the viewer base class.
  *  \author     Rhoot
  */
@@ -28,26 +28,26 @@
 namespace gw2b
 {
 
-Viewer::Viewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& pSize)
-    : wxPanel(pParent, wxID_ANY, pPos, pSize)
-    , mReader(NULL)
+Viewer::Viewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize& p_size)
+    : wxPanel(p_parent, wxID_ANY, p_pos, p_size)
+    , m_reader(nullptr)
 {
 }
 
 Viewer::~Viewer()
 {
-    DeletePointer(mReader);
+    deletePointer(m_reader);
 }
 
-void Viewer::Clear()
+void Viewer::clear()
 {
-    DeletePointer(mReader);
+    deletePointer(m_reader);
 }
 
-void Viewer::SetReader(FileReader* pReader)
+void Viewer::setReader(FileReader* p_reader)
 {
-    this->Clear();
-    mReader = pReader;
+    this->clear();
+    m_reader = p_reader;
 }
 
 }; // namespace gw2b

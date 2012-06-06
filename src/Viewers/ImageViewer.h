@@ -45,14 +45,14 @@ public:
     ImageViewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
     virtual ~ImageViewer();
 
-    virtual void Clear();
-    virtual void SetReader(FileReader* pReader);
+    virtual void clear();
+    virtual void setReader(FileReader* pReader);
     /** Gets the image reader containing the data displayed by this viewer.
      *  \return ImageReader*    Reader containing the data. */
-    ImageReader* GetImageReader()               { return (ImageReader*)this->GetReader(); }
+    ImageReader* GetImageReader()               { return (ImageReader*)this->reader(); }
     /** Gets the image reader containing the data displayed by this viewer.
      *  \return ImageReader*    Reader containing the data. */
-    const ImageReader* GetImageReader() const   { return (const ImageReader*)this->GetReader(); }
+    const ImageReader* GetImageReader() const   { return (const ImageReader*)this->reader(); }
 private:
     wxToolBar* BuildToolbar();
     void OnToolbarClickedEvt(wxCommandEvent& pEvent);

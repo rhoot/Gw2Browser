@@ -28,6 +28,7 @@
 
 #include <wx/treectrl.h>
 #include <set>
+
 #include "DatIndex.h"
 
 namespace gw2b
@@ -44,29 +45,29 @@ public:
         DT_Entry,       /**< The entry is an index entry. */
     };
 private:
-    const void* mData;
-    DataType    mDataType;
-    bool        mIsDirty;
+    const void* m_data;
+    DataType    m_dataType;
+    bool        m_isDirty;
 public:
     /** Constructor. Sets the properties of this object to the given values.
-     *  \param[in]  pType   type of entry.
-     *  \param[in]  pData   pointer to the data represented by this entry. */
-    CategoryTreeItem(DataType pType, const void* pData) : mData(pData), mDataType(pType), mIsDirty(false) {}
+     *  \param[in]  p_type   type of entry.
+     *  \param[in]  p_data   pointer to the data represented by this entry. */
+    CategoryTreeItem(DataType p_type, const void* p_data) : m_data(p_data), m_dataType(p_type), m_isDirty(false) {}
     /** Destructor. */
     virtual ~CategoryTreeItem() {}
     /** Gets the type of data represented by this entry.
      *  \return DataType    type of data represented by the entry. */
-    DataType GetDataType() const { return mDataType; }
+    DataType dataType() const { return m_dataType; }
     /** Gets the data represented by this entry.
      *  \return void*   pointer to the represented data. */
-    const void* GetData() const { return mData; }
+    const void* data() const { return m_data; }
     /** Marks this object as dirty. Only used for categories that are collapsed
      *  but have had new entries added to it. Entries that are yet to be created.
      *  \param[in]  pDirty  new dirty flag. */
-    void SetDirty(bool pDirty) { mIsDirty = pDirty; }
+    void setDirty(bool p_dirty) { m_isDirty = p_dirty; }
     /** Determines whether this object is dirty or not.
      *  \return bool    true if object is dirty, false if not. */
-    bool IsDirty() const { return mIsDirty; }
+    bool isDirty() const { return m_isDirty; }
 }; // class CategoryTreeItem
 
 /** Image list used to show icons in the category tree. */
@@ -97,25 +98,25 @@ class ICategoryTreeListener
 {
 public:
     /** Raised when the user wants to extract raw files.
-     *  \param[in]  pTree   category tree invoking the callback. */
-    virtual void OnTreeExtractRaw(CategoryTree& pTree) {}
+     *  \param[in]  p_tree   category tree invoking the callback. */
+    virtual void onTreeExtractRaw(CategoryTree& p_tree) {}
     /** Raised when the user wants to extract converted files.
-     *  \param[in]  pTree   category tree invoking the callback. */
-    virtual void OnTreeExtractConverted(CategoryTree& pTree) {}
+     *  \param[in]  p_tree   category tree invoking the callback. */
+    virtual void onTreeExtractConverted(CategoryTree& p_tree) {}
     /** Raised whenever a non-category entry is clicked in the category tree. 
-     *  \param[in]  pTree   category tree invoking the callback.
-     *  \param[in]  pEntry  reference to the clicked entry. */
-    virtual void OnTreeEntryClicked(CategoryTree& pTree, const DatIndexEntry& pEntry) {}
+     *  \param[in]  p_tree   category tree invoking the callback.
+     *  \param[in]  p_entry  reference to the clicked entry. */
+    virtual void onTreeEntryClicked(CategoryTree& p_tree, const DatIndexEntry& p_entry) {}
     /** Raised whenever a category entry is clicked in the category tree. 
-     *  \param[in]  pTree       category tree invoking the callback.
-     *  \param[in]  pCategory   reference to the clicked category. */
-    virtual void OnTreeCategoryClicked(CategoryTree& pTree, const DatIndexCategory& pCategory) {}
+     *  \param[in]  p_tree       category tree invoking the callback.
+     *  \param[in]  p_category   reference to the clicked category. */
+    virtual void onTreeCategoryClicked(CategoryTree& p_tree, const DatIndexCategory& p_category) {}
     /** Raised when the category tree is being cleared.
-     *  \param[in]  pTree   category tree invoking the callback. */
-    virtual void OnTreeCleared(CategoryTree& pTree) {}
+     *  \param[in]  p_tree   category tree invoking the callback. */
+    virtual void onTreeCleared(CategoryTree& p_tree) {}
     /** Raised when the category tree is being destroyed.
-     *  \param[in]  pTree   category tree invoking the callback. */
-    virtual void OnTreeDestruction(CategoryTree& pTree) {}
+     *  \param[in]  p_tree   category tree invoking the callback. */
+    virtual void onTreeDestruction(CategoryTree& p_tree) {}
 };
 
 /** Tree control containing categories and entries of a DatIndex. */
@@ -123,100 +124,98 @@ class CategoryTree : public wxTreeCtrl, public IDatIndexListener
 {
     typedef std::set<ICategoryTreeListener*>    ListenerSet;
 private:
-    AutoPtr<DatIndex>   mIndex;
-    ListenerSet         mListeners;
+    std::shared_ptr<DatIndex>   m_index;
+    ListenerSet                 m_listeners;
 public:
     /** Constructor. Creates the tree control with the given parent.
-     *  \param[in]  pParent     Parent of the control.
-     *  \param[in]  pLocation   Optional location of the control. 
-     *  \param[in]  pSize       Optional size of the control. */
-    CategoryTree(wxWindow* pParent, const wxPoint& pLocation = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
+     *  \param[in]  p_parent     Parent of the control.
+     *  \param[in]  p_location   Optional location of the control. 
+     *  \param[in]  p_size       Optional size of the control. */
+    CategoryTree(wxWindow* p_parent, const wxPoint& p_location = wxDefaultPosition, const wxSize& p_size = wxDefaultSize);
     /** Destructor. */
     virtual ~CategoryTree();
 
     /** Adds an index entry to this tree.
-     *  \param[in]  pEntry  Entry to add. */
-    void AddEntry(const DatIndexEntry& pEntry);
+     *  \param[in]  p_entry  Entry to add. */
+    void addEntry(const DatIndexEntry& p_entry);
     /** Ensures that the given category is part of the tree. Note that the
      *  category is \e not added if a parent category is collapsed. If it
      *  already exists, its id is returned and no category is added.
-     *  \param[in]  pCategory   Category to add to the tree.
-     *  \param[in]  pForce      Forcefully add the category, even if the parent
+     *  \param[in]  p_category   Category to add to the tree.
+     *  \param[in]  p_force      Forcefully add the category, even if the parent
      *              is collapsed. */
-    wxTreeItemId EnsureHasCategory(const DatIndexCategory& pCategory, bool pForce = false);
+    wxTreeItemId ensureHasCategory(const DatIndexCategory& p_category, bool p_force = false);
     /** Clears all entries from the tree. */
-    void ClearEntries();
+    void clearEntries();
     /** Gets the currently selected objects.
      *  \return Array<DatIndexEntry*>  array of entries. */
-    Array<const DatIndexEntry*> GetSelectedEntries() const;
+    Array<const DatIndexEntry*> getSelectedEntries() const;
 
     /** Gets the .dat file index represented by this tree. */
-    DatIndex* GetIndex();
-    /** Gets the .dat file index represented by this tree. */
-    const DatIndex* GetIndex() const;
+    std::shared_ptr<DatIndex> datIndex() const;
     /** Sets the .dat file index represented by this tree. 
-     *  \param[in]  pIndex  Index this tree should represent. */
-    void SetIndex(DatIndex* pIndex);
+     *  \param[in]  p_index  Index this tree should represent. */
+    void setDatIndex(const std::shared_ptr<DatIndex>& p_index);
 
     /** Adds an event listener to this tree.
      *  \param  pListener   Pointer to the listener to add. */
-    void AddListener(ICategoryTreeListener* pListener);
+    void addListener(ICategoryTreeListener* p_listener);
     /** Removes an event listener from this tree.
-     *  \param  pListener   Pointer to the listener to remove. */
-    void RemoveListener(ICategoryTreeListener* pListener);
+     *  \param  p_listener   Pointer to the listener to remove. */
+    void removeListener(ICategoryTreeListener* p_listener);
 
     /** Called by the .dat index when an entry is added.
-     *  \param[in]  pIndex  Reference to the index that had a file added to it.
-     *  \param[in]  pEntry  Reference to the newly added entry. */
-    virtual void OnIndexFileAdded(DatIndex& pIndex, const DatIndexEntry& pEntry);
+     *  \param[in]  p_index  Reference to the index that had a file added to it.
+     *  \param[in]  p_entry  Reference to the newly added entry. */
+    virtual void onIndexFileAdded(DatIndex& p_index, const DatIndexEntry& p_entry) override;
     /** Called by the .dat index when it is cleared.
-     *  \param[in]  pIndex  Reference to the index being cleared. */
-    virtual void OnIndexCleared(DatIndex& pIndex);
+     *  \param[in]  p_index  Reference to the index being cleared. */
+    virtual void onIndexCleared(DatIndex& p_index) override;
     /** Called by the .dat index when it is destroyed.
-     *  \param[in]  pIndex  Reference to the index being destroyed. */
-    virtual void OnIndexDestruction(DatIndex& pIndex);
+     *  \param[in]  p_index  Reference to the index being destroyed. */
+    virtual void onIndexDestruction(DatIndex& p_index) override;
 private:
-    void AddCategoryEntriesToArray(Array<const DatIndexEntry*>& pArray, uint& pIndex, const DatIndexCategory& pCategory) const;
+    void addCategoryEntriesToArray(Array<const DatIndexEntry*>& p_array, uint& p_index, const DatIndexCategory& p_category) const;
 
     /** Helper method to add an entry to the tree at the right spot, for sorting.
-     *  \param[in]  pParent     Category to add the entry to.
-     *  \param[in]  pEntry      Entry to add. */
-    wxTreeItemId AddEntry(const wxTreeItemId& pParent, const DatIndexEntry& pEntry);
+     *  \param[in]  p_parent     Category to add the entry to.
+     *  \param[in]  p_entry      Entry to add. */
+    wxTreeItemId addEntry(const wxTreeItemId& p_parent, const DatIndexEntry& p_entry);
     /** Helper method to add an entry to the tree at the right spot, for sorting.
-     *  \param[in]  pParent     Category to add the entry to.
-     *  \param[in]  pEntry      Entry to add.
-     *  \param[in]  pName       Name of the entry, as an integer. */
-    wxTreeItemId AddNumberEntry(const wxTreeItemId& pParent, const DatIndexEntry& pEntry, uint pName);
+     *  \param[in]  p_parent     Category to add the entry to.
+     *  \param[in]  p_entry      Entry to add.
+     *  \param[in]  p_name       Name of the entry, as an integer. */
+    wxTreeItemId addNumberEntry(const wxTreeItemId& p_parent, const DatIndexEntry& p_entry, uint p_name);
     /** Helper method to add an entry to the tree at the right spot, for sorting.
-     *  \param[in]  pParent     Category to add the entry to.
-     *  \param[in]  pEntry      Entry to add. */
-    wxTreeItemId AddTextEntry(const wxTreeItemId& pParent, const DatIndexEntry& pEntry);
+     *  \param[in]  p_parent     Category to add the entry to.
+     *  \param[in]  p_entry      Entry to add. */
+    wxTreeItemId addTextEntry(const wxTreeItemId& p_parent, const DatIndexEntry& p_entry);
     /** Helper method to add a category to the tree at the right spot, for sorting.
-     *  \param[in]  pParent         Parent category to add the category to.
-     *  \param[in]  pDisplayName    Name of the category to add. */
-    wxTreeItemId AddCategoryEntry(const wxTreeItemId& pParent, const wxString& pDisplayName);
+     *  \param[in]  p_parent         Parent category to add the category to.
+     *  \param[in]  p_displayName    Name of the category to add. */
+    wxTreeItemId addCategoryEntry(const wxTreeItemId& p_parent, const wxString& p_displayName);
 
     /** Gets the index for the image that should represent the given entry.
-     *  \param[in]  pEntry  Entry in need of an icon. */
-    int GetImageForEntry(const DatIndexEntry& pEntry);
+     *  \param[in]  p_entry  Entry in need of an icon. */
+    int getImageForEntry(const DatIndexEntry& p_entry);
     /** Event raised when an item is being expanded.
-     *  \param[in]  pEvent  Event object handed to us by wxWidgets. */
-    void OnItemExpanding(wxTreeEvent& pEvent);
+     *  \param[in]  p_event  Event object handed to us by wxWidgets. */
+    void onItemExpanding(wxTreeEvent& p_event);
     /** Event raised when an item is being collapsed.
-     *  \param[in]  pEvent  Event object handed to us by wxWidgets. */
-    void OnItemCollapsing(wxTreeEvent& pEvent);
+     *  \param[in]  p_event  Event object handed to us by wxWidgets. */
+    void onItemCollapsing(wxTreeEvent& p_event);
     /** Event raised when an item is being selected.
-     *  \param[in]  pEvent  Event object handed to us by wxWidgets. */
-    void OnSelChanged(wxTreeEvent& pEvent);
+     *  \param[in]  p_event  Event object handed to us by wxWidgets. */
+    void onSelChanged(wxTreeEvent& p_event);
     /** Event raised when an item has been right clicked on.
-     *  \param[in]  pEvent  Event object handed to us by wxWidgets. */
-    void OnContextMenu(wxTreeEvent& pEvent);
+     *  \param[in]  p_event  Event object handed to us by wxWidgets. */
+    void onContextMenu(wxTreeEvent& p_event);
     /** Event raised when the user wants to extract raw files.
-     *  \param[in]  pEvent  Event object handed to us by wxWidgets. */
-    void OnExtractRawFiles(wxCommandEvent& pEvent);
+     *  \param[in]  p_event  Event object handed to us by wxWidgets. */
+    void onExtractRawFiles(wxCommandEvent& p_event);
     /** Event raised when the user wants to extract converted files.
-     *  \param[in]  pEvent  Event object handed to us by wxWidgets. */
-    void OnExtractConvertedFiles(wxCommandEvent& pEvent);
+     *  \param[in]  p_event  Event object handed to us by wxWidgets. */
+    void onExtractConvertedFiles(wxCommandEvent& p_event);
 }; // class CategoryTree
 
 }; // namespace gw2b

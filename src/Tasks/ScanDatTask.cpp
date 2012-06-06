@@ -31,47 +31,47 @@
 namespace gw2b
 {
 
-ScanDatTask::ScanDatTask(DatIndex* pIndex, DatFile& pDatFile)
-    : mIndex(pIndex, true)
+ScanDatTask::ScanDatTask(const std::shared_ptr<DatIndex>& pIndex, DatFile& pDatFile)
+    : mIndex(pIndex)
     , mDatFile(pDatFile)
 {
-    Ensure::NotNull(pIndex);
-    Ensure::NotNull(&pDatFile);
+    Ensure::notNull(pIndex.get());
+    Ensure::notNull(&pDatFile);
 }
 
 ScanDatTask::~ScanDatTask()
 {
 }
 
-bool ScanDatTask::Init()
+bool ScanDatTask::init()
 {
-    this->SetMaxProgress(mDatFile.GetNumFiles());
-    this->SetCurrentProgress(mIndex->GetHighestMftEntry() + 1);
+    this->setMaxProgress(mDatFile.numFiles());
+    this->setCurrentProgress(mIndex->highestMftEntry() + 1);
 
-    uint filesLeft = mDatFile.GetNumFiles() - (mIndex->GetHighestMftEntry() + 1);
-    mIndex->ReserveEntries(filesLeft);
+    uint filesLeft = mDatFile.numFiles() - (mIndex->highestMftEntry() + 1);
+    mIndex->reserveEntries(filesLeft);
 
     return true;
 }
 
-void ScanDatTask::Perform()
+void ScanDatTask::perform()
 {
     // Make sure the output buffer is big enough
     this->EnsureBufferSize(0x20);
 
     // Read file
-    uint32 entryNumber = this->GetCurrentProgress();
-    uint size = mDatFile.PeekFile(entryNumber, 0x20, mOutputBuffer.GetPointer());
+    uint32 entryNumber = this->currentProgress();
+    uint size = mDatFile.peekFile(entryNumber, 0x20, mOutputBuffer.GetPointer());
 
     // Skip if empty
     if (!size) {
-        this->SetCurrentProgress(entryNumber + 1);
+        this->setCurrentProgress(entryNumber + 1);
         return;
     }
 
     // Get the file type
     ANetFileType fileType;
-    DatFile::IdentificationResult results = mDatFile.IdentifyFileType(mOutputBuffer.GetPointer(), size, fileType);
+    DatFile::IdentificationResult results = mDatFile.identifyFileType(mOutputBuffer.GetPointer(), size, fileType);
 
     // Enough data to identify the file type?
     uint lastRequestedSize = 0x20;
@@ -84,13 +84,13 @@ void ScanDatTask::Perform()
 
         // Re-read with the newly asked-for size
         this->EnsureBufferSize(sizeRequired);
-        size    = mDatFile.PeekFile(entryNumber, sizeRequired, mOutputBuffer.GetPointer());
-        results = mDatFile.IdentifyFileType(mOutputBuffer.GetPointer(), size, fileType);
+        size    = mDatFile.peekFile(entryNumber, sizeRequired, mOutputBuffer.GetPointer());
+        results = mDatFile.identifyFileType(mOutputBuffer.GetPointer(), size, fileType);
     }
 
     // Need another check, since the file might have been reloaded a couple of times
     if (!size) {
-        this->SetCurrentProgress(entryNumber + 1);
+        this->setCurrentProgress(entryNumber + 1);
         return;
     }
 
@@ -98,24 +98,24 @@ void ScanDatTask::Perform()
     DatIndexCategory* category = this->Categorize(fileType, mOutputBuffer.GetPointer(), size);
 
     // Add to index
-    uint baseId = mDatFile.GetBaseIdFromFileNum(entryNumber);
-    DatIndexEntry& newEntry = mIndex->AddIndexEntry()
-        ->SetBaseId(baseId)
-        .SetFileId(mDatFile.GetFileIdFromFileNum(entryNumber))
-        .SetFileType(fileType)
-        .SetMftEntry(entryNumber)
-        .SetName(wxString::Format(wxT("%d"), baseId));
+    uint baseId = mDatFile.baseIdFromFileNum(entryNumber);
+    DatIndexEntry& newEntry = mIndex->addIndexEntry()
+        ->setBaseId(baseId)
+        .setFileId(mDatFile.fileIdFromFileNum(entryNumber))
+        .setFileType(fileType)
+        .setMftEntry(entryNumber)
+        .setName(wxString::Format(wxT("%d"), baseId));
     // Found a file with no baseId...
     if (baseId == 0) {
-        newEntry.SetName(wxString::Format(wxT("ID-less_%d"), entryNumber));
+        newEntry.setName(wxString::Format(wxT("ID-less_%d"), entryNumber));
     }
     // Finalize the add
-    category->AddEntry(&newEntry);
-    newEntry.FinalizeAdd();
+    category->addEntry(&newEntry);
+    newEntry.finalizeAdd();
 
     // Delete the reader and proceed to the next file
-    this->SetText(wxString::Format(wxT("Scanning .dat: %d/%d"), entryNumber, this->GetMaxProgress()));
-    this->SetCurrentProgress(entryNumber + 1);
+    this->setText(wxString::Format(wxT("Scanning .dat: %d/%d"), entryNumber, this->maxProgress()));
+    this->setCurrentProgress(entryNumber + 1);
 }
 
 uint ScanDatTask::GetRequiredIdentificationSize(byte* pData, uint pSize, ANetFileType pFileType)
@@ -136,14 +136,14 @@ uint ScanDatTask::GetRequiredIdentificationSize(byte* pData, uint pSize, ANetFil
     }
 }
 
-#define MakeSubCategory(x)  { category = category->FindOrAddSubCategory(x); }
+#define MakeSubCategory(x)  { category = category->findOrAddSubCategory(x); }
 DatIndexCategory* ScanDatTask::Categorize(ANetFileType pFileType, byte* pData, uint pSize)
 {
-    DatIndexCategory* category = NULL;
+    DatIndexCategory* category = nullptr;
     
     // Textures
     if (pFileType > ANFT_TextureStart && pFileType < ANFT_TextureEnd) {
-        category = mIndex->FindOrAddCategory(wxT("Textures"));
+        category = mIndex->findOrAddCategory(wxT("Textures"));
 
         switch (pFileType) {
         case ANFT_ATEX:
@@ -182,67 +182,67 @@ DatIndexCategory* ScanDatTask::Categorize(ANetFileType pFileType, byte* pData, u
 
     // Sounds
     else if (pFileType == ANFT_MP3 || pFileType == ANFT_OGG || pFileType == ANFT_Sound) {
-        category = mIndex->FindOrAddCategory(wxT("Sounds"));
+        category = mIndex->findOrAddCategory(wxT("Sounds"));
     }
 
     // Binaries
     else if (pFileType == ANFT_Binary || pFileType == ANFT_EXE || pFileType == ANFT_DLL) {
-        category = mIndex->FindOrAddCategory(wxT("Binaries"));
+        category = mIndex->findOrAddCategory(wxT("Binaries"));
     }
 
     // Strings
     else if (pFileType == ANFT_StringFile) {
-        category = mIndex->FindOrAddCategory(wxT("Strings"));
+        category = mIndex->findOrAddCategory(wxT("Strings"));
     }
 
     // Manifests
     else if (pFileType == ANFT_Manifest) {
-        category = mIndex->FindOrAddCategory(wxT("Manifests"));
+        category = mIndex->findOrAddCategory(wxT("Manifests"));
     }
 
     // Bank files
     else if (pFileType == ANFT_Bank) {
-        category = mIndex->FindOrAddCategory(wxT("Bank files"));
+        category = mIndex->findOrAddCategory(wxT("Bank files"));
     }
 
     // Model files
     else if (pFileType == ANFT_Model) {
-        category = mIndex->FindOrAddCategory(wxT("Models"));
+        category = mIndex->findOrAddCategory(wxT("Models"));
     }
 
     // Dependency table
     else if (pFileType == ANFT_DependencyTable) {
-        category = mIndex->FindOrAddCategory(wxT("Dependency tables"));
+        category = mIndex->findOrAddCategory(wxT("Dependency tables"));
     }
 
     // EULA
     else if (pFileType == ANFT_EULA) {
-        category = mIndex->FindOrAddCategory(wxT("EULA"));
+        category = mIndex->findOrAddCategory(wxT("EULA"));
     }
     
     // Cinematic
     else if (pFileType == ANFT_Cinematic) {
-        category = mIndex->FindOrAddCategory(wxT("Cinematics"));
+        category = mIndex->findOrAddCategory(wxT("Cinematics"));
     }
 
     // Havok
     else if (pFileType == ANFT_HavokCloth) {
-        category = mIndex->FindOrAddCategory(wxT("Havok cloth"));
+        category = mIndex->findOrAddCategory(wxT("Havok cloth"));
     }
 
     // Maps
     else if (pFileType == ANFT_Map) {
-        category = mIndex->FindOrAddCategory(wxT("Maps"));
+        category = mIndex->findOrAddCategory(wxT("Maps"));
     }
 
     // Materials
     else if (pFileType == ANFT_Material) {
-        category = mIndex->FindOrAddCategory(wxT("Materials"));
+        category = mIndex->findOrAddCategory(wxT("Materials"));
     }
 
     // Random PF files
     else if (pFileType == ANFT_PF) {
-        category = mIndex->FindOrAddCategory(wxT("Misc"));
+        category = mIndex->findOrAddCategory(wxT("Misc"));
 
         if (pSize >= 12) {
             MakeSubCategory(wxString((const char*)(pData + 8), 4));
@@ -251,13 +251,13 @@ DatIndexCategory* ScanDatTask::Categorize(ANetFileType pFileType, byte* pData, u
 
     // ABFF
     else if (pFileType == ANFT_ABFF) {
-        category = mIndex->FindOrAddCategory(wxT("Misc"));
+        category = mIndex->findOrAddCategory(wxT("Misc"));
         MakeSubCategory(wxT("ABFF"));
     }
 
     // unknown stuff
     else {
-        category = mIndex->FindOrAddCategory(wxT("Unknown"));
+        category = mIndex->findOrAddCategory(wxT("Unknown"));
         MakeSubCategory(wxString::Format(wxT("%x"), *(const uint32*)pData));
     }
 

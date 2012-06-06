@@ -32,7 +32,7 @@ namespace gw2b
 #pragma warning(disable: 4146)  // unary minus operator applied to unsigned type, result still unsigned
 
     // http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
-    uint LowestSetBit(uint32 pValue)
+    uint lowestSetBit(uint32 pValue)
     {
         static const int32 MultiplyDeBruijnBitPosition[32] =  {
             0x00, 0x01, 0x1c, 0x02, 0x1d, 0x0e, 0x18, 0x03, 0x1e, 0x16, 0x14, 0x0f, 0x19, 0x11, 0x04, 0x08, 

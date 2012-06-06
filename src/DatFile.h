@@ -38,21 +38,21 @@ class DatFile
 {
     struct IdEntry
     {
-        uint32  mBaseId;
-        uint32  mFileId;
+        uint32  baseId;
+        uint32  fileId;
     };
 private:
     typedef Array<ANetMftEntry> EntryArray;
     typedef Array<IdEntry>      EntryToIdArray;
     typedef Array<byte>         InputBufferArray;
 private:
-    wxFile              mFile;
-    ANetDatHeader       mDatHead;
-    ANetMftHeader       mMftHead;
-    EntryArray          mMftEntries;
-    EntryToIdArray      mEntryToId;
-    InputBufferArray    mInputBuffer;
-    uint                mLastReadEntry;
+    wxFile              m_file;
+    ANetDatHeader       m_datHead;
+    ANetMftHeader       m_mftHead;
+    EntryArray          m_mftEntries;
+    EntryToIdArray      m_entryToId;
+    InputBufferArray    m_inputBuffer;
+    uint                m_lastReadEntry;
 private:
     enum { MFT_FILE_OFFSET = 16 };
 public:
@@ -66,114 +66,114 @@ public:
     /** Default constructor. Initializes internals. */
     DatFile();
     /** Constructor. Initializes internals and opens the given .dat file.
-     *  \param[in]  pFilename   Name of the .dat file to open. */
-    DatFile(const wxString& pFilename);
+     *  \param[in]  p_filename   Name of the .dat file to open. */
+    DatFile(const wxString& p_filename);
     /** Destructor. Makes sure to clear out any unfreed data. */
     ~DatFile();
 
     /** Opens the given .dat file for reading.
-     *  \param[in]  pFilename   Name of the .dat file to open.
+     *  \param[in]  p_filename   Name of the .dat file to open.
      *  \return bool    true if opening succeeded, false if not. */
-    bool Open(const wxString& pFilename);
+    bool open(const wxString& p_filename);
     /** Checks whether or not this object currently has a .dat file open.
      *  \return bool    true if a .dat file is open, false if not. */
-    bool IsOpen() const;
+    bool isOpen() const;
     /** Closes the open .dat file, if any. */
-    void Close();
+    void close();
 
     /** Gets the MFT entry number for the file with the given file id.
-     *  \param[in]  pFileId     ID of the file to get the entry number for.
+     *  \param[in]  p_fileId     ID of the file to get the entry number for.
      *  \return uint    The MFT entry num if it was found, UINT_MAX if not. */
-    uint GetEntryNumFromFileId(uint pFileId) const;
+    uint entryNumFromFileId(uint p_fileId) const;
     /** Gets the file ID of the file with the given MFT entry number.
-     *  \param[in]  pEntryNum   Entry number to get the file ID for.
+     *  \param[in]  p_entryNum   Entry number to get the file ID for.
      *  \return uint    The file ID if it was found, UINT_MAX if not. */
-    uint GetFileIdFromEntryNum(uint pEntryNum) const;
+    uint fileIdFromEntryNum(uint p_entryNum) const;
     /** Gets the file ID of the file with the given MFT file entry number.
-     *  \param[in]  pEntryNum   File entry number to get the file ID for.
+     *  \param[in]  p_entryNum   File entry number to get the file ID for.
      *  \return uint    The file ID if it was found, UINT_MAX if not. */
-    uint GetFileIdFromFileNum(uint pEntryNum) const;
+    uint fileIdFromFileNum(uint p_entryNum) const;
 
     /** Gets the MFT entry number for the file with the given base id.
-     *  \param[in]  pBaseId     Base ID of the file to get the entry number for.
+     *  \param[in]  p_baseId     Base ID of the file to get the entry number for.
      *  \return uint    The MFT entry num if it was found, UINT_MAX if not. */
-    uint GetEntryNumFromBaseId(uint pBaseId) const;
+    uint entryNumFromBaseId(uint p_baseId) const;
     /** Gets the base id of the file with the given MFT entry number.
-     *  \param[in]  pEntryNum   Entry number to get the base id for.
+     *  \param[in]  p_entryNum   Entry number to get the base id for.
      *  \return uint    The base id if it was found, UINT_MAX if not. */
-    uint GetBaseIdFromEntryNum(uint pEntryNum) const;
+    uint baseIdFromEntryNum(uint p_entryNum) const;
     /** Gets the base id of the file with the given MFT file entry number.
-     *  \param[in]  pEntryNum   File entry number to get the base id for.
+     *  \param[in]  p_entryNum   File entry number to get the base id for.
      *  \return uint    The base id if it was found, UINT_MAX if not. */
-    uint GetBaseIdFromFileNum(uint pEntryNum) const;
+    uint baseIdFromFileNum(uint p_entryNum) const;
 
     /** Gets the total uncompressed size of the given entry.
-     *  \param[in]  pEntryNum   Entry number to check the size for.
+     *  \param[in]  p_entryNum   Entry number to check the size for.
      *  \return uint    Uncompressed size of the entry. */
-    uint GetEntrySize(uint pEntryNum);
+    uint entrySize(uint p_entryNum);
     /** Gets the total uncompressed size of the given file.
-     *  \param[in]  pFileNum   File entry number to check the size for.
+     *  \param[in]  p_fileNum   File entry number to check the size for.
      *  \return uint    Uncompressed size of the file. */
-    uint GetFileSize(uint pFileNum);
+    uint fileSize(uint p_fileNum);
     /** Gets the amount of total MFT entries in the .dat file. 
      *  \return uint    Amount of entries in the .dat file, UINT_MAX if file not open. */
-    uint GetNumEntries() const                  { if (!this->IsOpen()) { return UINT_MAX; } return mMftHead.mNumEntries; }
+    uint numEntries() const                     { if (!this->isOpen()) { return UINT_MAX; } return m_mftHead.numEntries; }
     /** Gets the amount of file MFT entries in the .dat file. 
      *  \return uint    Amount of file entries in the .dat file, UINT_MAX if file not open. */
-    uint GetNumFiles() const                    { if (!this->IsOpen()) { return UINT_MAX; } return mMftHead.mNumEntries - MFT_FILE_OFFSET; }
+    uint numFiles() const                       { if (!this->isOpen()) { return UINT_MAX; } return m_mftHead.numEntries - MFT_FILE_OFFSET; }
     /** Gets the amount of entries that appear before the file entries in the 
     *   .dat file.
      *  \return uint    Index of the first file entry in the MFT. */
-    uint GetMftFileOffset() const               { return MFT_FILE_OFFSET; }
+    uint mftFileOffset() const                  { return MFT_FILE_OFFSET; }
 
     /** Peeks at the contents of the given MFT entry and returns the results.
-     *  \param[in]  pEntryNum   MFT entry number to get contents for.
-     *  \param[in]  pPeekSize   Amount of bytes to peek at. Specifying 0 will read the whole entry.
-     *  \param[in,out]  poBuffer    Buffer to store results in. Must be *at least*
+     *  \param[in]  p_entryNum   MFT entry number to get contents for.
+     *  \param[in]  p_peekSize   Amount of bytes to peek at. Specifying 0 will read the whole entry.
+     *  \param[in,out]  po_buffer    Buffer to store results in. Must be *at least*
      *                  pPeekSize in length.
      *  \return uint    Size of poBuffer. */
-    uint PeekEntry(uint pEntryNum, uint pPeekSize, byte* poBuffer);
+    uint peekEntry(uint p_entryNum, uint p_peekSize, byte* po_buffer);
     /** Peeks at the contents of the given MFT file entry and returns the results.
-     *  \param[in]  pFileNum    MFT entry number to get contents for.
-     *  \param[in]  pPeekSize   Amount of bytes to peek at. Specifying 0 will read the whole file.
-     *  \param[in,out]  poBuffer    Buffer to store results in. Must be *at least*
+     *  \param[in]  p_fileNum    MFT entry number to get contents for.
+     *  \param[in]  p_peekSize   Amount of bytes to peek at. Specifying 0 will read the whole file.
+     *  \param[in,out]  po_buffer    Buffer to store results in. Must be *at least*
      *                  pPeekSize in length.
      *  \return uint    Size of poBuffer. */
-    uint PeekFile(uint pFileNum, uint pPeekSize, byte* poBuffer);
+    uint peekFile(uint p_fileNum, uint p_peekSize, byte* po_buffer);
     /** Peeks at the contents of the given MFT entry and returns the results.
-     *  \param[in]  pEntryNum   MFT entry number to get contents for.
-     *  \param[in]  pPeekSize   Amount of bytes to peek at.
+     *  \param[in]  p_entryNum   MFT entry number to get contents for.
+     *  \param[in]  p_peekSize   Amount of bytes to peek at.
      *  \return Array<byte>  Object used to handle the peeked data. */
-    Array<byte> PeekEntry(uint pEntryNum, uint pPeekSize);
+    Array<byte> peekEntry(uint p_entryNum, uint p_peekSize);
     /** Peeks at the contents of the given MFT file entry and returns the results.
-     *  \param[in]  pFileNum    MFT file entry number to get contents for.
-     *  \param[in]  pPeekSize   Amount of bytes to peek at.
+     *  \param[in]  p_fileNum    MFT file entry number to get contents for.
+     *  \param[in]  p_peekSize   Amount of bytes to peek at.
      *  \return Array<byte>  Object used to handle the peeked data. */
-    Array<byte> PeekFile(uint pFileNum, uint pPeekSize);
+    Array<byte> peekFile(uint p_fileNum, uint p_peekSize);
 
     /** Reads the contents of the given MFT entry and returns the results.
-     *  \param[in]  pEntryNum   MFT entry number to get contents for.
-     *  \param[in,out]  poBuffer    Buffer to store results in. It is up to the
+     *  \param[in]  p_entryNum   MFT entry number to get contents for.
+     *  \param[in,out]  po_buffer    Buffer to store results in. It is up to the
                         caller to make sure the buffer is big enough.
      *  \return uint    Size of poBuffer. */
-    uint ReadEntry(uint pEntryNum, byte* poBuffer);
+    uint readEntry(uint p_entryNum, byte* po_buffer);
     /** Reads the contents of the given MFT file entry and returns the results.
-     *  \param[in]  pFileNum   MFT entry number to get contents for.
-     *  \param[in,out]  poBuffer    Buffer to store results in. It is up to the
+     *  \param[in]  p_fileNum   MFT entry number to get contents for.
+     *  \param[in,out]  po_buffer    Buffer to store results in. It is up to the
                         caller to make sure the buffer is big enough.
      *  \return uint    Size of poBuffer. */
-    uint ReadFile(uint pFileNum, byte* poBuffer);
+    uint readFile(uint p_fileNum, byte* po_buffer);
     /** Reads the data contained at the given MFT entry.
-     *  \param[in]  pEntryNum   MFT entry number to read.
+     *  \param[in]  p_entryNum   MFT entry number to read.
      *  \return Array<byte>  Object used to handle the read data. */
-    Array<byte> ReadEntry(uint pEntryNum);
+    Array<byte> readEntry(uint p_entryNum);
     /** Reads the file contained at the given MFT entry.
-     *  \param[in]  pFileNum    MFT file entry number to read.
+     *  \param[in]  p_fileNum    MFT file entry number to read.
      *  \return Array<byte>  Object used to handle the read file. */
-    Array<byte> ReadFile(uint pFileNum);
+    Array<byte> readFile(uint p_fileNum);
 
-    IdentificationResult IdentifyFileType(byte* pData, uint pSize, ANetFileType& pFileType);
-    static uint GetFileNumFromFileReference(const ANetFileReference& pFileRef);
+    IdentificationResult identifyFileType(const byte* p_data, uint p_size, ANetFileType& p_fileType);
+    static uint fileIdFromFileReference(const ANetFileReference& p_fileRef);
 
 }; // class DatFile
 

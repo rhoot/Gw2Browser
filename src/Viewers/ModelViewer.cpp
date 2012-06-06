@@ -47,17 +47,17 @@ ModelViewer::ModelViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& p
     mPresentParams.AutoDepthStencilFormat  = D3DFMT_D16;
 
     // Init Direct3D
-    IDirect3DDevice9* device = NULL;
-    mD3D = ::Direct3DCreate9(D3D_SDK_VERSION);
+    IDirect3DDevice9* device = nullptr;
+    mD3D.reset(::Direct3DCreate9(D3D_SDK_VERSION));
     mD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, this->GetHandle(), D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE, &mPresentParams, &device);
-    mDevice = device;
+    mDevice.reset(device);
 
     // Load shader
-    ID3DXEffect* effect = NULL;
-    ID3DXBuffer* errors = NULL;
-    uint32 shaderFlags  = IfDebug(D3DXSHADER_DEBUG, 0);
-    HRESULT result = ::D3DXCreateEffectFromFileW(mDevice, L"data/model_view.hlsl", NULL, NULL, shaderFlags, NULL, &effect, &errors);
-    mEffect = effect;
+    ID3DXEffect* effect = nullptr;
+    ID3DXBuffer* errors = nullptr;
+    uint32 shaderFlags  = ifDebug(D3DXSHADER_DEBUG, 0);
+    HRESULT result = ::D3DXCreateEffectFromFileW(mDevice.get(), L"data/model_view.hlsl", nullptr, nullptr, shaderFlags, nullptr, &effect, &errors);
+    mEffect.reset(effect);
 
     if (FAILED(result)) {
         wxMessageBox(wxString::Format(wxT("Error 0x%08x while loading shader: %s"), result, static_cast<const char*>(errors->GetBufferPointer())));
@@ -82,7 +82,7 @@ ModelViewer::~ModelViewer()
     }
 }
 
-void ModelViewer::Clear()
+void ModelViewer::clear()
 {
     for (uint i = 0; i < mMeshCache.GetSize(); i++) {
         if (mMeshCache[i].mIndexBuffer)  { mMeshCache[i].mIndexBuffer->Release();  }
@@ -95,13 +95,13 @@ void ModelViewer::Clear()
     mTextureCache.Clear();
     mMeshCache.Clear();
     mModel = Model();
-    Viewer::Clear();
+    Viewer::clear();
 }
 
-void ModelViewer::SetReader(FileReader* pReader)
+void ModelViewer::setReader(FileReader* pReader)
 {
-    Ensure::IsOfType<ModelReader>(pReader);
-    Viewer::SetReader(pReader);
+    Ensure::isOfType<ModelReader>(pReader);
+    Viewer::setReader(pReader);
 
     // Load model
     ModelReader* reader = this->GetModelReader();
@@ -123,8 +123,8 @@ void ModelViewer::SetReader(FileReader* pReader)
 
         if (!this->CreateBuffers(cache, vertexCount, vertexSize, indexCount, indexSize)) { continue; }
         if (!this->PopulateBuffers(mesh, cache)) { 
-            ReleasePointer(cache.mIndexBuffer);
-            ReleasePointer(cache.mVertexBuffer);
+            releasePointer(cache.mIndexBuffer);
+            releasePointer(cache.mVertexBuffer);
             continue;
         }
     }
@@ -141,14 +141,14 @@ void ModelViewer::SetReader(FileReader* pReader)
         if (material.mDiffuseTexture) {
             cache.mDiffuseMap = this->LoadTexture(material.mDiffuseTexture);
         } else {
-            cache.mDiffuseMap = NULL;
+            cache.mDiffuseMap = nullptr;
         }
 
         // Load normal map
         if (material.mNormalMap) {
             cache.mNormalMap = this->LoadTexture(material.mNormalMap);
         } else {
-            cache.mNormalMap = NULL;
+            cache.mNormalMap = nullptr;
         }
     }
 
@@ -159,8 +159,8 @@ void ModelViewer::SetReader(FileReader* pReader)
 
 bool ModelViewer::CreateBuffers(MeshCache& pCache, uint pVertexCount, uint pVertexSize, uint pIndexCount, uint pIndexSize)
 {
-    pCache.mIndexBuffer  = NULL;
-    pCache.mVertexBuffer = NULL;
+    pCache.mIndexBuffer  = nullptr;
+    pCache.mVertexBuffer = nullptr;
 
     // 0 indices or 0 vertices, either is an empty mesh
     if (!pVertexCount || !pIndexCount) {
@@ -169,18 +169,18 @@ bool ModelViewer::CreateBuffers(MeshCache& pCache, uint pVertexCount, uint pVert
 
     // Allocate vertex buffer and bail if it fails
     if (FAILED(mDevice->CreateVertexBuffer(pVertexCount * pVertexSize, D3DUSAGE_WRITEONLY, VertexDefinition::sFVF,
-        D3DPOOL_DEFAULT, &pCache.mVertexBuffer, NULL))) 
+        D3DPOOL_DEFAULT, &pCache.mVertexBuffer, nullptr))) 
     {
         return false;
     }
 
     // Allocate index buffer and bail if it fails
     if (FAILED(mDevice->CreateIndexBuffer(pIndexCount * pIndexSize, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16,
-        D3DPOOL_DEFAULT, &pCache.mIndexBuffer, NULL))) 
+        D3DPOOL_DEFAULT, &pCache.mIndexBuffer, nullptr))) 
     {
         pCache.mVertexBuffer->Release();
-        pCache.mVertexBuffer = NULL;
-        pCache.mIndexBuffer  = NULL;
+        pCache.mVertexBuffer = nullptr;
+        pCache.mIndexBuffer  = nullptr;
         return false;
     }
 
@@ -234,7 +234,7 @@ bool ModelViewer::PopulateBuffers(const Mesh& pMesh, MeshCache& pCache)
             ::memset(&vertices[j].mUV[1], 0, sizeof(XMFLOAT2));
         }
     }
-    wxASSERT(SUCCEEDED(pCache.mVertexBuffer->Unlock()));
+    Assert(SUCCEEDED(pCache.mVertexBuffer->Unlock()));
 
     // Lock index buffer
     uint16* indices;
@@ -243,7 +243,7 @@ bool ModelViewer::PopulateBuffers(const Mesh& pMesh, MeshCache& pCache)
     }
     // Copy index buffer
     ::memcpy(indices, pMesh.mTriangles.GetPointer(), indexCount * indexSize);
-    wxASSERT(SUCCEEDED(pCache.mIndexBuffer->Unlock()));
+    Assert(SUCCEEDED(pCache.mIndexBuffer->Unlock()));
 
     return true;
 }
@@ -261,7 +261,7 @@ void ModelViewer::BeginFrame(uint32 pClearColor)
 
     mDevice->SetViewport(&viewport);
     mDevice->BeginScene();
-    mDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, pClearColor, 1, 0);
+    mDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, pClearColor, 1, 0);
 }
 
 void ModelViewer::EndFrame()
@@ -275,7 +275,7 @@ void ModelViewer::EndFrame()
     sourceRect.bottom = viewport.Height;
 
     mDevice->EndScene();
-    mDevice->Present(&sourceRect, NULL, NULL, NULL);
+    mDevice->Present(&sourceRect, nullptr, nullptr, nullptr);
 }
 
 void ModelViewer::Render()
@@ -300,7 +300,7 @@ void ModelViewer::DrawMesh(uint pMeshIndex)
     const MeshCache& mesh = mMeshCache[pMeshIndex];
 
     // No mesh to draw?
-    if (mesh.mIndexBuffer == NULL || mesh.mVertexBuffer == NULL) {
+    if (mesh.mIndexBuffer == nullptr || mesh.mVertexBuffer == nullptr) {
         return;
     }
 
@@ -359,37 +359,37 @@ void ModelViewer::UpdateMatrices()
 
 IDirect3DTexture9* ModelViewer::LoadTexture(uint pFileId)
 {
-    uint entryNumber      = this->GetDatFile()->GetEntryNumFromFileId(pFileId);
-    Array<byte> fileData  = this->GetDatFile()->ReadEntry(entryNumber);
+    uint entryNumber      = this->datFile()->entryNumFromFileId(pFileId);
+    Array<byte> fileData  = this->datFile()->readEntry(entryNumber);
 
     // Bail if read failed
-    if (fileData.GetSize() == 0) { return NULL; }
+    if (fileData.GetSize() == 0) { return nullptr; }
 
     // Convert to image
     ANetFileType fileType;
-    this->GetDatFile()->IdentifyFileType(fileData.GetPointer(), fileData.GetSize(), fileType);
-    FileReader* reader = FileReader::GetReaderForData(fileData, fileType);
+    this->datFile()->identifyFileType(fileData.GetPointer(), fileData.GetSize(), fileType);
+    FileReader* reader = FileReader::readerForData(fileData, fileType);
     
     // Bail if not an image
     ImageReader* imgReader = dynamic_cast<ImageReader*>(reader);
     if (!imgReader) {
-        DeletePointer(reader);
-        return NULL;
+        deletePointer(reader);
+        return nullptr;
     }
 
     // Convert to PNG and bail if invalid
-    Array<byte> pngData = imgReader->ConvertData();
+    Array<byte> pngData = imgReader->convertData();
     if (pngData.GetSize() == 0) {
-        DeletePointer(reader);
-        return NULL;
+        deletePointer(reader);
+        return nullptr;
     }
 
     // Finally, load texture from in-memory PNG.
-    IDirect3DTexture9* texture = NULL;
-    ::D3DXCreateTextureFromFileInMemory(mDevice, pngData.GetPointer(), pngData.GetSize(), &texture);
+    IDirect3DTexture9* texture = nullptr;
+    ::D3DXCreateTextureFromFileInMemory(mDevice.get(), pngData.GetPointer(), pngData.GetSize(), &texture);
 
     // Delete reader and return
-    DeletePointer(reader);
+    deletePointer(reader);
     return texture;
 }
 

@@ -29,8 +29,8 @@
 namespace gw2b
 {
 
-AboutBox::AboutBox(wxWindow* pParent)
-    : wxDialog(pParent, wxID_ANY, wxT("About Gw2Browser"), wxDefaultPosition, wxSize(400, 384), wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX | wxTAB_TRAVERSAL)
+AboutBox::AboutBox(wxWindow* p_parent)
+    : wxDialog(p_parent, wxID_ANY, wxT("About Gw2Browser"), wxDefaultPosition, wxSize(400, 384), wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX | wxTAB_TRAVERSAL)
 {
     // Set colors
     this->SetBackgroundColour(wxColor((ulong)0xffffff));
@@ -40,9 +40,11 @@ AboutBox::AboutBox(wxWindow* pParent)
     this->SetClientSize(400, 384);
     
     // Create bitmap at top
-    wxBitmap bitmap = data::LoadJPG(data::about_box_jpg, data::about_box_jpg_size);
-    wxStaticBitmap* bitmapBox = new wxStaticBitmap(this, wxID_ANY, bitmap, wxPoint(0, 0), wxSize(400, 384));
+    auto bitmap    = data::loadJPG(data::about_box_jpg, data::about_box_jpg_size);
+    auto bitmapBox = new wxStaticBitmap(this, wxID_ANY, bitmap, wxPoint(0, 0), wxSize(400, 384));
 }
+
+//============================================================================/
 
 AboutBox::~AboutBox()
 {

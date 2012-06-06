@@ -133,13 +133,13 @@ public:
     /** Gets the type of data contained in this file. Not to be confused with
      *  file type.
      *  \return DataType    type of data. */
-    virtual DataType GetDataType() const        { return DT_Model; }
+    virtual DataType dataType() const        { return DT_Model; }
     /** Gets an appropriate file extension for the contents of this reader.
      *  \return wxString    File extension. */
-    virtual const wxChar* GetExtension() const  { return wxT(".obj"); }
+    virtual const wxChar* extension() const  { return wxT(".obj"); }
     /** Converts the data associated with this file into OBJ.
      *  \return Array<byte> converted data. */
-    virtual Array<byte> ConvertData() const;
+    virtual Array<byte> convertData() const;
     /** Gets the model represented by this data.
      *  \return Model   model. */
     Model GetModel() const;

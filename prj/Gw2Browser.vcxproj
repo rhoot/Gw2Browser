@@ -39,12 +39,8 @@
     <ClInclude Include="..\src\Tasks\WriteIndexTask.h" />
     <ClInclude Include="..\src\Tasks\ScanDatTask.h" />
     <ClInclude Include="..\src\Util\Array.h" />
-    <ClInclude Include="..\src\Util\AutoPtr.h" />
-    <ClInclude Include="..\src\Util\Delegate.h" />
-    <ClInclude Include="..\src\Util\DelegateTemplate.h" />
     <ClInclude Include="..\src\Util\Ensure.h" />
     <ClInclude Include="..\src\Util\Misc.h" />
-    <ClInclude Include="..\src\Util\RefCounted.h" />
     <ClInclude Include="..\src\Viewer.h" />
     <ClInclude Include="..\src\Viewers\BinaryViewer.h" />
     <ClInclude Include="..\src\Viewers\BinaryViewer\HexControl.h" />
@@ -77,6 +73,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\src\Task.cpp" />
     <ClCompile Include="..\src\Tasks\ReadIndexTask.cpp" />
     <ClCompile Include="..\src\Tasks\ScanDatTask.cpp" />
     <ClCompile Include="..\src\Tasks\WriteIndexTask.cpp" />

@@ -26,6 +26,9 @@
 #ifndef TASK_H_INCLUDED
 #define TASK_H_INCLUDED
 
+#include <functional>
+#include <list>
+
 namespace gw2b
 {
 
@@ -34,58 +37,61 @@ class Task
 {
 public:
     /** Event handler for task completion. */
-    typedef Delegate<void()>    OnCompleteHandler;
+    typedef std::function<void()>   OnCompleteHandler;
 private:
-    uint                    mCurrentProgress;
-    uint                    mMaxProgress;
-    wxString                mLabel;
-    OnCompleteHandler       mOnComplete;
+    std::list<OnCompleteHandler>    m_onComplete;
+
+    uint                            m_currentProgress;
+    uint                            m_maxProgress;
+    wxString                        m_label;
 public:
     /** Constructor. */
-    Task() : mCurrentProgress(0), mMaxProgress(0) {}
+    Task() : m_currentProgress(0), m_maxProgress(0) {}
     /** Destructor. */
     virtual ~Task() {}
 
     /** Gets the text that should be used to display what's going on. 
      *  \return wxString&   Message describing the task. */
-    virtual const wxString& GetText() const         { return mLabel; }
+    virtual const wxString& text() const            { return m_label; }
     /** Gets the current progress.
      *  \return uint    Current progress. */
-    virtual uint GetCurrentProgress() const         { return mCurrentProgress; }
+    virtual uint currentProgress() const            { return m_currentProgress; }
     /** Gets the max progress.
      *  \return uint    max progress. */
-    virtual uint GetMaxProgress() const             { return mMaxProgress; }
+    virtual uint maxProgress() const                { return m_maxProgress; }
     /** Determines whether the task is done.
      *  \return bool    true if the task is done, false if not. */
-    virtual bool IsDone() const                     { return (this->GetCurrentProgress() >= this->GetMaxProgress()); }
+    virtual bool isDone() const                     { return (this->currentProgress() >= this->maxProgress()); }
 
     /** Gets the OnComplete event handler.
      *  \return OnCompleteHandler&  Reference to the OnComplete event handler. */
-    OnCompleteHandler& GetOnCompleteHandler()       { return mOnComplete; }
+    void addOnCompleteHandler(const OnCompleteHandler& p_handler);
+    void addOnCompleteHandler(OnCompleteHandler&& p_handler);
+    void invokeOnCompleteHandler();
 
     /** Initializes this task.
      *  \return bool    true upon success, false on failure. */
-    virtual bool Init()     { return true; }
+    virtual bool init()                             { return true; }
     /** Performs one iteration of this task. */
-    virtual void Perform()  = 0;
+    virtual void perform()  = 0;
     /** Aborts this task. */
-    virtual void Abort()    {}
+    virtual void abort()    {}
     /** Cleans up after this task. */
-    virtual void Clean()    {}
+    virtual void clean()    {}
     /** Determines whether the task can be aborted.
      *  \return bool    true if the task is abortable, false if not. */
-    virtual bool CanAbort() const { return true; }
+    virtual bool canAbort() const                   { return true; }
     
 protected:
     /** Used by subclasses to set current progress.
-     *  \param[in]  pProgress   Current progress. */
-    virtual void SetCurrentProgress(uint pProgress) { mCurrentProgress = pProgress; }
+     *  \param[in]  p_progress   Current progress. */
+    virtual void setCurrentProgress(uint p_progress) { m_currentProgress = p_progress; }
     /** Used by subclasses to set max progress.
-     *  \param[in]  pProgress   max progress. */
-    virtual void SetMaxProgress(uint pProgress)     { mMaxProgress     = pProgress; }
+     *  \param[in]  p_progress   max progress. */
+    virtual void setMaxProgress(uint p_progress)     { m_maxProgress     = p_progress; }
     /** Used by subclasses to set the task message.
-     *  \param[in]  pText   Current task message. */
-    virtual void SetText(const wxString& pText)     { mLabel = pText; }
+     *  \param[in]  p_text   Current task message. */
+    virtual void setText(const wxString& p_text)     { m_label = p_text; }
 }; // class Task
 
 }; // namespace gw2b

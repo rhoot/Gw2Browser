@@ -27,51 +27,51 @@
 namespace gw2b
 {
 
-WriteIndexTask::WriteIndexTask(DatIndex* pIndex, const wxFileName& pFilename)
-    : mIndex(pIndex, true)
+WriteIndexTask::WriteIndexTask(const std::shared_ptr<DatIndex>& pIndex, const wxFileName& pFilename)
+    : mIndex(pIndex)
     , mWriter(*pIndex)
     , mFilename(pFilename)
     , mErrorOccured(false)
 {
-    Ensure::NotNull(pIndex);
+    Ensure::notNull(pIndex.get());
 }
 
-bool WriteIndexTask::Init()
+bool WriteIndexTask::init()
 {
     if (!mFilename.DirExists()) {
         mFilename.Mkdir(511, wxPATH_MKDIR_FULL);
     }
 
-    if (mIndex->IsDirty()) {
-        bool result = mWriter.Open(mFilename.GetFullPath());
-        if (result) { this->SetMaxProgress(mWriter.GetNumEntries() + mWriter.GetNumCategories()); }
+    if (mIndex->isDirty()) {
+        bool result = mWriter.open(mFilename.GetFullPath());
+        if (result) { this->setMaxProgress(mWriter.numEntries() + mWriter.numCategories()); }
         return result;
     }
     return false;
 }
 
-void WriteIndexTask::Perform()
+void WriteIndexTask::perform()
 {
-    if (!this->IsDone()) {
-        mErrorOccured = !mWriter.Write(7);
-        uint progress = mWriter.GetCurrentEntry() + mWriter.GetCurrentCategory();
-        this->SetCurrentProgress(progress);
-        this->SetText(wxT("Saving .dat index..."));
+    if (!this->isDone()) {
+        mErrorOccured = !mWriter.write(7);
+        uint progress = mWriter.currentEntry() + mWriter.currentCategory();
+        this->setCurrentProgress(progress);
+        this->setText(wxT("Saving .dat index..."));
         // If something went wrong, we should delete the file again since it's half-complete
         wxString path = mFilename.GetFullPath();
         if (mErrorOccured && wxFile::Exists(path)) {
             wxRemoveFile(path);
         }
         // If done, remove the dirty flag from the index
-        if (this->IsDone()) {
-            mIndex->SetDirty(false);
+        if (this->isDone()) {
+            mIndex->setDirty(false);
         }
     }
 }
 
-void WriteIndexTask::Abort()
+void WriteIndexTask::abort()
 {
-    mWriter.Close();
+    mWriter.close();
     // Remove the file again
     wxString path = mFilename.GetFullPath();
     if (wxFile::Exists(path)) {
@@ -79,14 +79,14 @@ void WriteIndexTask::Abort()
     }
 }
 
-void WriteIndexTask::Clean()
+void WriteIndexTask::clean()
 {
-    mWriter.Close();
+    mWriter.close();
 }
 
-bool WriteIndexTask::IsDone() const
+bool WriteIndexTask::isDone() const
 {
-    return (mWriter.IsDone() || mErrorOccured);
+    return (mWriter.isDone() || mErrorOccured);
 }
 
 }; // namespace gw2b

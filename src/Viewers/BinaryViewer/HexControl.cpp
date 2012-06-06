@@ -36,7 +36,7 @@ namespace gw2b
 
 HexControl::HexControl(wxWindow* pParent, const wxPoint& pPosition, const wxSize& pSize)
     : wxScrolledWindow(pParent, wxID_ANY, pPosition, pSize, wxBORDER_THEME)
-    , mData(NULL)
+    , mData(nullptr)
     , mDataSize(0)
 {
     this->SetBackgroundStyle(wxBG_STYLE_CUSTOM);
@@ -183,11 +183,11 @@ char HexControl::FilterTextChar(byte pChar)
 void HexControl::SetData(const byte* pData, uint pSize)
 {
     if (pSize) {
-        Ensure::NotNull(pData);
+        Ensure::notNull(pData);
         mData     = pData;
         mDataSize = pSize;
     } else {
-        mData     = NULL;
+        mData     = nullptr;
         mDataSize = 0;
     }
 

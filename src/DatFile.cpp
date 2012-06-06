@@ -63,81 +63,81 @@ enum FourCC
 };
 
 DatFile::DatFile()
-    : mLastReadEntry(-1)
+    : m_lastReadEntry(-1)
 {
-    ::memset(&mDatHead, 0, sizeof(mDatHead));
-    ::memset(&mMftHead, 0, sizeof(mMftHead));
+    ::memset(&m_datHead, 0, sizeof(m_datHead));
+    ::memset(&m_mftHead, 0, sizeof(m_mftHead));
 }
 
-DatFile::DatFile(const wxString& pFilename)
-    : mLastReadEntry(-1)
+DatFile::DatFile(const wxString& p_filename)
+    : m_lastReadEntry(-1)
 {
-    ::memset(&mDatHead, 0, sizeof(mDatHead));
-    ::memset(&mMftHead, 0, sizeof(mMftHead));
-    this->Open(pFilename);
+    ::memset(&m_datHead, 0, sizeof(m_datHead));
+    ::memset(&m_mftHead, 0, sizeof(m_mftHead));
+    this->open(p_filename);
 }
 
 DatFile::~DatFile()
 {
-    this->Close();
+    this->close();
 }
 
-bool DatFile::Open(const wxString& pFilename)
+bool DatFile::open(const wxString& p_filename)
 {
-    this->Close();
+    this->close();
 
     while (true) {
         // Open file
-        mFile.Open(pFilename);
-        if (!mFile.IsOpened()) { break; }
+        m_file.Open(p_filename);
+        if (!m_file.IsOpened()) { break; }
 
         // Read header
-        if (mFile.Length() < sizeof(mDatHead)) { break; }
-        mFile.Read(&mDatHead, sizeof(mDatHead));
+        if (m_file.Length() < sizeof(m_datHead)) { break; }
+        m_file.Read(&m_datHead, sizeof(m_datHead));
 
         // Read MFT Header
-        if ((uint64)mFile.Length() < mDatHead.mMftOffset + mDatHead.mMftSize) { break; }
-        mFile.Seek(mDatHead.mMftOffset, wxFromStart);
-        mFile.Read(&mMftHead, sizeof(mMftHead));
+        if (static_cast<uint64>(m_file.Length()) < m_datHead.mftOffset + m_datHead.mftSize) { break; }
+        m_file.Seek(m_datHead.mftOffset, wxFromStart);
+        m_file.Read(&m_mftHead, sizeof(m_mftHead));
 
         // Read all of the MFT
-        if (mDatHead.mMftSize != mMftHead.mNumEntries * sizeof(ANetMftEntry)) { break; }
-        if (mDatHead.mMftSize % sizeof(ANetMftEntry)) { break; }
+        if (m_datHead.mftSize != m_mftHead.numEntries * sizeof(ANetMftEntry)) { break; }
+        if (m_datHead.mftSize % sizeof(ANetMftEntry)) { break; }
 
-        mMftEntries.SetSize(mDatHead.mMftSize / sizeof(ANetMftEntry));
-        mFile.Seek(mDatHead.mMftOffset, wxFromStart);
-        mFile.Read(mMftEntries.GetPointer(), mDatHead.mMftSize);
+        m_mftEntries.SetSize(m_datHead.mftSize / sizeof(ANetMftEntry));
+        m_file.Seek(m_datHead.mftOffset, wxFromStart);
+        m_file.Read(m_mftEntries.GetPointer(), m_datHead.mftSize);
 
         // Read the file id entry table
-        if ((uint64)mFile.Length() < mMftEntries[2].mOffset + mMftEntries[2].mSize) { break; }
-        if (mMftEntries[2].mSize % sizeof(ANetFileIdEntry)) { break; }
+        if (static_cast<uint64>(m_file.Length()) < m_mftEntries[2].offset + m_mftEntries[2].size) { break; }
+        if (m_mftEntries[2].size % sizeof(ANetFileIdEntry)) { break; }
 
-        uint numFileIdEntries = mMftEntries[2].mSize / sizeof(ANetFileIdEntry);
+        uint numFileIdEntries = m_mftEntries[2].size / sizeof(ANetFileIdEntry);
         Array<ANetFileIdEntry> fileIdTable(numFileIdEntries);
-        mFile.Seek(mMftEntries[2].mOffset, wxFromStart);
-        mFile.Read(fileIdTable.GetPointer(), mMftEntries[2].mSize);
+        m_file.Seek(m_mftEntries[2].offset, wxFromStart);
+        m_file.Read(fileIdTable.GetPointer(), m_mftEntries[2].size);
 
         // Extract the entry -> base/file ID tables
-        mEntryToId.SetSize(mMftEntries.GetSize());
-        ::memset(mEntryToId.GetPointer(), 0, mEntryToId.GetByteSize());
+        m_entryToId.SetSize(m_mftEntries.GetSize());
+        ::memset(m_entryToId.GetPointer(), 0, m_entryToId.GetByteSize());
 
         for (uint i = 0; i < numFileIdEntries; i++) {
-            if (fileIdTable[i].mFileId == 0 && fileIdTable[i].mMftEntryIndex == 0) {
+            if (fileIdTable[i].fileId == 0 && fileIdTable[i].mftEntryIndex == 0) {
                 continue;
             }
 
-            uint entryIndex = fileIdTable[i].mMftEntryIndex;
-            IdEntry& entry  = mEntryToId[entryIndex];
+            uint entryIndex = fileIdTable[i].mftEntryIndex;
+            auto& entry     = m_entryToId[entryIndex];
 
-            if (entry.mBaseId == 0) {
-                entry.mBaseId = fileIdTable[i].mFileId;
-            } else if (entry.mFileId == 0) {
-                entry.mFileId = fileIdTable[i].mFileId;
+            if (entry.baseId == 0) {
+                entry.baseId = fileIdTable[i].fileId;
+            } else if (entry.fileId == 0) {
+                entry.fileId = fileIdTable[i].fileId;
             }
 
-            if (entry.mBaseId > 0 && entry.mFileId > 0) {
-                if (entry.mBaseId > entry.mFileId) {
-                    Swap(entry.mBaseId, entry.mFileId);
+            if (entry.baseId > 0 && entry.fileId > 0) {
+                if (entry.baseId > entry.fileId) {
+                    std::swap(entry.baseId, entry.fileId);
                 }
             }
         }
@@ -146,164 +146,164 @@ bool DatFile::Open(const wxString& pFilename)
         return true;
     }
 
-    this->Close();
+    this->close();
     return false;
 }
 
-bool DatFile::IsOpen() const
+bool DatFile::isOpen() const
 {
-    return mFile.IsOpened();
+    return m_file.IsOpened();
 }
 
-void DatFile::Close()
+void DatFile::close()
 {
     // Clear input buffer and lookup tables
-    mInputBuffer.Clear();
-    mEntryToId.Clear();
+    m_inputBuffer.Clear();
+    m_entryToId.Clear();
 
     // Clear PODs
-    ::memset(&mDatHead, 0, sizeof(mDatHead));
-    ::memset(&mMftHead, 0, sizeof(mMftHead));
+    ::memset(&m_datHead, 0, sizeof(m_datHead));
+    ::memset(&m_mftHead, 0, sizeof(m_mftHead));
 
     // Remove MFT entries and close the file
-    mMftEntries.Clear();
-    mFile.Close();
+    m_mftEntries.Clear();
+    m_file.Close();
 }
 
-uint DatFile::GetEntrySize(uint pEntryNum)
+uint DatFile::entrySize(uint p_entryNum)
 {
-    if (!IsOpen()) { return std::numeric_limits<uint>::max(); }
-    if (pEntryNum >= mMftEntries.GetSize()) { return std::numeric_limits<uint>::max(); }
+    if (!isOpen()) { return std::numeric_limits<uint>::max(); }
+    if (p_entryNum >= m_mftEntries.GetSize()) { return std::numeric_limits<uint>::max(); }
     
-    const ANetMftEntry& entry = mMftEntries[pEntryNum];
+    auto& entry = m_mftEntries[p_entryNum];
 
     // If the entry is compressed we need to read the uncompressed size from the .dat
-    if (entry.mCompressionFlag & ANCF_Compressed) {
+    if (entry.compressionFlag & ANCF_Compressed) {
         uint32 uncompressedSize = 0;
-        mFile.Seek(entry.mOffset + 4, wxFromStart);
-        mFile.Read(&uncompressedSize, sizeof(uncompressedSize));
+        m_file.Seek(entry.offset + 4, wxFromStart);
+        m_file.Read(&uncompressedSize, sizeof(uncompressedSize));
         return uncompressedSize;
     } 
         
-    return entry.mSize;
+    return entry.size;
 }
 
-uint DatFile::GetFileSize(uint pFileNum) {
-    return this->GetEntrySize(pFileNum + MFT_FILE_OFFSET);
+uint DatFile::fileSize(uint p_fileNum) {
+    return this->entrySize(p_fileNum + MFT_FILE_OFFSET);
 }
 
-uint DatFile::GetEntryNumFromFileId(uint pFileId) const
+uint DatFile::entryNumFromFileId(uint p_fileId) const
 {
-    if (!IsOpen()) { return std::numeric_limits<uint>::max(); }
-    for (uint i = 0; i < mEntryToId.GetSize(); i++) {
-        uint fileId = (mEntryToId[i].mFileId == 0 ? mEntryToId[i].mBaseId : mEntryToId[i].mFileId);
-        if (fileId == pFileId) {
+    if (!isOpen()) { return std::numeric_limits<uint>::max(); }
+    for (uint i = 0; i < m_entryToId.GetSize(); i++) {
+        uint fileId = (m_entryToId[i].fileId == 0 ? m_entryToId[i].baseId : m_entryToId[i].fileId);
+        if (fileId == p_fileId) {
             return i;
         }
     }
     return std::numeric_limits<uint>::max();
 }
 
-uint DatFile::GetFileIdFromEntryNum(uint pEntryNum) const
+uint DatFile::fileIdFromEntryNum(uint p_entryNum) const
 {
-    if (!IsOpen()) { return std::numeric_limits<uint>::max(); }
-    if (pEntryNum >= mEntryToId.GetSize()) { return std::numeric_limits<uint>::max(); }
-    return (mEntryToId[pEntryNum].mFileId == 0 ? mEntryToId[pEntryNum].mBaseId : mEntryToId[pEntryNum].mFileId);
+    if (!isOpen()) { return std::numeric_limits<uint>::max(); }
+    if (p_entryNum >= m_entryToId.GetSize()) { return std::numeric_limits<uint>::max(); }
+    return (m_entryToId[p_entryNum].fileId == 0 ? m_entryToId[p_entryNum].baseId : m_entryToId[p_entryNum].fileId);
 }
 
-uint DatFile::GetFileIdFromFileNum(uint pFileNum) const
+uint DatFile::fileIdFromFileNum(uint p_fileNum) const
 {
-    return this->GetFileIdFromEntryNum(pFileNum + MFT_FILE_OFFSET);
+    return this->fileIdFromEntryNum(p_fileNum + MFT_FILE_OFFSET);
 }
 
-uint DatFile::GetEntryNumFromBaseId(uint pBaseId) const
+uint DatFile::entryNumFromBaseId(uint p_baseId) const
 {
-    if (!IsOpen()) { return std::numeric_limits<uint>::max(); }
-    for (uint i = 0; i < mEntryToId.GetSize(); i++) {
-        if (mEntryToId[i].mBaseId == pBaseId) {
+    if (!isOpen()) { return std::numeric_limits<uint>::max(); }
+    for (uint i = 0; i < m_entryToId.GetSize(); i++) {
+        if (m_entryToId[i].baseId == p_baseId) {
             return i;
         }
     }
     return std::numeric_limits<uint>::max();
 }
 
-uint DatFile::GetBaseIdFromEntryNum(uint pEntryNum) const
+uint DatFile::baseIdFromEntryNum(uint p_entryNum) const
 {
-    if (!IsOpen()) { return std::numeric_limits<uint>::max(); }
-    if (pEntryNum >= mEntryToId.GetSize()) { return std::numeric_limits<uint>::max(); }
-    return mEntryToId[pEntryNum].mBaseId;
+    if (!isOpen()) { return std::numeric_limits<uint>::max(); }
+    if (p_entryNum >= m_entryToId.GetSize()) { return std::numeric_limits<uint>::max(); }
+    return m_entryToId[p_entryNum].baseId;
 }
 
-uint DatFile::GetBaseIdFromFileNum(uint pFileNum) const
+uint DatFile::baseIdFromFileNum(uint p_fileNum) const
 {
-    return this->GetBaseIdFromEntryNum(pFileNum + MFT_FILE_OFFSET);
+    return this->baseIdFromEntryNum(p_fileNum + MFT_FILE_OFFSET);
 }
 
-uint DatFile::PeekFile(uint pFileNum, uint pPeekSize, byte* poBuffer)
+uint DatFile::peekFile(uint p_fileNum, uint p_peekSize, byte* po_Buffer)
 {
-    return this->PeekEntry(pFileNum + MFT_FILE_OFFSET, pPeekSize, poBuffer);
+    return this->peekEntry(p_fileNum + MFT_FILE_OFFSET, p_peekSize, po_Buffer);
 }
 
-uint DatFile::PeekEntry(uint pEntryNum, uint pPeekSize, byte* poBuffer)
+uint DatFile::peekEntry(uint p_entryNum, uint p_peekSize, byte* po_Buffer)
 {
-    Ensure::NotNull(poBuffer);
+    Ensure::notNull(po_Buffer);
     uint inputSize;
 
     // Return instantly if size is 0, or if the file isn't open
-    if (pPeekSize == 0 || !this->IsOpen()) {
+    if (p_peekSize == 0 || !this->isOpen()) {
         return 0;
     }
 
     // If this was the last entry we read, there's no need to re-read it. The
     // input buffer should already contain the full file.
-    if (mLastReadEntry != pEntryNum) {
+    if (m_lastReadEntry != p_entryNum) {
         // Perform some checks
-        bool entryIsInRange = mMftHead.mNumEntries > (uint)pEntryNum;
+        auto entryIsInRange = m_mftHead.numEntries > (uint)p_entryNum;
         if (!entryIsInRange) { return 0; }
 
-        bool entryIsInUse      = (mMftEntries[pEntryNum].mEntryFlags & ANMEF_InUse);
-        bool fileIsLargeEnough = (uint64)mFile.Length() >= mMftEntries[pEntryNum].mOffset + mMftEntries[pEntryNum].mSize;
+        auto entryIsInUse      = (m_mftEntries[p_entryNum].entryFlags & ANMEF_InUse);
+        auto fileIsLargeEnough = (uint64)m_file.Length() >= m_mftEntries[p_entryNum].offset + m_mftEntries[p_entryNum].size;
         if (!entryIsInUse || !fileIsLargeEnough) { return 0; }
 
         // Make sure we can re-use the input buffer
-        inputSize = mMftEntries[pEntryNum].mSize;
-        if (mInputBuffer.GetSize() < inputSize) {
-            mInputBuffer.SetSize(inputSize);
+        inputSize = m_mftEntries[p_entryNum].size;
+        if (m_inputBuffer.GetSize() < inputSize) {
+            m_inputBuffer.SetSize(inputSize);
         }
 
         // Read the file data
-        mFile.Seek(mMftEntries[pEntryNum].mOffset, wxFromStart);
-        mFile.Read(mInputBuffer.GetPointer(), inputSize);
-        mLastReadEntry = pEntryNum;
+        m_file.Seek(m_mftEntries[p_entryNum].offset, wxFromStart);
+        m_file.Read(m_inputBuffer.GetPointer(), inputSize);
+        m_lastReadEntry = p_entryNum;
     } else {
-        inputSize = mMftEntries[pEntryNum].mSize;
+        inputSize = m_mftEntries[p_entryNum].size;
     }
 
     // If the file is compressed we need to uncompress it
-    if (mMftEntries[pEntryNum].mCompressionFlag) {
-        uint32 outputSize = pPeekSize;
+    if (m_mftEntries[p_entryNum].compressionFlag) {
+        uint32 outputSize = p_peekSize;
         try {
-            gw2dt::compression::inflateDatFileBuffer(inputSize, mInputBuffer.GetPointer(), outputSize, poBuffer);
+            gw2dt::compression::inflateDatFileBuffer(inputSize, m_inputBuffer.GetPointer(), outputSize, po_Buffer);
             return outputSize;
         } catch (std::exception&) {
             return 0;
         }
     } else {
-        uint size = wxMin(pPeekSize, inputSize);
-        ::memcpy(poBuffer, mInputBuffer.GetPointer(), size);
+        uint size = wxMin(p_peekSize, inputSize);
+        ::memcpy(po_Buffer, m_inputBuffer.GetPointer(), size);
         return size;
     }
 }
 
-Array<byte> DatFile::PeekFile(uint pFileNum, uint pPeekSize)
+Array<byte> DatFile::peekFile(uint p_fileNum, uint p_peekSize)
 {
-    return this->PeekEntry(pFileNum + MFT_FILE_OFFSET, pPeekSize);
+    return this->peekEntry(p_fileNum + MFT_FILE_OFFSET, p_peekSize);
 }
 
-Array<byte> DatFile::PeekEntry(uint pEntryNum, uint pPeekSize)
+Array<byte> DatFile::peekEntry(uint p_entryNum, uint p_peekSize)
 {
-    Array<byte> output = Array<byte>(pPeekSize);
-    uint readBytes = this->PeekEntry(pEntryNum, pPeekSize, output.GetPointer());
+    Array<byte> output = Array<byte>(p_peekSize);
+    uint readBytes = this->peekEntry(p_entryNum, p_peekSize, output.GetPointer());
 
     if (readBytes == 0) {
         return Array<byte>();
@@ -312,35 +312,35 @@ Array<byte> DatFile::PeekEntry(uint pEntryNum, uint pPeekSize)
     return output;
 }
 
-uint DatFile::ReadFile(uint pFileNum, byte* poBuffer)
+uint DatFile::readFile(uint p_fileNum, byte* po_Buffer)
 {
-    return this->ReadEntry(pFileNum + MFT_FILE_OFFSET, poBuffer);
+    return this->readEntry(p_fileNum + MFT_FILE_OFFSET, po_Buffer);
 }
 
-uint DatFile::ReadEntry(uint pEntryNum, byte* poBuffer)
+uint DatFile::readEntry(uint p_entryNum, byte* po_Buffer)
 {
-    uint size = this->GetEntrySize(pEntryNum);
+    uint size = this->entrySize(p_entryNum);
 
     if (size != std::numeric_limits<uint>::max()) {
-        return this->PeekEntry(pEntryNum, size, poBuffer);
+        return this->peekEntry(p_entryNum, size, po_Buffer);
     } 
 
     return 0;
 }
 
-Array<byte> DatFile::ReadFile(uint pFileNum)
+Array<byte> DatFile::readFile(uint p_fileNum)
 {
-    return this->ReadEntry(pFileNum + MFT_FILE_OFFSET);
+    return this->readEntry(p_fileNum + MFT_FILE_OFFSET);
 }
 
-Array<byte> DatFile::ReadEntry(uint pEntryNum)
+Array<byte> DatFile::readEntry(uint p_entryNum)
 {
-    uint size = this->GetEntrySize(pEntryNum);
-    Array<byte> output = NULL;
+    uint size = this->entrySize(p_entryNum);
+    Array<byte> output;
 
     if (size != std::numeric_limits<uint>::max()) {
         output.SetSize(size);
-        uint readBytes = this->PeekEntry(pEntryNum, size, output.GetPointer());
+        uint readBytes = this->peekEntry(p_entryNum, size, output.GetPointer());
 
         if (readBytes > 0) {
             return output;
@@ -350,22 +350,22 @@ Array<byte> DatFile::ReadEntry(uint pEntryNum)
     return Array<byte>();
 }
 
-DatFile::IdentificationResult DatFile::IdentifyFileType(byte* pData, uint pSize, ANetFileType& pFileType)
+DatFile::IdentificationResult DatFile::identifyFileType(const byte* p_data, uint p_size, ANetFileType& po_fileType)
 {
-    if (pSize < 4) { pFileType = ANFT_Unknown; return IR_Failure; }
+    if (p_size < 4) { po_fileType = ANFT_Unknown; return IR_Failure; }
 
     // start with fourcc
-    uint32 fourcc = *(uint32*)pData;
-    pFileType = ANFT_Unknown;
+    auto fourcc = *reinterpret_cast<const uint32*>(p_data);
+    po_fileType = ANFT_Unknown;
 
     // abff files need offsetting
     if (fourcc == FCC_abff) {
-        pFileType = ANFT_ABFF;
+        po_fileType = ANFT_ABFF;
 
-        if (pSize >= 0x44) {
-            pData   += 0x40;
-            pSize   -= 0x40;
-            fourcc = *(uint32*)pData;
+        if (p_size >= 0x44) {
+            p_data   += 0x40;
+            p_size   -= 0x40;
+            fourcc = *reinterpret_cast<const uint32*>(p_data);
         } else {
             return IR_NotEnoughData;
         }
@@ -373,47 +373,47 @@ DatFile::IdentificationResult DatFile::IdentifyFileType(byte* pData, uint pSize,
 
     switch (fourcc) {
     case FCC_ATEX:
-        pFileType = ANFT_ATEX;
+        po_fileType = ANFT_ATEX;
         break;
     case FCC_ATTX:
-        pFileType = ANFT_ATTX;
+        po_fileType = ANFT_ATTX;
         break;
     case FCC_ATEC:
-        pFileType = ANFT_ATEC;
+        po_fileType = ANFT_ATEC;
         break;
     case FCC_ATEP:
-        pFileType = ANFT_ATEP;
+        po_fileType = ANFT_ATEP;
         break;
     case FCC_ATEU:
-        pFileType = ANFT_ATEU;
+        po_fileType = ANFT_ATEU;
         break;
     case FCC_ATET:
-        pFileType = ANFT_ATET;
+        po_fileType = ANFT_ATET;
         break;
     case FCC_DDS:
-        pFileType = ANFT_DDS;
+        po_fileType = ANFT_DDS;
         break;
     case FCC_strs:
-        pFileType = ANFT_StringFile;
+        po_fileType = ANFT_StringFile;
         break;
     case FCC_asnd:
-        pFileType = ANFT_Sound;
+        po_fileType = ANFT_Sound;
         break;
     case FCC_CINP:
-        pFileType = ANFT_Cinematic;
+        po_fileType = ANFT_Cinematic;
         break;
     }
 
     // Identify binary files
     if ((fourcc & 0xffff) == FCC_MZ) {
-        pFileType = ANFT_Binary;
+        po_fileType = ANFT_Binary;
 
-        if (pSize >= 0x40) {
-            uint32 peOffset = *(uint32*)(pData + 0x3c);
+        if (p_size >= 0x40) {
+            auto peOffset = *reinterpret_cast<const uint32*>(p_data + 0x3c);
 
-            if (pSize >= (peOffset + 0x18)) {
-                uint16 flags = *(uint16*)(pData + peOffset + 0x16);
-                pFileType = (flags & 0x2000) ? ANFT_DLL : ANFT_EXE;
+            if (p_size >= (peOffset + 0x18)) {
+                auto flags = *reinterpret_cast<const uint16*>(p_data + peOffset + 0x16);
+                po_fileType = (flags & 0x2000) ? ANFT_DLL : ANFT_EXE;
             } else {
                 return IR_NotEnoughData;
             }
@@ -424,57 +424,57 @@ DatFile::IdentificationResult DatFile::IdentifyFileType(byte* pData, uint pSize,
 
     // Identify PF files
     if ((fourcc & 0xffff) == FCC_PF) {
-        pFileType = ANFT_PF;
+        po_fileType = ANFT_PF;
 
-        if (pSize >= 12) {
-            fourcc   = *(uint32*)(pData + 8);
+        if (p_size >= 12) {
+            fourcc   = *reinterpret_cast<const uint32*>(p_data + 8);
         } else {
             return IR_NotEnoughData;
         }
 
         switch (fourcc) {
         case FCC_ARMF:
-            pFileType = ANFT_Manifest;
+            po_fileType = ANFT_Manifest;
             break;
         case FCC_ASND:
-            pFileType = ANFT_Sound;
+            po_fileType = ANFT_Sound;
             break;
         case FCC_ABNK:
-            pFileType = ANFT_Bank;
+            po_fileType = ANFT_Bank;
             break;
         case FCC_MODL:
-            pFileType = ANFT_Model;
+            po_fileType = ANFT_Model;
             break;
         case FCC_DEPS:
-            pFileType = ANFT_DependencyTable;
+            po_fileType = ANFT_DependencyTable;
             break;
         case FCC_EULA:
-            pFileType = ANFT_EULA;
+            po_fileType = ANFT_EULA;
             break;
         case FCC_hvkC:
-            pFileType = ANFT_HavokCloth;
+            po_fileType = ANFT_HavokCloth;
             break;
         case FCC_mapc:
-            pFileType = ANFT_Map;
+            po_fileType = ANFT_Map;
             break;
         case FCC_AMAT:
-            pFileType = ANFT_Material;
+            po_fileType = ANFT_Material;
             break;
         }
     }
 
     // Identify sounds
-    if (pFileType == ANFT_Sound) {
-        if (pSize >= 12) {
-            if (*(uint32*)pData == FCC_asnd) {
-                if (pSize >= 40) {
-                    pFileType = (*(uint32*)(pData + 36) == FCC_OggS) ? ANFT_OGG : ANFT_MP3;
+    if (po_fileType == ANFT_Sound) {
+        if (p_size >= 12) {
+            if (*reinterpret_cast<const uint32*>(p_data) == FCC_asnd) {
+                if (p_size >= 40) {
+                    po_fileType = (*reinterpret_cast<const uint32*>(p_data + 36) == FCC_OggS) ? ANFT_OGG : ANFT_MP3;
                 } else {
                     return IR_NotEnoughData;
                 }
-            } else if (*(uint16*)pData == FCC_PF && *(uint32*)(pData + 8) == FCC_ASND) {
-                if (pSize >= 96) {
-                    pFileType = (*(uint32*)(pData + 92) == FCC_OggS) ? ANFT_OGG : ANFT_MP3;
+            } else if (*reinterpret_cast<const uint32*>(p_data) == FCC_PF && *reinterpret_cast<const uint32*>(p_data + 8) == FCC_ASND) {
+                if (p_size >= 96) {
+                    po_fileType = (*reinterpret_cast<const uint32*>(p_data + 92) == FCC_OggS) ? ANFT_OGG : ANFT_MP3;
                 } else {
                     return IR_NotEnoughData;
                 }
@@ -487,10 +487,10 @@ DatFile::IdentificationResult DatFile::IdentifyFileType(byte* pData, uint pSize,
     return IR_Success;
 }
 
-uint DatFile::GetFileNumFromFileReference(const ANetFileReference& pFileRef)
+uint DatFile::fileIdFromFileReference(const ANetFileReference& p_fileRef)
 {
-    wxASSERT(pFileRef.mParts[2] == 0);
-    return 0xFF00 * (pFileRef.mParts[1] - 0x100) + (pFileRef.mParts[0] - 0x100) + 1;
+    Assert(p_fileRef.parts[2] == 0);
+    return 0xFF00 * (p_fileRef.parts[1] - 0x100) + (p_fileRef.parts[0] - 0x100) + 1;
 }
 
 }; // namespace gw2b

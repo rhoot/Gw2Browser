@@ -42,81 +42,80 @@ class Task;
 /** Represents the browser's main window. */
 class BrowserWindow : public wxFrame, public ICategoryTreeListener
 {
-    wxString            mDatPath;
-    DatFile             mDatFile;
-    AutoPtr<DatIndex>   mIndex;
-    ProgressStatusBar*  mProgress;
-    Task*               mCurrentTask;
-    wxSplitterWindow*   mSplitter;
-    CategoryTree*       mCatTree;
-    PreviewPanel*       mPreviewPanel;
+    wxString                    m_datPath;
+    DatFile                     m_datFile;
+    std::shared_ptr<DatIndex>   m_index;
+    ProgressStatusBar*          m_progress;
+    Task*                       m_currentTask;
+    wxSplitterWindow*           m_splitter;
+    CategoryTree*               m_catTree;
+    PreviewPanel*               m_previewPanel;
 public:
     /** Constructs the frame with the given title.
-     *  \param[in]  pTitle  Title of window. */
-    BrowserWindow(const wxString& pTitle);
+     *  \param[in]  p_title  Title of window. */
+    BrowserWindow(const wxString& p_title);
     /** Destructor. */
     ~BrowserWindow();
     /** Opens the given .dat file for browsing.
-     *  \param[in]  pPath   Path to the .dat file to open. */
-    void OpenFile(const wxString& pPath);
+     *  \param[in]  p_path   Path to the .dat file to open. */
+    void openFile(const wxString& p_path);
     /** Tries to close this window, but does not force it (same as calling 
      *  Close(false)). */
-    void TryClose();
+    void tryClose();
     /** Opens the preview pane with the given entry's contents in it.
-     *  \param[in]  pEntry  entry to view. */
-    void ViewEntry(const DatIndexEntry& pEntry);
+     *  \param[in]  p_entry  entry to view. */
+    void viewEntry(const DatIndexEntry& p_entry);
 private:
     /** Performs the given task periodically, until it is done.
-     *  \param[in]  pTask   Task to perform. Ownership is taken. 
+     *  \param[in]  p_task   Task to perform. Ownership is taken. 
      *  \return bool    true if the task's init succeeded, false if not. */
-    bool PerformTask(Task* pTask);
+    bool performTask(Task* p_task);
 
     /** Hashes the internally stored .dat file path and determines where its 
     *   index file should be located. 
     *   \return wxFileName containing the path to the index file. */
-    wxFileName FindDatIndex();
-    /** Resumes indexing the loaded .dat file. 
-     *  \param[in]  pFirstEntry     First entry to scan. */
-    void IndexDat();
-    /** Reindexes the loaded .dat file. */
-    void ReIndexDat();
+    wxFileName findDatIndex();
+    /** Resumes indexing the loaded .dat file. */
+    void indexDat();
+    /** Re-indexes the loaded .dat file. */
+    void reIndexDat();
 
     /** Executed when the user clicks <em>File -> Open</em> in the menu. 
-     *  \param[in]  pEvent  Unused event object handed to us by wxWidgets. */
-    void OnOpenEvt(wxCommandEvent& pEvent);
+     *  \param[in]  p_event  Unused event object handed to us by wxWidgets. */
+    void onOpenEvt(wxCommandEvent& p_event);
     /** Executed when the user clicks <em>File -> Exit</em> in the menu. 
-     *  \param[in]  pEvent  Unused event object handed to us by wxWidgets. */
-    void OnExitEvt(wxCommandEvent& pEvent);
+     *  \param[in]  p_event  Unused event object handed to us by wxWidgets. */
+    void onExitEvt(wxCommandEvent& p_event);
     /** Executed when the user clicks <em>Help -> About</em> in the menu. 
-     *  \param[in]  pEvent  Unused event object handed to us by wxWidgets. */
-    void OnAboutEvt(wxCommandEvent& pEvent);
+     *  \param[in]  p_event  Unused event object handed to us by wxWidgets. */
+    void onAboutEvt(wxCommandEvent& p_event);
     /** Executed when the window is closing.
-     *  \param[in]  pEvent  Unused event object handed to us by wxWidgets. */
-    void OnCloseEvt(wxCloseEvent& pEvent);
+     *  \param[in]  p_event  Unused event object handed to us by wxWidgets. */
+    void onCloseEvt(wxCloseEvent& p_event);
     /** Performs the currently active task repeatedly until it is complete.
-     *  \param[in]  pEvent  Idle event object used to request more idle events. */
-    void OnPerformTaskEvt(wxIdleEvent& pEvent);
+     *  \param[in]  p_event  Idle event object used to request more idle events. */
+    void onPerformTaskEvt(wxIdleEvent& p_event);
 
     /** Raised when the index has been read. */
-    void OnReadIndexComplete();
+    void onReadIndexComplete();
     /** Raised when the .dat has finished indexing. */
-    void OnScanTaskComplete();
-    /** Raised when the write task has finished, if invoked from OnCloseEvt. */
-    void OnWriteTaskCloseCompleted();
+    void onScanTaskComplete();
+    /** Raised when the write task has finished, if invoked from onCloseEvt. */
+    void onWriteTaskCloseCompleted();
 
     /** Raised when the user clicks an item in the category tree.
-     *  \param[in]  pTree   tree that raised the event.
-     *  \param[in]  pEntry  entry that was clicked. */
-    virtual void OnTreeEntryClicked(CategoryTree& pTree, const DatIndexEntry& pEntry);
+     *  \param[in]  p_tree   tree that raised the event.
+     *  \param[in]  p_entry  entry that was clicked. */
+    virtual void onTreeEntryClicked(CategoryTree& p_tree, const DatIndexEntry& p_entry) override;
     /** Raised when the user clicks a category in the category tree.
-     *  \param[in]  pTree       tree that raised the event.
-     *  \param[in]  pCategory   category that was clicked. */
-    virtual void OnTreeCategoryClicked(CategoryTree& pTree, const DatIndexCategory& pCategory);
+     *  \param[in]  p_tree       tree that raised the event.
+     *  \param[in]  p_category   category that was clicked. */
+    virtual void onTreeCategoryClicked(CategoryTree& p_tree, const DatIndexCategory& p_category) override;
     /** Raised when the category tree was cleared.
-     *  \param[in]  pTree   tree that was cleared. */
-    virtual void OnTreeCleared(CategoryTree& pTree);
-    virtual void OnTreeExtractRaw(CategoryTree& pTree);
-    virtual void OnTreeExtractConverted(CategoryTree& pTree);
+     *  \param[in]  p_tree   tree that was cleared. */
+    virtual void onTreeCleared(CategoryTree& p_tree) override;
+    virtual void onTreeExtractRaw(CategoryTree& p_tree) override;
+    virtual void onTreeExtractConverted(CategoryTree& p_tree) override;
 }; // class BrowserWindow
 
 }; // namespace gw2b

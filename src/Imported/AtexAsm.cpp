@@ -2052,6 +2052,6 @@ bool AtexDecompress(const unsigned int *InputBuffer, unsigned int BufferSize, un
 	if (CompressionCode&0x10 && ImageData.xres==256 && ImageData.yres==256 && (ImageFormat==0x10 || ImageFormat==0x11))
 		AtexSubCode7_((unsigned int)OutBuffer,BlockCount);
 
-	gw2b::FreePointer(DcmpBuffer1);
+	gw2b::freePointer(DcmpBuffer1);
     return true;
 }

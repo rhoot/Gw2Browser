@@ -58,11 +58,21 @@ struct TextureCache
     IDirect3DTexture9*  mNormalMap;
 };
 
+struct AutoReleaser
+{
+    template <typename T>
+        void operator()(T* p_pointer) const
+    {
+        p_pointer->Release();
+    }
+};
+
 class ModelViewer : public Viewer, public INeedDatFile
 {
-    AutoPtr<IDirect3D9>         mD3D;
-    AutoPtr<IDirect3DDevice9>   mDevice;
-    AutoPtr<ID3DXEffect>        mEffect;
+    std::unique_ptr<IDirect3D9, AutoReleaser>       mD3D;
+    std::unique_ptr<IDirect3DDevice9, AutoReleaser> mDevice;
+    std::unique_ptr<ID3DXEffect, AutoReleaser>      mEffect;
+
     D3DPRESENT_PARAMETERS       mPresentParams;
     Model                       mModel;
     Array<MeshCache>            mMeshCache;
@@ -73,14 +83,14 @@ public:
     ModelViewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
     virtual ~ModelViewer();
 
-    virtual void Clear();
-    virtual void SetReader(FileReader* pReader);
+    virtual void clear();
+    virtual void setReader(FileReader* pReader);
     /** Gets the image reader containing the data displayed by this viewer.
      *  \return ModelReader*    Reader containing the data. */
-    ModelReader* GetModelReader()               { return (ModelReader*)this->GetReader(); }
+    ModelReader* GetModelReader()               { return (ModelReader*)this->reader(); }
     /** Gets the image reader containing the data displayed by this viewer.
      *  \return ModelReader*    Reader containing the data. */
-    const ModelReader* GetModelReader() const   { return (const ModelReader*)this->GetReader(); }
+    const ModelReader* GetModelReader() const   { return (const ModelReader*)this->reader(); }
 
     void Focus();
 

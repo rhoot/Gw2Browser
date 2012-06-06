@@ -1,5 +1,5 @@
-/** \file       Viewers/BinaryViewer.h
- *  \brief      Contains declaration of the hex viewer.
+/** \file       Task.cpp
+ *  \brief      Contains definition of the task base class.
  *  \author     Rhoot
  */
 
@@ -21,29 +21,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#ifndef VIEWERS_BINARYVIEWER_H_INCLUDED
-#define VIEWERS_BINARYVIEWER_H_INCLUDED
-
-#include "Viewer.h"
+#include "stdafx.h"
+#include "Task.h"
 
 namespace gw2b
 {
-class HexControl;
 
-class BinaryViewer : public Viewer
+void Task::addOnCompleteHandler(const OnCompleteHandler& p_handler)
 {
-    HexControl*     mHexControl;
-    Array<byte>     mBinaryData;
-public:
-    BinaryViewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
-    virtual ~BinaryViewer();
+    m_onComplete.push_back(p_handler);
+}
 
-    virtual void clear();
-    virtual void setReader(FileReader* pReader);
-}; // class BinaryViewer
+void Task::addOnCompleteHandler(OnCompleteHandler&& p_handler)
+{
+    m_onComplete.push_back(std::forward<OnCompleteHandler>(p_handler));
+}
+
+void Task::invokeOnCompleteHandler()
+{
+    for (auto iter = m_onComplete.begin(); iter != m_onComplete.end(); iter++) {
+        (*iter)();
+    }
+}
 
 }; // namespace gw2b
-
-#endif // VIEWERS_BINARYVIEWER_H_INCLUDED

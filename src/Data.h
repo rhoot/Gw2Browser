@@ -34,15 +34,15 @@ namespace data
 {
 
 /** Loads a PNG from memory and returns a new wxBitmap containing it.
- *  \param[in]  pData   PNG data to load.
- *  \param[in]  pSize   Size of the PNG data.
+ *  \param[in]  p_data   PNG data to load.
+ *  \param[in]  p_size   Size of the PNG data.
  *  \return wxBitmap    Bitmap containing the loaded PNG. */
-wxBitmap LoadPNG(const byte* pData, uint pSize);
+wxBitmap loadPNG(const byte* p_data, uint p_size);
 /** Loads a JPG from memory and returns a new wxBitmap containing it.
- *  \param[in]  pData   PNG data to load.
- *  \param[in]  pSize   Size of the PNG data.
+ *  \param[in]  p_data   PNG data to load.
+ *  \param[in]  p_size   Size of the PNG data.
  *  \return wxBitmap    Bitmap containing the loaded JPG. */
-wxBitmap LoadJPG(const byte* pData, uint pSize);
+wxBitmap loadJPG(const byte* p_data, uint p_size);
 
 // File: data/about_box.jpg
 extern const uint about_box_jpg_size;

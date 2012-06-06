@@ -34,7 +34,7 @@ ImageControl::ImageControl(wxWindow* pParent, const wxPoint& pPosition, const wx
     : wxScrolledWindow(pParent, wxID_ANY, pPosition, pSize)
     , mChannels(IC_All)
 {    
-    mBackdrop = data::LoadPNG(data::checkers_png, data::checkers_png_size);
+    mBackdrop = data::loadPNG(data::checkers_png, data::checkers_png_size);
     this->SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_APPWORKSPACE));
     this->Connect(wxEVT_PAINT,  wxPaintEventHandler(ImageControl::OnPaintEvt));
@@ -74,17 +74,17 @@ void ImageControl::UpdateBitmap()
         // Check if any channels have been toggled off
         if (mChannels != IC_All) {
             uint numPixels    = image.GetWidth() * image.GetHeight();
-            uint8* alphaCache = NULL;
+            uint8* alphaCache = nullptr;
 
             // Any colors toggled off?
             if (!(mChannels & IC_Red) || !(mChannels & IC_Green) || !(mChannels & IC_Blue)) {
-                uint8* colors = Alloc<uint8>(numPixels * 3);
+                uint8* colors = allocate<uint8>(numPixels * 3);
                 ::memcpy(colors, image.GetData(), numPixels * 3);
 
                 // Setting colors clears the alpha, so cache it for restoration later,
                 // if the image has an alpha channel and it's visible
                 if (imageHasAlpha && (mChannels & IC_Alpha)) {
-                    alphaCache = Alloc<uint8>(numPixels);
+                    alphaCache = allocate<uint8>(numPixels);
                     ::memcpy(alphaCache, image.GetAlpha(), numPixels);
                 }
 
@@ -112,7 +112,7 @@ void ImageControl::UpdateBitmap()
 
                 // If alpha should be white, it should not be alpha too
                 if (whiteAlpha) {
-                    FreePointer(alphaCache);
+                    freePointer(alphaCache);
                 }
 
                 // Update colors
@@ -121,7 +121,7 @@ void ImageControl::UpdateBitmap()
 
             // Was alpha turned off?
             if (imageHasAlpha && !(mChannels & IC_Alpha)) {
-                uint8* alpha = Alloc<uint8>(numPixels);
+                uint8* alpha = allocate<uint8>(numPixels);
                 ::memset(alpha, 0xff, numPixels);
                 image.SetAlpha(alpha);
             } else if (alphaCache) {

@@ -45,18 +45,18 @@ public:
         EM_Converted,
     };
 private:
-    DatFile&                    mDatFile;
-    Array<const DatIndexEntry*> mEntries;
-    wxProgressDialog*           mProgress;
-    uint                        mCurrentProgress;
-    wxString                    mPath;
-    ExtractionMode              mMode;
+    DatFile&                    m_datFile;
+    Array<const DatIndexEntry*> m_entries;
+    wxProgressDialog*           m_progress;
+    uint                        m_currentProgress;
+    wxString                    m_path;
+    ExtractionMode              m_mode;
 public:
-    ExtractFilesWindow(const Array<const DatIndexEntry*>& pEntries, DatFile& pDatFile, const wxString& pPath, ExtractionMode pMode);
+    ExtractFilesWindow(const Array<const DatIndexEntry*>& p_entries, DatFile& p_datFile, const wxString& p_path, ExtractionMode p_mode);
 private:
-    void OnIdleEvt(wxIdleEvent& pEvent);
-    void ExtractFile(const DatIndexEntry& pEntry);
-    void AppendPaths(wxFileName& pPath, const DatIndexCategory& pCategory);
+    void onIdleEvt(wxIdleEvent& p_event);
+    void extractFile(const DatIndexEntry& p_entry);
+    void appendPaths(wxFileName& p_path, const DatIndexCategory& p_category);
 }; // class ExtractFilesWindow
 
 }; // namespace gw2b

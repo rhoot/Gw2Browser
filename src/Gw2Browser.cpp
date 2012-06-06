@@ -1,5 +1,5 @@
 /** \file       Gw2Browser.cpp
- *  \brief      Defines the application object. 
+ *  \brief      Defines the application object. This is the entry point.
  *  \author     Rhoot
  */
 
@@ -22,39 +22,55 @@
 */
 
 #include "stdafx.h"
-#include <vld.h>
-#include <wx/filename.h>
-
 #include "Gw2Browser.h"
+
+#include <vld.h>
+
 #include "BrowserWindow.h"
 
 namespace gw2b
 {
+    
+wxIMPLEMENT_APP(Gw2Browser);
 
-IMPLEMENT_APP(Gw2Browser);
+//============================================================================/
+
+namespace
+{
+    
+    struct ArgumentOptions
+    {
+        wxString datPath;
+    };
+
+    ArgumentOptions parseArguments(int argc, wchar_t** argv)
+    {
+        ArgumentOptions options;
+        if (argc > 1) {
+            options.datPath = argv[1];
+        }
+        return options;
+    }
+
+}; // anon namespace
+
+//============================================================================/
 
 bool Gw2Browser::OnInit()
 {
-    wxInitAllImageHandlers();
-    this->ParseArguments();
+    ::wxInitAllImageHandlers();
 
-    // Open window
-    BrowserWindow* window = new BrowserWindow(wxT("Gw2Browser"));
+    auto window = new BrowserWindow(wxT("Gw2Browser"));
     window->Show();
 
-    // Open dat, if one specified
-    if (mDatPath.Length() > 0) {
-        window->OpenFile(mDatPath);
+    auto options = parseArguments(this->argc, this->argv);
+    if (!options.datPath.IsEmpty()) {
+        window->openFile(options.datPath);
     }
 
     return true;
 }
 
-void Gw2Browser::ParseArguments()
-{
-    if (this->argc > 1) {
-        mDatPath = this->argv[1];
-    }
-}
+//============================================================================/
 
 }; // namespace gw2b

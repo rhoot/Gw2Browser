@@ -31,7 +31,7 @@ namespace gw2b
 
 BinaryViewer::BinaryViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& pSize)
     : Viewer(pParent, pPos, pSize)
-    , mHexControl(NULL)
+    , mHexControl(nullptr)
 {
     wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     
@@ -48,19 +48,19 @@ BinaryViewer::~BinaryViewer()
 {
 }
 
-void BinaryViewer::Clear()
+void BinaryViewer::clear()
 {
-    mHexControl->SetData(NULL, 0);
+    mHexControl->SetData(nullptr, 0);
     mBinaryData.Clear();
-    Viewer::Clear();
+    Viewer::clear();
 }
 
-void BinaryViewer::SetReader(FileReader* pReader)
+void BinaryViewer::setReader(FileReader* pReader)
 {
-    Viewer::SetReader(pReader);
+    Viewer::setReader(pReader);
 
     if (pReader) {
-        mBinaryData = pReader->ConvertData();
+        mBinaryData = pReader->convertData();
         mHexControl->SetData(mBinaryData.GetPointer(), mBinaryData.GetSize());
     }
 }

@@ -84,12 +84,6 @@
     <ClInclude Include="..\src\CategoryTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Util\RefCounted.h">
-      <Filter>Header Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Util\AutoPtr.h">
-      <Filter>Header Files\Util</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Imported\crc.h">
       <Filter>Header Files\Imported</Filter>
     </ClInclude>
@@ -122,12 +116,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Tasks\ReadIndexTask.h">
       <Filter>Header Files\Tasks</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Util\Delegate.h">
-      <Filter>Header Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Util\DelegateTemplate.h">
-      <Filter>Header Files\Util</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Tasks\ScanDatTask.h">
       <Filter>Header Files\Tasks</Filter>
@@ -289,6 +277,9 @@
     </ClCompile>
     <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp">
       <Filter>Source Files\Viewers\ModelViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Task.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

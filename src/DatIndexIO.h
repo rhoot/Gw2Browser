@@ -44,31 +44,31 @@ enum {
 struct DatIndexHead
 {
     union {
-        char mMagic[2];         /**< Contains 'DI'. */
-        uint16 mMagicInteger;   /**< Contains 0x4944, in little endian. */
+        char magic[2];          /**< Contains 'DI'. */
+        uint16 magicInteger;    /**< Contains 0x4944, in little endian. */
     };
-    uint16 mVersion;            /**< Index format version. */
-    uint64 mDatTimeStamp;       /**< Indexed .dat file's timestamp. */
-    uint32 mNumEntries;         /**< Amount of entries in the index. */
-    uint32 mNumCategories;      /**< Amount of categories in the index. */
+    uint16 version;             /**< Index format version. */
+    uint64 datTimestamp;        /**< Indexed .dat file's timestamp. */
+    uint32 numEntries;          /**< Amount of entries in the index. */
+    uint32 numCategories;       /**< Amount of categories in the index. */
 };
 
 /** Structure of the fixed-width category fields in the .dat index file. */
 struct DatIndexCategoryFields
 {
-    int32 mParent;              /**< Index of the category's parent. -1 for none. */
-    uint16 mNameLength;         /**< Length of the category's name, in bytes. */
+    int32 parent;               /**< Index of the category's parent. -1 for none. */
+    uint16 nameLength;          /**< Length of the category's name, in bytes. */
 }; 
 
 /** Structure of the fixed-width entry fields in the .dat index file. */
 struct DatIndexEntryFields
 {
-    int32 mCategory;            /**< Index of the category it belongs to. */
-    uint32 mBaseId;             /**< Base ID of the indexed file. */
-    uint32 mFileId;             /**< File ID of the indexed file. */
-    uint32 mMftEntry;           /**< MFT entry number of the indexed file. */
-    uint32 mFileType;           /**< Type of the indexed file. */
-    uint16 mNameLength;         /**< Length of the entry's name, in bytes. */
+    int32 category;             /**< Index of the category it belongs to. */
+    uint32 baseId;              /**< Base ID of the indexed file. */
+    uint32 fileId;              /**< File ID of the indexed file. */
+    uint32 mftEntry;            /**< MFT entry number of the indexed file. */
+    uint32 fileType;            /**< Type of the indexed file. */
+    uint16 nameLength;          /**< Length of the entry's name, in bytes. */
 };
 
 #pragma pack(pop)
@@ -76,9 +76,9 @@ struct DatIndexEntryFields
 /** Responsible for reading a .dat index from file. */
 class DatIndexReader
 {
-    DatIndex&       mIndex;
-    DatIndexHead    mHeader;
-    wxFile          mFile;
+    DatIndex&       m_index;
+    DatIndexHead    m_header;
+    wxFile          m_file;
 public:
     /** Result of the Read() operation. */
     enum ReadResult
@@ -92,90 +92,90 @@ public:
     };
 public:
     /** Constructor.
-     *  \param[in]  pIndex  Index to read into. */
-    DatIndexReader(DatIndex& pIndex);
+     *  \param[in]  p_index  Index to read into. */
+    DatIndexReader(DatIndex& p_index);
     /** Destructor. */
     ~DatIndexReader();
 
     /** Opens the given file for reading.
-     *  \param[in]  pFilename   File to open.
+     *  \param[in]  p_filename   File to open.
      *  \return bool    true if open was successful, false if not. */
-    bool Open(const wxString& pFilename);
+    bool open(const wxString& p_filename);
     /** Closes the opened file. */
-    void Close();
+    void close();
     /** Determines whether this task is done. 
      *  \return bool    true if the task is done, false if not. */
-    bool IsDone() const;
+    bool isDone() const;
     /** Determines whether there is an open index file.
      *  \return bool    true if there is an open index file, false if not. */
-    bool IsOpen() const                 { return mFile.IsOpened(); }
+    bool isOpen() const                 { return m_file.IsOpened(); }
 
     /** Gets the current amount of read categories.
      *  \return uint    amount of categories. */
-    uint GetCurrentCategory() const     { return mIndex.GetNumCategories(); }
+    uint currentCategory() const        { return m_index.numCategories(); }
     /** Gets the total amount of categories in the file.
      *  \return uint    amount of categories. */
-    uint GetNumCategories() const       { return mHeader.mNumCategories; }
+    uint numCategories() const          { return m_header.numCategories; }
 
     /** Gets the current amount of read entries.
      *  \return uint    amount of entries. */
-    uint GetCurrentEntry() const        { return mIndex.GetNumEntries(); }
+    uint currentEntry() const           { return m_index.numEntries(); }
     /** Gets the total amount of entries in the file.
      *  \return uint    amount of entries. */
-    uint GetNumEntries() const          { return mHeader.mNumEntries; }
+    uint numEntries() const             { return m_header.numEntries; }
 
     /** Performs a read cycle, reading some categories/entries from the file
      *  and adding them to the index. 
-     *  \param[in]  pAmount     Amount of read cycles to perform.
+     *  \param[in]  p_amount     Amount of read cycles to perform.
      *  \return ReadResult  The result of the read operation(s). */
-    ReadResult Read(uint pAmount = 1);
+    ReadResult read(uint p_amount = 1);
 }; // class DatIndexReader
 
 /** Responsible for writing a .dat index to file. */
 class DatIndexWriter
 {
-    DatIndex&       mIndex;
-    wxFile          mFile;
-    uint            mCategoriesWritten;
-    uint            mEntriesWritten;
+    DatIndex&       m_index;
+    wxFile          m_file;
+    uint            m_categoriesWritten;
+    uint            m_entriesWritten;
 public:
     /** Constructor.
-     *  \param[in]  pIndex  Index to write onto disk. */
-    DatIndexWriter(DatIndex& pIndex);
+     *  \param[in]  p_index  Index to write onto disk. */
+    DatIndexWriter(DatIndex& p_index);
     /** Destructor. */
     ~DatIndexWriter();
 
     /** Opens the given file for writing.
-     *  \param[in]  pFilename   File to open.
+     *  \param[in]  p_filename   File to open.
      *  \return bool    true if open was successful, false if not. */
-    bool Open(const wxString& pFilename);
+    bool open(const wxString& p_filename);
     /** Closes the opened file. */
-    void Close();
+    void close();
     /** Determines whether this task is done. 
      *  \return bool    true if the task is done, false if not. */
-    bool IsDone() const;
+    bool isDone() const;
     /** Determines whether there is an open index file.
      *  \return bool    true if there is an open index file, false if not. */
-    bool IsOpen() const                 { return mFile.IsOpened(); }
+    bool isOpen() const                 { return m_file.IsOpened(); }
 
     /** Gets the current amount of written categories.
      *  \return uint    amount of categories. */
-    uint GetCurrentCategory() const     { return mCategoriesWritten; }
+    uint currentCategory() const        { return m_categoriesWritten; }
     /** Gets the total amount of categories to write.
      *  \return uint    amount of categories. */
-    uint GetNumCategories() const       { return mIndex.GetNumCategories(); }
+    uint numCategories() const          { return m_index.numCategories(); }
 
     /** Gets the current amount of written entries.
      *  \return uint    amount of entries. */
-    uint GetCurrentEntry() const        { return mEntriesWritten; }
+    uint currentEntry() const           { return m_entriesWritten; }
     /** Gets the total amount of entries to write.
      *  \return uint    amount of entries. */
-    uint GetNumEntries() const          { return mIndex.GetNumEntries(); }
+    uint numEntries() const             { return m_index.numEntries(); }
 
     /** Performs a write cycle, writing some categories/entries to the file. 
-     *  \param[in]  pAmount     Amount of write cycles to perform.
+     *  \param[in]  p_amount     Amount of write cycles to perform.
      *  \return bool    true if successful, false if not. */
-    bool Write(uint pAmount = 1);
+    bool write(uint p_amount = 1);
 
 }; // class DatIndexWriter
 

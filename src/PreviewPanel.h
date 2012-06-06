@@ -37,28 +37,28 @@ class DatIndexEntry;
 /** Panel control used to preview files from the .dat. */
 class PreviewPanel : public wxPanel
 {
-    Viewer*                 mCurrentView;
-    FileReader::DataType    mCurrentDataType;
+    Viewer*                 m_currentView;
+    FileReader::DataType    m_currentDataType;
 public:
     /** Constructor. Creates the preview panel with the given parent.
-     *  \param[in]  pParent     Parent of the control.
-     *  \param[in]  pLocation   Optional location of the control. 
-     *  \param[in]  pSize       Optional size of the control. */
-    PreviewPanel(wxWindow* pParent, const wxPoint& pLocation = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
+     *  \param[in]  p_parent     Parent of the control.
+     *  \param[in]  p_location   Optional location of the control. 
+     *  \param[in]  p_size       Optional size of the control. */
+    PreviewPanel(wxWindow* p_parent, const wxPoint& p_location = wxDefaultPosition, const wxSize& p_size = wxDefaultSize);
     /** Destructor. */
     ~PreviewPanel();
     /** Tells this panel to preview a file.
-     *  \param[in]  pDatFile    .dat file containing the file to preview.
-     *  \param[in]  pEntry      Entry to preview.
+     *  \param[in]  p_datFile    .dat file containing the file to preview.
+     *  \param[in]  p_entry      Entry to preview.
      *  \return bool    true if successful, false if not. */
-    bool PreviewFile(DatFile& pDatFile, const DatIndexEntry& pEntry);
+    bool previewFile(DatFile& p_datFile, const DatIndexEntry& p_entry);
 private:
     /** Helper method to create a viewer control to handle the given data type.
      *  The caller is responsible for freeing the viewer.
-     *  \param[in]  pDataType   Type of data to create a viewer for.
-     *  \param[in]  pDatFile    Reference to an instance of DatFile.
+     *  \param[in]  p_dataType   Type of data to create a viewer for.
+     *  \param[in]  p_datFile    Reference to an instance of DatFile.
      *  \return Viewer* Newly created viewer. */
-    Viewer* CreateViewerForDataType(FileReader::DataType pDataType, DatFile& pDatFile);
+    Viewer* createViewerForDataType(FileReader::DataType p_dataType, DatFile& p_datFile);
 }; // class PreviewPanel
 
 }; // namespace gw2b

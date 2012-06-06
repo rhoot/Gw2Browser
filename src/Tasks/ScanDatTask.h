@@ -37,15 +37,15 @@ class DatIndexCategory;
 
 class ScanDatTask : public Task
 {
-    AutoPtr<DatIndex>   mIndex;
-    Array<byte>         mOutputBuffer;
-    DatFile&            mDatFile;
+    std::shared_ptr<DatIndex>   mIndex;
+    Array<byte>                 mOutputBuffer;
+    DatFile&                    mDatFile;
 public:
-    ScanDatTask(DatIndex* pIndex, DatFile& pDatFile);
+    ScanDatTask(const std::shared_ptr<DatIndex>& pIndex, DatFile& pDatFile);
     virtual ~ScanDatTask();
 
-    virtual bool Init();
-    virtual void Perform();
+    virtual bool init();
+    virtual void perform();
 private:
     uint GetRequiredIdentificationSize(byte* pData, uint pSize, ANetFileType pFileType);
     DatIndexCategory* Categorize(ANetFileType pFileType, byte* pData, uint pSize);

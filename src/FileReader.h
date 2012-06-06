@@ -38,8 +38,8 @@ namespace gw2b
 class FileReader
 {
 protected:
-    Array<byte>     mData;
-    ANetFileType    mFileType;
+    Array<byte>     m_data;
+    ANetFileType    m_fileType;
 public:
     /** Type of data contained in this file. Determines how it is exported. */
     enum DataType
@@ -52,31 +52,31 @@ public:
     };
 public:
     /** Constructor.
-     *  \param[in]  pData       Data to be handled by this reader.
-     *  \param[in]  pFileType   File type of the given data. */
-    FileReader(const Array<byte>& pData, ANetFileType pFileType);
+     *  \param[in]  p_data       Data to be handled by this reader.
+     *  \param[in]  p_fileType   File type of the given data. */
+    FileReader(const Array<byte>& p_data, ANetFileType p_fileType);
     /** Destructor. Clears all data. */
     virtual ~FileReader();
 
     /** Clears all data contained in this reader. */
-    virtual void Clean();
+    virtual void clean();
     /** Gets the type of data contained in this file. Not to be confused with
      *  file type.
      *  \return DataType    type of data. */
-    virtual DataType GetDataType() const        { return DT_Binary; }
+    virtual DataType dataType() const           { return DT_Binary; }
     /** Gets an appropriate file extension for the contents of this reader.
      *  \return wxString    File extension. */
-    virtual const wxChar* GetExtension() const  { return wxT(".raw"); }
+    virtual const wxChar* extension() const     { return wxT(".raw"); }
     /** Converts the data associated with this file into a usable format.
      *  \return Array<byte> converted data. */
-    virtual Array<byte> ConvertData() const;
+    virtual Array<byte> convertData() const;
 
     /** Analyzes the given data and creates an appropriate subclass of 
      *  FileReader to handle it. Caller is responsible for freeing the reader.
-     *  \param[in]  pData   Data to read.
-     *  \param[in]  pFileType   File type of the given data.
+     *  \param[in]  p_data      Data to read.
+     *  \param[in]  p_fileType   File type of the given data.
      *  \return FileReader* Newly created FileReader for the data. */
-    static FileReader* GetReaderForData(const Array<byte>& pData, ANetFileType pFileType);
+    static FileReader* readerForData(const Array<byte>& p_data, ANetFileType p_fileType);
 };
 
 }; // namespace gw2b

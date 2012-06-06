@@ -160,13 +160,13 @@ public:
     /** Gets the type of data contained in this file. Not to be confused with
      *  file type.
      *  \return DataType    type of data. */
-    virtual DataType GetDataType() const        { return DT_Image; }
+    virtual DataType dataType() const        { return DT_Image; }
     /** Gets an appropriate file extension for the contents of this reader.
      *  \return wxString    File extension. */
-    virtual const wxChar* GetExtension() const  { return wxT(".png"); }
+    virtual const wxChar* extension() const  { return wxT(".png"); }
     /** Converts the data associated with this file into PNG.
      *  \return Array<byte> converted data. */
-    virtual Array<byte> ConvertData() const;
+    virtual Array<byte> convertData() const;
     /** Gets the image contained in the data owned by this reader.
      *  \return wxImage     Newly created image. */
     wxImage GetImage() const;

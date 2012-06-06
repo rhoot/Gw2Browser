@@ -31,99 +31,99 @@ namespace gw2b
 //      DatIndexReader
 //----------------------------------------------------------------------------
 
-DatIndexReader::DatIndexReader(DatIndex& pIndex)
-    : mIndex(pIndex)
+DatIndexReader::DatIndexReader(DatIndex& p_index)
+    : m_index(p_index)
 {
-    Ensure::NotNull(&pIndex);
-    ::memset(&mHeader, 0, sizeof(mHeader));
+    Ensure::notNull(&p_index);
+    ::memset(&m_header, 0, sizeof(m_header));
 }
 
 DatIndexReader::~DatIndexReader()
 {
-    this->Close();
+    this->close();
 }
 
-bool DatIndexReader::Open(const wxString& pFilename)
+bool DatIndexReader::open(const wxString& p_filename)
 {
-    this->Close();
-    if (!wxFile::Exists(pFilename)) { return false; }
+    this->close();
+    if (!wxFile::Exists(p_filename)) { return false; }
 
-    mFile.Open(pFilename);
-    if (mFile.IsOpened() && mFile.Length() > sizeof(mHeader)) {
-        mFile.Read(&mHeader, sizeof(mHeader));
-        if (mHeader.mMagicInteger != DatIndex_Magic) { this->Close(); return false; }
-        if (mHeader.mVersion != DatIndex_Version) { this->Close(); return false; }
-        mIndex.Clear(); // always start with a fresh index
-        mIndex.SetDatTimeStamp(mHeader.mDatTimeStamp);
-        mIndex.ReserveEntries(mHeader.mNumEntries);
-        mIndex.ReserveCategories(mHeader.mNumEntries);
+    m_file.Open(p_filename);
+    if (m_file.IsOpened() && m_file.Length() > sizeof(m_header)) {
+        m_file.Read(&m_header, sizeof(m_header));
+        if (m_header.magicInteger != DatIndex_Magic) { this->close(); return false; }
+        if (m_header.version != DatIndex_Version) { this->close(); return false; }
+        m_index.clear(); // always start with a fresh index
+        m_index.setDatTimestamp(m_header.datTimestamp);
+        m_index.reserveEntries(m_header.numEntries);
+        m_index.reserveCategories(m_header.numEntries);
         return true;
     }
 
     return false;
 }
 
-void DatIndexReader::Close()
+void DatIndexReader::close()
 {
-    mFile.Close();
-    ::memset(&mHeader, 0, sizeof(mHeader));
+    m_file.Close();
+    ::memset(&m_header, 0, sizeof(m_header));
 }
 
-bool DatIndexReader::IsDone() const
+bool DatIndexReader::isDone() const
 {
-    return (mIndex.GetNumCategories() == mHeader.mNumCategories) 
-        && (mIndex.GetNumEntries() == mHeader.mNumEntries);
+    return (m_index.numCategories() == m_header.numCategories) 
+        && (m_index.numEntries() == m_header.numEntries);
 }
 
-DatIndexReader::ReadResult DatIndexReader::Read(uint pAmount)
+DatIndexReader::ReadResult DatIndexReader::read(uint p_amount)
 {
     ReadResult result = RR_Failure;
 
-    for (uint i = 0; i < pAmount; i++) {
+    for (uint i = 0; i < p_amount; i++) {
         ssize_t bytesRead;
 
         // First read all categories, one at a time
-        if (mIndex.GetNumCategories() < mHeader.mNumCategories) {
+        if (m_index.numCategories() < m_header.numCategories) {
             // Read fixed-width fields
             DatIndexCategoryFields fields;
-            bytesRead = mFile.Read(&fields, sizeof(fields));
+            bytesRead = m_file.Read(&fields, sizeof(fields));
             if (bytesRead < sizeof(fields)) { result = RR_CorruptFile; goto READ_FAILED; }
             // Read name
-            Array<char> nameData(fields.mNameLength);
-            bytesRead = mFile.Read(nameData.GetPointer(), nameData.GetSize());
+            Array<char> nameData(fields.nameLength);
+            bytesRead = m_file.Read(nameData.GetPointer(), nameData.GetSize());
             if (bytesRead < (ssize_t)nameData.GetSize()) { result = RR_CorruptFile; goto READ_FAILED; }
             // Add category
-            wxString name = wxString::FromUTF8Unchecked(nameData.GetPointer(), nameData.GetSize());
-            DatIndexCategory* category = mIndex.AddIndexCategory(name, false);
+            auto name     = wxString::FromUTF8Unchecked(nameData.GetPointer(), nameData.GetSize());
+            auto category = m_index.addIndexCategory(name, false);
             // Set parent
-            if (fields.mParent != DatIndex_RootCategory) {
-                DatIndexCategory* parent = mIndex.GetCategory(fields.mParent);
-                if (parent) { parent->AddSubCategory(category); }
+            if (fields.parent != DatIndex_RootCategory) {
+                auto parent = m_index.category(fields.parent);
+                if (parent) { parent->addSubCategory(category); }
             }
         }
 
         // If all categories are read, start reading the files instead (note the 'else')
-        else if (mIndex.GetNumEntries() < mHeader.mNumEntries) {
+        else if (m_index.numEntries() < m_header.numEntries) {
             // Read fixed-width fields
             DatIndexEntryFields fields;
-            bytesRead = mFile.Read(&fields, sizeof(fields));
+            bytesRead = m_file.Read(&fields, sizeof(fields));
             if (bytesRead < sizeof(fields)) { result = RR_CorruptFile; goto READ_FAILED; }
             // Read name
-            Array<char> nameData(fields.mNameLength);
-            bytesRead = mFile.Read(nameData.GetPointer(), nameData.GetSize());
+            Array<char> nameData(fields.nameLength);
+            bytesRead = m_file.Read(nameData.GetPointer(), nameData.GetSize());
             if (bytesRead < (ssize_t)nameData.GetSize()) { result = RR_CorruptFile; goto READ_FAILED; }
             // Add entry
-            wxString name = wxString::FromUTF8Unchecked(nameData.GetPointer(), nameData.GetSize());
-            DatIndexEntry& newEntry = mIndex.AddIndexEntry(false)
-                ->SetBaseId(fields.mBaseId)
-                .SetFileId(fields.mFileId)
-                .SetMftEntry(fields.mMftEntry)
-                .SetFileType((ANetFileType)fields.mFileType)
-                .SetName(name);
-            DatIndexCategory* category = mIndex.GetCategory(fields.mCategory);
+            auto name      = wxString::FromUTF8Unchecked(nameData.GetPointer(), nameData.GetSize());
+            auto& newEntry = m_index.addIndexEntry(false)
+                ->setBaseId(fields.baseId)
+                .setFileId(fields.fileId)
+                .setMftEntry(fields.mftEntry)
+                .setFileType((ANetFileType)fields.fileType)
+                .setName(name);
+            auto category = m_index.category(fields.category);
             if (!category) { result = RR_CorruptFile; goto READ_FAILED; }
-            category->AddEntry(&newEntry);
-            newEntry.FinalizeAdd();
+            category->addEntry(&newEntry);
+            newEntry.finalizeAdd();
         }
 
         // If both are done we can skip this loop
@@ -142,34 +142,34 @@ READ_FAILED:
 //      DatIndexWriter
 //----------------------------------------------------------------------------
 
-DatIndexWriter::DatIndexWriter(DatIndex& pIndex)
-    : mIndex(pIndex)
-    , mCategoriesWritten(0)
-    , mEntriesWritten(0)
+DatIndexWriter::DatIndexWriter(DatIndex& p_index)
+    : m_index(p_index)
+    , m_categoriesWritten(0)
+    , m_entriesWritten(0)
 {
-    Ensure::NotNull(&pIndex);
+    Ensure::notNull(&p_index);
 }
 
 DatIndexWriter::~DatIndexWriter()
 {
-    this->Close();
+    this->close();
 }
 
-bool DatIndexWriter::Open(const wxString& pFilename)
+bool DatIndexWriter::open(const wxString& p_filename)
 {
-    this->Close();
+    this->close();
 
-    mFile.Open(pFilename, wxFile::write);
-    if (mFile.IsOpened()) {
+    m_file.Open(p_filename, wxFile::write);
+    if (m_file.IsOpened()) {
         DatIndexHead header;
-        header.mMagicInteger  = DatIndex_Magic;
-        header.mVersion       = DatIndex_Version;
-        header.mDatTimeStamp  = mIndex.GetDatTimeStamp();
-        header.mNumEntries    = mIndex.GetNumEntries();
-        header.mNumCategories = mIndex.GetNumCategories();
+        header.magicInteger  = DatIndex_Magic;
+        header.version       = DatIndex_Version;
+        header.datTimestamp  = m_index.datTimestamp();
+        header.numEntries    = m_index.numEntries();
+        header.numCategories = m_index.numCategories();
 
-        ssize_t bytesWritten = mFile.Write(&header, sizeof(header));
-        if (bytesWritten < sizeof(header)) { this->Close(); return false; }
+        auto bytesWritten = m_file.Write(&header, sizeof(header));
+        if (bytesWritten < sizeof(header)) { this->close(); return false; }
 
         return true;
     }
@@ -177,62 +177,62 @@ bool DatIndexWriter::Open(const wxString& pFilename)
     return false;
 }
 
-void DatIndexWriter::Close()
+void DatIndexWriter::close()
 {
-    mFile.Close();
-    mCategoriesWritten = 0;
-    mEntriesWritten    = 0;
+    m_file.Close();
+    m_categoriesWritten = 0;
+    m_entriesWritten    = 0;
 }
 
-bool DatIndexWriter::IsDone() const
+bool DatIndexWriter::isDone() const
 {
-    return (mIndex.GetNumEntries() == mEntriesWritten)
-        && (mIndex.GetNumCategories() == mCategoriesWritten);
+    return (m_index.numEntries() == m_entriesWritten)
+        && (m_index.numCategories() == m_categoriesWritten);
 }
 
-bool DatIndexWriter::Write(uint pAmount)
+bool DatIndexWriter::write(uint p_amount)
 {
-    for (uint i = 0; i < pAmount; i++) {
+    for (uint i = 0; i < p_amount; i++) {
         ssize_t bytesWritten;
 
         // First write categories, one at a time
-        if (mCategoriesWritten < mIndex.GetNumCategories()) {
-            DatIndexCategory* category    = mIndex.GetCategory(mCategoriesWritten);
-            DatIndexCategory* parent      = category->GetParent();
-            wxScopedCharBuffer nameBuffer = category->GetName().ToUTF8();
+        if (m_categoriesWritten < m_index.numCategories()) {
+            auto category    = m_index.category(m_categoriesWritten);
+            auto parent      = category->parent();
+            wxScopedCharBuffer nameBuffer = category->name().ToUTF8();
             // Fixed-width fields
             DatIndexCategoryFields fields;
-            fields.mParent     = (parent ? parent->GetIndex() : -1);
-            fields.mNameLength = nameBuffer.length();
-            bytesWritten = mFile.Write(&fields, sizeof(fields));
+            fields.parent     = (parent ? parent->index() : -1);
+            fields.nameLength = nameBuffer.length();
+            bytesWritten = m_file.Write(&fields, sizeof(fields));
             if (bytesWritten < sizeof(fields)) { return false; }
             // Name
-            bytesWritten = mFile.Write(nameBuffer, fields.mNameLength);
-            if (bytesWritten < fields.mNameLength) { return false; }
+            bytesWritten = m_file.Write(nameBuffer, fields.nameLength);
+            if (bytesWritten < fields.nameLength) { return false; }
             // Increase the counter
-            mCategoriesWritten++;
+            m_categoriesWritten++;
         }
 
         // Then, write entries one at a time (note the 'else')
-        else if (mEntriesWritten < mIndex.GetNumEntries()) {
-            const DatIndexEntry*    entry    = mIndex.GetEntry(mEntriesWritten);
-            const DatIndexCategory* category = entry->GetCategory();
-            wxScopedCharBuffer nameBuffer    = entry->GetName().ToUTF8();
+        else if (m_entriesWritten < m_index.numEntries()) {
+            auto entry      = m_index.entry(m_entriesWritten);
+            auto category   = entry->category();
+            auto nameBuffer = entry->name().ToUTF8();
             // Fixed-width fields
             DatIndexEntryFields fields;
-            fields.mCategory   = category->GetIndex();
-            fields.mBaseId     = entry->GetBaseId();
-            fields.mFileId     = entry->GetFileId();
-            fields.mMftEntry   = entry->GetMftEntry();
-            fields.mFileType   = entry->GetFileType();
-            fields.mNameLength = nameBuffer.length();
-            bytesWritten = mFile.Write(&fields, sizeof(fields));
+            fields.category   = category->index();
+            fields.baseId     = entry->baseId();
+            fields.fileId     = entry->fileId();
+            fields.mftEntry   = entry->mftEntry();
+            fields.fileType   = entry->fileType();
+            fields.nameLength = nameBuffer.length();
+            bytesWritten = m_file.Write(&fields, sizeof(fields));
             if (bytesWritten < sizeof(fields)) { return false; }
             // Name
-            bytesWritten = mFile.Write(nameBuffer, fields.mNameLength);
-            if (bytesWritten < fields.mNameLength) { return false; }
+            bytesWritten = m_file.Write(nameBuffer, fields.nameLength);
+            if (bytesWritten < fields.nameLength) { return false; }
             // Increase the counter
-            mEntriesWritten++;
+            m_entriesWritten++;
         }
 
         // Both done = ditch this loop
@@ -242,8 +242,8 @@ bool DatIndexWriter::Write(uint pAmount)
     }
 
     // Remove dirty flag if everything is saved
-    if (this->IsDone()) {
-        mIndex.SetDirty(false);
+    if (this->isDone()) {
+        m_index.setDirty(false);
     }
 
     return true;

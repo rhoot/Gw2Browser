@@ -34,92 +34,92 @@ namespace gw2b
 //      DatIndexEntry
 //----------------------------------------------------------------------------
 
-DatIndexEntry::DatIndexEntry(DatIndex& pOwner)
-    : mOwner(&pOwner)
-    , mFileId(0)
-    , mBaseId(0)
-    , mMftEntry(0)
-    , mFileType(ANFT_Unknown)
-    , mCategory(NULL)
+DatIndexEntry::DatIndexEntry(DatIndex& p_owner)
+    : m_owner(&p_owner)
+    , m_fileId(0)
+    , m_baseId(0)
+    , m_mftEntry(0)
+    , m_fileType(ANFT_Unknown)
+    , m_category(nullptr)
 {
-    Ensure::NotNull(&pOwner);
+    Ensure::notNull(&p_owner);
 }
 
-void DatIndexEntry::OnAddedToCategory(DatIndexCategory* pCategory)
+void DatIndexEntry::onAddedToCategory(DatIndexCategory* p_category)
 {
-    mCategory = pCategory;
+    m_category = p_category;
 }
 
-void DatIndexEntry::FinalizeAdd()
+void DatIndexEntry::finalizeAdd()
 {
-    mOwner->OnEntryAddComplete(*this);
+    m_owner->onEntryAddComplete(*this);
 }
 
 //----------------------------------------------------------------------------
 //      DatIndexCategory
 //----------------------------------------------------------------------------
 
-DatIndexCategory::DatIndexCategory(DatIndex& pOwner, const wxString& pName, int pIndex)
-    : mOwner(&pOwner)
-    , mIndex(pIndex)
-    , mName(pName)
-    , mParent(NULL)
+DatIndexCategory::DatIndexCategory(DatIndex& p_owner, const wxString& p_name, int p_index)
+    : m_owner(&p_owner)
+    , m_index(p_index)
+    , m_name(p_name)
+    , m_parent(nullptr)
 {
-    Ensure::NotNull(&pOwner);
+    Ensure::notNull(&p_owner);
 }
 
-DatIndexCategory* DatIndexCategory::FindSubCategory(const wxString& pName)
+DatIndexCategory* DatIndexCategory::findSubCategory(const wxString& p_name)
 {
-    for (uint i = 0; i < mSubCategories.GetSize(); i++) {
-        if (mSubCategories[i]->GetName() == pName) {
-            return mSubCategories[i];
+    for (uint i = 0; i < m_subCategories.GetSize(); i++) {
+        if (m_subCategories[i]->name() == p_name) {
+            return m_subCategories[i];
         }
     }
-    return NULL;
+    return nullptr;
 }
 
-DatIndexCategory* DatIndexCategory::FindOrAddSubCategory(const wxString& pName)
+DatIndexCategory* DatIndexCategory::findOrAddSubCategory(const wxString& p_name)
 {
-    DatIndexCategory* subCat = this->FindSubCategory(pName);
+    auto subCat = this->findSubCategory(p_name);
     if (!subCat) {
-        subCat = mOwner->AddIndexCategory(pName);
-        this->AddSubCategory(subCat);
+        subCat = m_owner->addIndexCategory(p_name);
+        this->addSubCategory(subCat);
     }
     return subCat;
 }
 
-uint DatIndexCategory::GetNumEntries(bool pRecursive) const
+uint DatIndexCategory::numEntries(bool p_recursive) const
 {
-    uint count = mEntries.GetSize();
+    auto count = m_entries.GetSize();
 
-    if (pRecursive) {
-        for (uint i = 0; i < mSubCategories.GetSize(); i++) {
-            count += mSubCategories[i]->GetNumEntries(pRecursive);
+    if (p_recursive) {
+        for (uint i = 0; i < m_subCategories.GetSize(); i++) {
+            count += m_subCategories[i]->numEntries(p_recursive);
         }
     } 
 
     return count;
 }
 
-void DatIndexCategory::AddEntry(DatIndexEntry* pEntry)
+void DatIndexCategory::addEntry(DatIndexEntry* p_entry)
 {
-    mEntries.Add(pEntry);
-    pEntry->OnAddedToCategory(this);
+    m_entries.Add(p_entry);
+    p_entry->onAddedToCategory(this);
 }
 
-void DatIndexCategory::AddSubCategory(DatIndexCategory* pSubCategory)
+void DatIndexCategory::addSubCategory(DatIndexCategory* p_subCategory)
 {
-    Ensure::NotNull(pSubCategory);
-    wxASSERT(!pSubCategory->GetParent());
+    Ensure::notNull(p_subCategory);
+    Assert(!p_subCategory->parent());
 
-    mSubCategories.Add(pSubCategory);
-    pSubCategory->OnAddedToCategory(this);
+    m_subCategories.Add(p_subCategory);
+    p_subCategory->onAddedToCategory(this);
 }
 
-void DatIndexCategory::OnAddedToCategory(DatIndexCategory* pParent)
+void DatIndexCategory::onAddedToCategory(DatIndexCategory* p_parent)
 {
-    Ensure::IsNull(mParent);
-    mParent = pParent;
+    Ensure::isNull(m_parent);
+    m_parent = p_parent;
 }
 
 //----------------------------------------------------------------------------
@@ -127,135 +127,135 @@ void DatIndexCategory::OnAddedToCategory(DatIndexCategory* pParent)
 //----------------------------------------------------------------------------
 
 DatIndex::DatIndex()
-    : mDatTimestamp(0)
-    , mHighestMftEntry(-1)
-    , mIsDirty(false)
-    , mNumEntries(0)
-    , mNumCategories(0)
+    : m_datTimestamp(0)
+    , m_highestMftEntry(-1)
+    , m_isDirty(false)
+    , m_numEntries(0)
+    , m_numCategories(0)
 {
 }
 
 DatIndex::~DatIndex()
 {
-    this->Clear();
+    this->clear();
 
     // Notify listeners, so they can clear pointers etc
-    for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-        (*it)->OnIndexDestruction(*this);
+    for (auto it = m_listeners.begin(); it != m_listeners.end(); it++) {
+        (*it)->onIndexDestruction(*this);
     }
 }
 
-void DatIndex::Clear()
+void DatIndex::clear()
 {
     // destruct all entries before clearing their memory
-    for (uint i = 0; i < mNumEntries; i++) {
-        delete mEntries[i];
+    for (uint i = 0; i < m_numEntries; i++) {
+        delete m_entries[i];
     }
-    mEntries.Clear();
+    m_entries.Clear();
     // also destruct all categories before clearing their memory
-    for (uint i = 0; i < mNumCategories; i++) {
-        delete mCategories[i];
+    for (uint i = 0; i < m_numCategories; i++) {
+        delete m_categories[i];
     }
-    mCategories.Clear();
+    m_categories.Clear();
 
-    mDatTimestamp       = 0;
-    mHighestMftEntry    = -1;
-    mIsDirty            = false;
-    mNumEntries         = 0;
-    mNumCategories      = 0;
+    m_datTimestamp       = 0;
+    m_highestMftEntry    = -1;
+    m_isDirty            = false;
+    m_numEntries         = 0;
+    m_numCategories      = 0;
 
     // Notify listeners
-    for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-        (*it)->OnIndexCleared(*this);
+    for (auto it = m_listeners.begin(); it != m_listeners.end(); it++) {
+        (*it)->onIndexCleared(*this);
     }
 }
 
-DatIndexEntry* DatIndex::AddIndexEntry(bool pSetDirty)
+DatIndexEntry* DatIndex::addIndexEntry(bool p_setDirty)
 {
-    if (mNumEntries == mEntries.GetSize()) {
-        if (!ReserveEntries(1)) { return NULL; }
+    if (m_numEntries == m_entries.GetSize()) {
+        if (!reserveEntries(1)) { return nullptr; }
     }
 
-    uint index = mNumEntries++;
-    mEntries[index] = new DatIndexEntry(*this);
+    uint index = m_numEntries++;
+    m_entries[index] = new DatIndexEntry(*this);
 
-    mIsDirty = (mIsDirty || pSetDirty);
-    return mEntries[index];
+    m_isDirty = (m_isDirty || p_setDirty);
+    return m_entries[index];
 }
 
-DatIndexCategory* DatIndex::FindCategory(const wxString& pName, bool pRootsOnly) 
+DatIndexCategory* DatIndex::findCategory(const wxString& p_name, bool p_rootsOnly) 
 {
-    for (uint i = 0; i < mNumCategories; i++) {
-        if (!pRootsOnly || !(mCategories[i]->GetParent())) {
-            if (mCategories[i]->GetName() == pName) {
-                return mCategories[i];
+    for (uint i = 0; i < m_numCategories; i++) {
+        if (!p_rootsOnly || !(m_categories[i]->parent())) {
+            if (m_categories[i]->name() == p_name) {
+                return m_categories[i];
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
-DatIndexCategory* DatIndex::AddIndexCategory(const wxString& pName, bool pSetDirty)
+DatIndexCategory* DatIndex::addIndexCategory(const wxString& p_name, bool p_setDirty)
 {
-    if (mNumCategories == mCategories.GetSize()) {
-        if (!ReserveCategories(1)) { return NULL; }
+    if (m_numCategories == m_categories.GetSize()) {
+        if (!reserveCategories(1)) { return nullptr; }
     }
 
-    uint index = mNumCategories++;
-    mCategories[index] = new DatIndexCategory(*this, pName, index);
-    DatIndexCategory& category = *mCategories[index];
+    uint index = m_numCategories++;
+    m_categories[index] = new DatIndexCategory(*this, p_name, index);
+    auto& category = *m_categories[index];
 
     // Notify listeners
-    for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-        (*it)->OnIndexCategoryAdded(*this, category);
+    for (auto it = m_listeners.begin(); it != m_listeners.end(); it++) {
+        (*it)->onIndexCategoryAdded(*this, category);
     }
 
-    mIsDirty = (mIsDirty || pSetDirty);
+    m_isDirty = (m_isDirty || p_setDirty);
     return &category;
 }
 
-DatIndexCategory* DatIndex::FindOrAddCategory(const wxString& pName, bool pSetDirty)
+DatIndexCategory* DatIndex::findOrAddCategory(const wxString& p_name, bool p_setDirty)
 {
-    DatIndexCategory* category = this->FindCategory(pName, true);
+    auto category = this->findCategory(p_name, true);
     if (!category) {
-        category = this->AddIndexCategory(pName, pSetDirty);
+        category = this->addIndexCategory(p_name, p_setDirty);
     }
     return category;
 }
 
-bool DatIndex::ReserveEntries(uint pAdditionalEntries)
+bool DatIndex::reserveEntries(uint p_additionalEntries)
 {
-    if ((UINT_MAX - mEntries.GetSize()) < pAdditionalEntries) { return false; }
-    mEntries.SetSize(mEntries.GetSize() + pAdditionalEntries);
+    if ((UINT_MAX - m_entries.GetSize()) < p_additionalEntries) { return false; }
+    m_entries.SetSize(m_entries.GetSize() + p_additionalEntries);
     return true;
 }
 
-bool DatIndex::ReserveCategories(uint pAdditionalCategories)
+bool DatIndex::reserveCategories(uint p_additionalCategories)
 {
-    if ((UINT_MAX - mCategories.GetSize()) < pAdditionalCategories) { return false; }
-    mCategories.SetSize(mCategories.GetSize() + pAdditionalCategories);
+    if ((UINT_MAX - m_categories.GetSize()) < p_additionalCategories) { return false; }
+    m_categories.SetSize(m_categories.GetSize() + p_additionalCategories);
     return true;
 }
 
-void DatIndex::AddListener(IDatIndexListener* pListener)
+void DatIndex::addListener(IDatIndexListener* p_listener)
 {
-    mListeners.insert(pListener);
+    m_listeners.insert(p_listener);
 }
 
-void DatIndex::RemoveListener(IDatIndexListener* pListener)
+void DatIndex::removeListener(IDatIndexListener* p_listener)
 {
-    mListeners.erase(pListener);
+    m_listeners.erase(p_listener);
 }
 
-void DatIndex::OnEntryAddComplete(DatIndexEntry& pEntry)
+void DatIndex::onEntryAddComplete(DatIndexEntry& p_entry)
 {
-    if ((int)pEntry.GetMftEntry() > mHighestMftEntry) {
-        mHighestMftEntry = (int)pEntry.GetMftEntry();
+    if (static_cast<int>(p_entry.mftEntry()) > m_highestMftEntry) {
+        m_highestMftEntry = static_cast<int>(p_entry.mftEntry());
     }
 
     // Notify listeners
-    for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-        (*it)->OnIndexFileAdded(*this, pEntry);
+    for (auto it = m_listeners.begin(); it != m_listeners.end(); it++) {
+        (*it)->onIndexFileAdded(*this, p_entry);
     }
 }
 

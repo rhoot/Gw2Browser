@@ -27,65 +27,65 @@
 namespace gw2b
 {
 
-ProgressStatusBar::ProgressStatusBar(wxWindow* pParent)
-    : wxStatusBar(pParent, wxID_ANY, wxST_SIZEGRIP)
+ProgressStatusBar::ProgressStatusBar(wxWindow* p_parent)
+    : wxStatusBar(p_parent, wxID_ANY, wxST_SIZEGRIP)
 {
-    mProgress.Create(this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL | wxGA_SMOOTH);
-    mProgress.Hide();
-    this->Connect(wxEVT_SIZE, wxSizeEventHandler(ProgressStatusBar::OnSize));
+    m_progress.Create(this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL | wxGA_SMOOTH);
+    m_progress.Hide();
+    this->Connect(wxEVT_SIZE, wxSizeEventHandler(ProgressStatusBar::onSize));
 }
 
-void ProgressStatusBar::ShowProgressBar()
+void ProgressStatusBar::showProgressBar()
 {
     wxRect progressRect;
     this->SetFieldsCount(2);
     this->GetFieldRect(1, progressRect);
 
-    mProgress.SetPosition(progressRect.GetPosition());
-    mProgress.SetSize(progressRect.GetSize());
-    mProgress.Show();
+    m_progress.SetPosition(progressRect.GetPosition());
+    m_progress.SetSize(progressRect.GetSize());
+    m_progress.Show();
 }
 
-void ProgressStatusBar::HideProgressBar()
+void ProgressStatusBar::hideProgressBar()
 {
-    mProgress.Hide();
+    m_progress.Hide();
     this->SetFieldsCount(1);
 }
 
-uint ProgressStatusBar::GetMaxValue() const
+uint ProgressStatusBar::maxValue() const
 {
-    return mProgress.GetRange();
+    return m_progress.GetRange();
 }
 
-void ProgressStatusBar::SetMaxValue(uint pValue)
+void ProgressStatusBar::setMaxValue(uint p_value)
 {
-    mProgress.SetRange(pValue);
+    m_progress.SetRange(p_value);
 }
 
-uint ProgressStatusBar::GetCurrentValue() const
+uint ProgressStatusBar::currentValue() const
 {
-    return mProgress.GetValue();
+    return m_progress.GetValue();
 }
 
-void ProgressStatusBar::SetCurrentValue(uint pValue)
+void ProgressStatusBar::setCurrentValue(uint p_value)
 {
-    mProgress.SetValue(wxMin(pValue, mProgress.GetRange()));
+    m_progress.SetValue(wxMin(p_value, m_progress.GetRange()));
 }
 
-void ProgressStatusBar::Update(uint pValue, const wxString& pLabel)
+void ProgressStatusBar::update(uint p_value, const wxString& p_label)
 {
-    this->SetCurrentValue(pValue);
-    this->SetStatusText(pLabel);
+    this->setCurrentValue(p_value);
+    this->SetStatusText(p_label);
 }
 
 
-void ProgressStatusBar::OnSize(wxSizeEvent& WXUNUSED(pEvent))
+void ProgressStatusBar::onSize(wxSizeEvent& WXUNUSED(p_event))
 {
-    if (mProgress.IsShown()) {
+    if (m_progress.IsShown()) {
         wxRect progressRect;
         this->GetFieldRect(1, progressRect);
-        mProgress.SetPosition(progressRect.GetPosition());
-        mProgress.SetSize(progressRect.GetSize());
+        m_progress.SetPosition(progressRect.GetPosition());
+        m_progress.SetSize(progressRect.GetSize());
     }
 }
 

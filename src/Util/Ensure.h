@@ -1,5 +1,5 @@
 /** \file       Util/Ensure.h
- *  \brief      Contains some common wxASSERTs.
+ *  \brief      Contains some common Asserts.
  *  \author     Rhoot
  */
 
@@ -33,28 +33,28 @@ namespace Ensure
 {
 
 /** Asserts that the given object is castable to the given type.
- *  \param[in]  pObject     Object to verify type of.
+ *  \param[in]  p_object     Object to verify type of.
  *  \tparam     T           Type the object should be castable to. */
 template <typename T, typename TPtr>
-    void IsOfType(TPtr* pObject)
+    void isOfType(TPtr* p_object)
 {
-    wxASSERT(dynamic_cast<T*>(pObject) != NULL);
+    Assert(dynamic_cast<T*>(p_object) != nullptr);
 }
 
-/** Asserts that the given pointer is not NULL. 
- *  \param[in]  pPointer    Pointer to check. */
+/** Asserts that the given pointer is not nullptr. 
+ *  \param[in]  p_pointer    Pointer to check. */
 template <typename T>
-    void NotNull(T* pPointer)
+    void notNull(T* p_pointer)
 {
-    wxASSERT(pPointer != NULL);
+    Assert(p_pointer != nullptr);
 }
 
-/** Asserts that the given pointer is NULL.
- *  \param[in]  pPointer    Pointer to check. */
+/** Asserts that the given pointer is nullptr.
+ *  \param[in]  p_pointer    Pointer to check. */
 template <typename T>
-    void IsNull(T* pPointer)
+    void isNull(T* p_pointer)
 {
-    wxASSERT(pPointer == NULL);
+    Assert(p_pointer == nullptr);
 }
 
 }; // namespace Ensure

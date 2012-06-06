@@ -44,24 +44,24 @@
 namespace gw2b
 {
 
-BrowserWindow::BrowserWindow(const wxString& pTitle)
-    : wxFrame(NULL, wxID_ANY, pTitle, wxDefaultPosition, wxSize(800, 512))
-    , mIndex(new DatIndex())
-    , mProgress(NULL)
-    , mCurrentTask(NULL)
-    , mSplitter(NULL)
-    , mCatTree(NULL)
-    , mPreviewPanel(NULL)
+BrowserWindow::BrowserWindow(const wxString& p_title)
+    : wxFrame(nullptr, wxID_ANY, p_title, wxDefaultPosition, wxSize(800, 512))
+    , m_index(std::make_shared<DatIndex>())
+    , m_progress(nullptr)
+    , m_currentTask(nullptr)
+    , m_splitter(nullptr)
+    , m_catTree(nullptr)
+    , m_previewPanel(nullptr)
 {
-    wxMenuBar* menuBar = new wxMenuBar();
+    auto menuBar = new wxMenuBar();
     // File menu
-    wxMenu* fileMenu = new wxMenu();
+    auto fileMenu = new wxMenu();
     wxAcceleratorEntry accel(wxACCEL_CTRL, 'O');
     fileMenu->Append(wxID_OPEN, wxT("&Open"), wxT("Open a file for browsing"))->SetAccel(&accel);
     fileMenu->AppendSeparator();
     fileMenu->Append(wxID_EXIT, wxT("E&xit"));
     // Help menu
-    wxMenu* helpMenu = new wxMenu();
+    auto helpMenu = new wxMenu();
     helpMenu->Append(wxID_ABOUT, wxT("&About Gw2Browser"));
     // Attach menu
     menuBar->Append(fileMenu, wxT("&File"));
@@ -69,221 +69,253 @@ BrowserWindow::BrowserWindow(const wxString& pTitle)
     this->SetMenuBar(menuBar);
 
     // Setup statusbar
-    mProgress = new ProgressStatusBar(this);
-    this->SetStatusBar(mProgress);
+    m_progress = new ProgressStatusBar(this);
+    this->SetStatusBar(m_progress);
 
     // Splitter
-    mSplitter = new wxSplitterWindow(this);
+    m_splitter = new wxSplitterWindow(this);
 
     // Category tree
-    mCatTree = new CategoryTree(mSplitter);
-    mCatTree->SetIndex(mIndex);
-    mCatTree->AddListener(this);
+    m_catTree = new CategoryTree(m_splitter);
+    m_catTree->setDatIndex(m_index);
+    m_catTree->addListener(this);
 
     // Preview panel
-    mPreviewPanel = new PreviewPanel(mSplitter);
-    mPreviewPanel->Hide();
+    m_previewPanel = new PreviewPanel(m_splitter);
+    m_previewPanel->Hide();
 
     // Initialize splitter
-    mSplitter->Initialize(mCatTree);
+    m_splitter->Initialize(m_catTree);
 
     // Hook up events
-    this->Connect(wxID_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(BrowserWindow::OnOpenEvt));
-    this->Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(BrowserWindow::OnExitEvt));
-    this->Connect(wxID_ABOUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(BrowserWindow::OnAboutEvt));
-    this->Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(BrowserWindow::OnCloseEvt));
+    this->Connect(wxID_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(BrowserWindow::onOpenEvt));
+    this->Connect(wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(BrowserWindow::onExitEvt));
+    this->Connect(wxID_ABOUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(BrowserWindow::onAboutEvt));
+    this->Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(BrowserWindow::onCloseEvt));
 }
+
+//============================================================================/
 
 BrowserWindow::~BrowserWindow()
 {
-    DeletePointer(mCurrentTask);
+    deletePointer(m_currentTask);
 }
 
-bool BrowserWindow::PerformTask(Task* pTask)
+//============================================================================/
+
+bool BrowserWindow::performTask(Task* p_task)
 {
-    Ensure::NotNull(pTask);
+    Ensure::notNull(p_task);
 
     // Already have a task running?
-    if (mCurrentTask) {
-        if (mCurrentTask->CanAbort()) {
-            mCurrentTask->Abort();
-            DeletePointer(mCurrentTask);
-            this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(BrowserWindow::OnPerformTaskEvt));
-            mProgress->HideProgressBar();
+    if (m_currentTask) {
+        if (m_currentTask->canAbort()) {
+            m_currentTask->abort();
+            deletePointer(m_currentTask);
+            this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(BrowserWindow::onPerformTaskEvt));
+            m_progress->hideProgressBar();
         } else {
-            DeletePointer(pTask);
+            deletePointer(p_task);
             return false;
         }
     }
 
     // Initialize succeeded?
-    mCurrentTask = pTask;
-    if (!mCurrentTask->Init()) {
-        DeletePointer(mCurrentTask);
+    m_currentTask = p_task;
+    if (!m_currentTask->init()) {
+        deletePointer(m_currentTask);
         return false;
     }
 
-    this->Connect(wxEVT_IDLE, wxIdleEventHandler(BrowserWindow::OnPerformTaskEvt));
-    mProgress->SetMaxValue(mCurrentTask->GetMaxProgress());
-    mProgress->ShowProgressBar();
+    this->Connect(wxEVT_IDLE, wxIdleEventHandler(BrowserWindow::onPerformTaskEvt));
+    m_progress->setMaxValue(m_currentTask->maxProgress());
+    m_progress->showProgressBar();
     return true;
 }
 
-void BrowserWindow::OpenFile(const wxString& pPath)
+//============================================================================/
+
+void BrowserWindow::openFile(const wxString& p_path)
 {
     // Try to open the file
-    if (!mDatFile.Open(pPath)) {
-        wxMessageBox(wxString::Format(wxT("Failed to open file: %s"), pPath), 
+    if (!m_datFile.open(p_path)) {
+        wxMessageBox(wxString::Format(wxT("Failed to open file: %s"), p_path), 
             wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
         return;
     }
-    mDatPath = pPath;
+    m_datPath = p_path;
 
     // Open the index file
-    wxFileName indexFile = this->FindDatIndex();
-    uint64 datTimeStamp = wxFileModificationTime(pPath);
-    ReadIndexTask* readIndexTask = new ReadIndexTask(mIndex, indexFile.GetFullPath(), datTimeStamp);
+    uint64 datTimeStamp = wxFileModificationTime(p_path);
+    auto indexFile      = this->findDatIndex();
+    auto readIndexTask  = new ReadIndexTask(m_index, indexFile.GetFullPath(), datTimeStamp);
 
     // Start reading the index
-    readIndexTask->GetOnCompleteHandler() += Task::OnCompleteHandler(this, &BrowserWindow::OnReadIndexComplete);
-    if (!this->PerformTask(readIndexTask)) {
-        this->ReIndexDat();
+    readIndexTask->addOnCompleteHandler([this]() { this->onReadIndexComplete(); });
+    if (!this->performTask(readIndexTask)) {
+        this->reIndexDat();
     }
 }
 
-void BrowserWindow::ViewEntry(const DatIndexEntry& pEntry)
+//============================================================================/
+
+void BrowserWindow::viewEntry(const DatIndexEntry& p_entry)
 {
-    if (mPreviewPanel->PreviewFile(mDatFile, pEntry)) {
-        mPreviewPanel->Show();
+    if (m_previewPanel->previewFile(m_datFile, p_entry)) {
+        m_previewPanel->Show();
         // Split it!
-        mSplitter->SetMinimumPaneSize(100);
-        mSplitter->SplitVertically(mCatTree, mPreviewPanel, mSplitter->GetClientSize().x / 4);
+        m_splitter->SetMinimumPaneSize(100);
+        m_splitter->SplitVertically(m_catTree, m_previewPanel, m_splitter->GetClientSize().x / 4);
     }
 }
 
-wxFileName BrowserWindow::FindDatIndex()
+//============================================================================/
+
+wxFileName BrowserWindow::findDatIndex()
 {
-    wxString configPath    = wxStandardPaths().GetUserDataDir();
-    int datPathCrc         = ::compute_crc(INITIAL_CRC, mDatPath.char_str(), mDatPath.Length());
-    wxString indexFileName = wxString::Format(wxT("%x.idx"), (uint)datPathCrc);
+    auto configPath    = wxStandardPaths().GetUserDataDir();
+    auto datPathCrc    = ::compute_crc(INITIAL_CRC, m_datPath.char_str(), m_datPath.Length());
+    auto indexFileName = wxString::Format(wxT("%x.idx"), (uint)datPathCrc);
     
     return wxFileName(configPath, indexFileName);
 }
 
-void BrowserWindow::ReIndexDat()
+//============================================================================/
+
+void BrowserWindow::reIndexDat()
 {
-    mIndex->Clear();
-    mIndex->SetDatTimeStamp(wxFileModificationTime(mDatPath));
-    this->IndexDat();
+    m_index->clear();
+    m_index->setDatTimestamp(wxFileModificationTime(m_datPath));
+    this->indexDat();
 }
 
-void BrowserWindow::IndexDat()
+//============================================================================/
+
+void BrowserWindow::indexDat()
 {
-    ScanDatTask* scanTask = new ScanDatTask(mIndex, mDatFile);
-    scanTask->GetOnCompleteHandler() += Task::OnCompleteHandler(this, &BrowserWindow::OnScanTaskComplete);
-    this->PerformTask(scanTask);
+    auto scanTask = new ScanDatTask(m_index, m_datFile);
+    scanTask->addOnCompleteHandler([this]() { this->onScanTaskComplete(); });
+    this->performTask(scanTask);
 }
 
-void BrowserWindow::OnOpenEvt(wxCommandEvent& WXUNUSED(pEvent))
+//============================================================================/
+
+void BrowserWindow::onOpenEvt(wxCommandEvent& WXUNUSED(p_event))
 {
     wxFileDialog dialog(this, wxFileSelectorPromptStr, wxT(""), wxT("Gw2.dat"), 
         wxT("Guild Wars 2 DAT|*.dat"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (dialog.ShowModal() == wxID_OK) {
-        this->OpenFile(dialog.GetPath());
+        this->openFile(dialog.GetPath());
     }
 }
 
-void BrowserWindow::OnExitEvt(wxCommandEvent& WXUNUSED(pEvent))
+//============================================================================/
+
+void BrowserWindow::onExitEvt(wxCommandEvent& WXUNUSED(p_event))
 {
     this->Close(true);
 }
 
-void BrowserWindow::OnAboutEvt(wxCommandEvent& WXUNUSED(pEvent))
+//============================================================================/
+
+void BrowserWindow::onAboutEvt(wxCommandEvent& WXUNUSED(p_event))
 {
     AboutBox about(this);
     about.ShowModal();
 }
 
-void BrowserWindow::OnCloseEvt(wxCloseEvent& pEvent)
+//============================================================================/
+
+void BrowserWindow::onCloseEvt(wxCloseEvent& p_event)
 {
     // Drop out if we can't cancel the window closing
-    if (!pEvent.CanVeto()) {
-        pEvent.Skip();
+    if (!p_event.CanVeto()) {
+        p_event.Skip();
         return;
     }
 
     // Cancel current task if possible.
-    if (mCurrentTask) {
-        if (mCurrentTask->CanAbort()) {
-            mCurrentTask->Abort();
-            DeletePointer(mCurrentTask);
-            this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(BrowserWindow::OnPerformTaskEvt));
+    if (m_currentTask) {
+        if (m_currentTask->canAbort()) {
+            m_currentTask->abort();
+            deletePointer(m_currentTask);
+            this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(BrowserWindow::onPerformTaskEvt));
         } else {
             this->Disable();
-            mCurrentTask->GetOnCompleteHandler() += Task::OnCompleteHandler(this, &BrowserWindow::TryClose);
-            pEvent.Veto();
+            m_currentTask->addOnCompleteHandler([this]() { this->tryClose(); });
+            p_event.Veto();
             return;
         }
     }
 
     // Add a write task if the index is dirty
-    if (!mCurrentTask && mIndex->IsDirty()) {
-        wxFileName indexPath = this->FindDatIndex();
+    if (!m_currentTask && m_index->isDirty()) {
+        auto indexPath = this->findDatIndex();
         if (!indexPath.DirExists()) { indexPath.Mkdir(511, wxPATH_MKDIR_FULL); }
 
-        WriteIndexTask* writeTask = new WriteIndexTask(mIndex, indexPath.GetFullPath());
-        writeTask->GetOnCompleteHandler() += Task::OnCompleteHandler(this, &BrowserWindow::OnWriteTaskCloseCompleted);
-        if (this->PerformTask(writeTask)) {
+        auto writeTask = new WriteIndexTask(m_index, indexPath.GetFullPath());
+        writeTask->addOnCompleteHandler([this]() { this->onWriteTaskCloseCompleted(); });
+        if (this->performTask(writeTask)) {
             this->Disable();
-            pEvent.Veto();
+            p_event.Veto();
             return;
         }
     }
 
-    pEvent.Skip();
+    p_event.Skip();
 }
 
-void BrowserWindow::OnPerformTaskEvt(wxIdleEvent& pEvent)
-{
-    Ensure::NotNull(mCurrentTask);
-    mCurrentTask->Perform();
+//============================================================================/
 
-    if (!mCurrentTask->IsDone()) {
-        mProgress->Update(mCurrentTask->GetCurrentProgress(), mCurrentTask->GetText());
-        pEvent.RequestMore();
+void BrowserWindow::onPerformTaskEvt(wxIdleEvent& p_event)
+{
+    Ensure::notNull(m_currentTask);
+    m_currentTask->perform();
+
+    if (!m_currentTask->isDone()) {
+        m_progress->update(m_currentTask->currentProgress(), m_currentTask->text());
+        p_event.RequestMore();
     } else {
-        this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(BrowserWindow::OnPerformTaskEvt));
-        mProgress->SetStatusText(wxEmptyString);
-        mProgress->HideProgressBar();
-        Task::OnCompleteHandler onComplete = mCurrentTask->GetOnCompleteHandler();
-        DeletePointer(mCurrentTask);
-        onComplete();
+        this->Disconnect(wxEVT_IDLE, wxIdleEventHandler(BrowserWindow::onPerformTaskEvt));
+        m_progress->SetStatusText(wxEmptyString);
+        m_progress->hideProgressBar();
+
+        auto oldTask = m_currentTask;
+        m_currentTask = nullptr;
+        oldTask->invokeOnCompleteHandler();
+        deletePointer(oldTask);
     }
 }
 
-void BrowserWindow::OnReadIndexComplete()
+//============================================================================/
+
+void BrowserWindow::onReadIndexComplete()
 {
     // If it failed, it was cleared.
-    if (mIndex->GetDatTimeStamp() == 0 || mIndex->GetNumEntries() == 0) {
-        this->ReIndexDat();
+    if (m_index->datTimestamp() == 0 || m_index->numEntries() == 0) {
+        this->reIndexDat();
         return;
     }
 
     // Was it complete?
-    bool isComplete = (mIndex->GetHighestMftEntry() == mDatFile.GetNumFiles());
+    auto isComplete = (m_index->highestMftEntry() == m_datFile.numFiles());
     if (!isComplete) {
-        this->IndexDat();
+        this->indexDat();
     }
 }
 
-void BrowserWindow::OnScanTaskComplete()
+//============================================================================/
+
+void BrowserWindow::onScanTaskComplete()
 {
-    WriteIndexTask* writeTask = new WriteIndexTask(mIndex, this->FindDatIndex().GetFullPath());
-    this->PerformTask(writeTask);
+    auto writeTask = new WriteIndexTask(m_index, this->findDatIndex().GetFullPath());
+    this->performTask(writeTask);
 }
 
-void BrowserWindow::OnWriteTaskCloseCompleted()
+//============================================================================/
+
+void BrowserWindow::onWriteTaskCloseCompleted()
 {
     // Forcing this here causes the OnCloseEvt to not try to write the index
     // again. In case it failed the first time, it's likely to fail again and
@@ -291,35 +323,45 @@ void BrowserWindow::OnWriteTaskCloseCompleted()
     this->Close(true);
 }
 
-void BrowserWindow::TryClose()
+//============================================================================/
+
+void BrowserWindow::tryClose()
 {
     this->Close(false);
 }
 
-void BrowserWindow::OnTreeEntryClicked(CategoryTree& pTree, const DatIndexEntry& pEntry)
+//============================================================================/
+
+void BrowserWindow::onTreeEntryClicked(CategoryTree& p_tree, const DatIndexEntry& p_entry)
 {
-    this->ViewEntry(pEntry);
+    this->viewEntry(p_entry);
 }
 
-void BrowserWindow::OnTreeCategoryClicked(CategoryTree& pTree, const DatIndexCategory& pCategory)
+//============================================================================/
+
+void BrowserWindow::onTreeCategoryClicked(CategoryTree& p_tree, const DatIndexCategory& p_category)
 {
     // TODO
 }
 
-void BrowserWindow::OnTreeCleared(CategoryTree& pTree)
+//============================================================================/
+
+void BrowserWindow::onTreeCleared(CategoryTree& p_tree)
 {
     // TODO
 }
 
-void BrowserWindow::OnTreeExtractRaw(CategoryTree& pTree)
+//============================================================================/
+
+void BrowserWindow::onTreeExtractRaw(CategoryTree& p_tree)
 {
-    Array<const DatIndexEntry*> entries = pTree.GetSelectedEntries();
+    auto entries = p_tree.getSelectedEntries();
 
     if (entries.GetSize()) {
         // If it's just one file, we could handle it here
         if (entries.GetSize() == 1) {
-            const DatIndexEntry* entry = entries[0];
-            Array<byte> entryData = mDatFile.ReadFile(entry->GetMftEntry());
+            auto entry     = entries[0];
+            auto entryData = m_datFile.readFile(entry->mftEntry());
             
             // Valid data?
             if (!entryData.GetSize()) {
@@ -329,9 +371,9 @@ void BrowserWindow::OnTreeExtractRaw(CategoryTree& pTree)
 
             // Ask for location
             wxFileDialog dialog(this, 
-                wxString::Format(wxT("Extract %s..."), entry->GetName()), 
+                wxString::Format(wxT("Extract %s..."), entry->name()), 
                 wxEmptyString, 
-                entry->GetName(), 
+                entry->name(), 
                 wxFileSelectorDefaultWildcardStr,
                 wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
@@ -350,21 +392,23 @@ void BrowserWindow::OnTreeExtractRaw(CategoryTree& pTree)
         else {
             wxDirDialog dialog(this, wxT("Select output folder"));
             if (dialog.ShowModal() == wxID_OK) {
-                new ExtractFilesWindow(entries, mDatFile, dialog.GetPath(), ExtractFilesWindow::EM_Raw);
+                new ExtractFilesWindow(entries, m_datFile, dialog.GetPath(), ExtractFilesWindow::EM_Raw);
             }
         }
     }
 }
 
-void BrowserWindow::OnTreeExtractConverted(CategoryTree& pTree)
+//============================================================================/
+
+void BrowserWindow::onTreeExtractConverted(CategoryTree& p_tree)
 {
-    Array<const DatIndexEntry*> entries = pTree.GetSelectedEntries();
+    auto entries = p_tree.getSelectedEntries();
 
     if (entries.GetSize()) {
         // If it's just one file, we could handle it here
         if (entries.GetSize() == 1) {
-            const DatIndexEntry* entry = entries[0];
-            Array<byte> entryData = mDatFile.ReadFile(entry->GetMftEntry());
+            auto entry     = entries[0];
+            auto entryData = m_datFile.readFile(entry->mftEntry());
             
             // Valid data?
             if (!entryData.GetSize()) {
@@ -372,21 +416,21 @@ void BrowserWindow::OnTreeExtractConverted(CategoryTree& pTree)
                 return;
             }
             // Convert to a usable format
-            ANetFileType fileType = ANFT_Unknown;
-            mDatFile.IdentifyFileType(entryData.GetPointer(), entryData.GetSize(), fileType);
-            FileReader* reader = FileReader::GetReaderForData(entryData, fileType);
+            auto fileType = ANFT_Unknown;
+            m_datFile.identifyFileType(entryData.GetPointer(), entryData.GetSize(), fileType);
+            auto reader = FileReader::readerForData(entryData, fileType);
 
-            wxString ext = wxEmptyString;
+            auto ext = wxEmptyString;
             if (reader) {
-                entryData = reader->ConvertData();
-                ext       = reader->GetExtension();
+                entryData = reader->convertData();
+                ext       = reader->extension();
             }
 
             // Ask for location
             wxFileDialog dialog(this, 
-                wxString::Format(wxT("Extract %s%s..."), entry->GetName(), ext), 
+                wxString::Format(wxT("Extract %s%s..."), entry->name(), ext), 
                 wxEmptyString, 
-                entry->GetName() + ext, 
+                entry->name() + ext, 
                 wxFileSelectorDefaultWildcardStr,
                 wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
@@ -400,14 +444,14 @@ void BrowserWindow::OnTreeExtractConverted(CategoryTree& pTree)
                 }
             }
 
-            DeletePointer(reader);
+            deletePointer(reader);
         }
 
         // More files than one
         else {
             wxDirDialog dialog(this, wxT("Select output folder"));
             if (dialog.ShowModal() == wxID_OK) {
-                new ExtractFilesWindow(entries, mDatFile, dialog.GetPath(), ExtractFilesWindow::EM_Converted);
+                new ExtractFilesWindow(entries, m_datFile, dialog.GetPath(), ExtractFilesWindow::EM_Converted);
             }
         }
     }

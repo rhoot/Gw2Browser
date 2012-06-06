@@ -33,7 +33,7 @@ namespace gw2b
 
 ImageViewer::ImageViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& pSize)
     : Viewer(pParent, pPos, pSize)
-    , mImageControl(NULL)
+    , mImageControl(nullptr)
 {
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -54,16 +54,16 @@ ImageViewer::~ImageViewer()
 {
 }
 
-void ImageViewer::Clear()
+void ImageViewer::clear()
 {
     mImageControl->SetImage(wxImage());
-    Viewer::Clear();
+    Viewer::clear();
 }
 
-void ImageViewer::SetReader(FileReader* pReader)
+void ImageViewer::setReader(FileReader* pReader)
 {
-    Ensure::IsOfType<ImageReader>(pReader);
-    Viewer::SetReader(pReader);
+    Ensure::isOfType<ImageReader>(pReader);
+    Viewer::setReader(pReader);
 
     if (pReader) {
         mImage = GetImageReader()->GetImage();
@@ -83,10 +83,10 @@ wxToolBar* ImageViewer::BuildToolbar()
 
     // Load all toolbar button icons
     toolbar->SetToolBitmapSize(wxSize(16, 16));
-    mToolbarButtonIcons.push_back(data::LoadPNG(data::toggle_red_png,   data::toggle_red_png_size));
-    mToolbarButtonIcons.push_back(data::LoadPNG(data::toggle_green_png, data::toggle_green_png_size));
-    mToolbarButtonIcons.push_back(data::LoadPNG(data::toggle_blue_png,  data::toggle_blue_png_size));
-    mToolbarButtonIcons.push_back(data::LoadPNG(data::toggle_alpha_png, data::toggle_alpha_png_size));
+    mToolbarButtonIcons.push_back(data::loadPNG(data::toggle_red_png,   data::toggle_red_png_size));
+    mToolbarButtonIcons.push_back(data::loadPNG(data::toggle_green_png, data::toggle_green_png_size));
+    mToolbarButtonIcons.push_back(data::loadPNG(data::toggle_blue_png,  data::toggle_blue_png_size));
+    mToolbarButtonIcons.push_back(data::loadPNG(data::toggle_alpha_png, data::toggle_alpha_png_size));
 
     // Toggle channel buttons
     for (uint i = 0; i < 4; i++) {

@@ -29,8 +29,8 @@
 namespace gw2b
 {
 
-PackFile::PackFile(const Array<byte>& pData)
-    : mData(pData)
+PackFile::PackFile(const Array<byte>& p_data)
+    : m_data(p_data)
 {
 }
 
@@ -38,54 +38,54 @@ PackFile::~PackFile()
 {
 }
 
-const byte* PackFile::GetChunk(uint pChunkType, uint& poSize) const
+const byte* PackFile::findChunk(uint p_chunkType, uint& po_size) const
 {
-    poSize = 0;
+    po_size = 0;
 
     // Bail if the data size is too small
-    if (mData.GetSize() < sizeof(ANetPfHeader)) {
-        return NULL;
+    if (m_data.GetSize() < sizeof(ANetPfHeader)) {
+        return nullptr;
     }
 
     // Bail when Gw2 would
-    const ANetPfHeader* header = reinterpret_cast<const ANetPfHeader*>(mData.GetPointer());
-    if (header->mIdentifier[0] != 'P' || 
-        header->mIdentifier[1] != 'F' || 
-        header->mUnknownField2 != 0 ||
-        header->mPkFileVersion > 0xC)
+    auto header = reinterpret_cast<const ANetPfHeader*>(m_data.GetPointer());
+    if (header->identifier[0] != 'P' || 
+        header->identifier[1] != 'F' || 
+        header->unknownField2 != 0 ||
+        header->pkFileVersion > 0xC)
     {
-        return NULL;
+        return nullptr;
     }
 
-    const byte* end = &mData[mData.GetSize() - 1];
-    const byte* pos = &mData[sizeof(ANetPfHeader)];
+    auto end = &m_data[m_data.GetSize() - 1];
+    auto pos = &m_data[sizeof(ANetPfHeader)];
 
     while (pos < end) {
         uint bytesLeft = (end - pos);
         if (bytesLeft < sizeof(ANetPfChunkHeader)) {
-            return NULL;
+            return nullptr;
         }
 
         // Get the chunk header
-        const ANetPfChunkHeader* chunkHead = reinterpret_cast<const ANetPfChunkHeader*>(pos);
+        auto chunkHead = reinterpret_cast<const ANetPfChunkHeader*>(pos);
         // Calculate actual data size, as mChunkDataSize does not count the size of some header variables
-        uint chunkSize = chunkHead->mChunkDataSize + offsetof(ANetPfChunkHeader, mChunkVersion);
+        auto chunkSize = chunkHead->chunkDataSize + offsetof(ANetPfChunkHeader, chunkVersion);
 
         // Correct chunk type?
-        if (chunkHead->mChunkTypeInteger == pChunkType) {
+        if (chunkHead->chunkTypeInteger == p_chunkType) {
             // Bail if too little data left
             if (chunkSize > bytesLeft) {
-                return NULL;
+                return nullptr;
             }
             // Return result
-            poSize = chunkSize;
+            po_size = chunkSize;
             return pos;
         } else {
             pos += chunkSize;
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 }; // namespace gw2b

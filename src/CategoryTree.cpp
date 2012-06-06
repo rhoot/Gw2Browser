@@ -36,14 +36,16 @@ namespace gw2b
 CategoryTreeImageList::CategoryTreeImageList()
     : wxImageList(16, 16, true, 2)
 {
-    this->Add(data::LoadPNG(data::open_folder_png,   data::open_folder_png_size));
-    this->Add(data::LoadPNG(data::unknown_png,       data::unknown_png_size));
-    this->Add(data::LoadPNG(data::closed_folder_png, data::closed_folder_png_size));
-    this->Add(data::LoadPNG(data::exe_png,           data::exe_png_size));
-    this->Add(data::LoadPNG(data::dll_png,           data::dll_png_size));
-    this->Add(data::LoadPNG(data::image_png,         data::image_png_size));
-    this->Add(data::LoadPNG(data::text_png,          data::text_png_size));
+    this->Add(data::loadPNG(data::open_folder_png,   data::open_folder_png_size));
+    this->Add(data::loadPNG(data::unknown_png,       data::unknown_png_size));
+    this->Add(data::loadPNG(data::closed_folder_png, data::closed_folder_png_size));
+    this->Add(data::loadPNG(data::exe_png,           data::exe_png_size));
+    this->Add(data::loadPNG(data::dll_png,           data::dll_png_size));
+    this->Add(data::loadPNG(data::image_png,         data::image_png_size));
+    this->Add(data::loadPNG(data::text_png,          data::text_png_size));
 }
+
+//============================================================================/
 
 CategoryTreeImageList::~CategoryTreeImageList()
 {
@@ -53,63 +55,69 @@ CategoryTreeImageList::~CategoryTreeImageList()
 //      CategoryTree
 //----------------------------------------------------------------------------
 
-CategoryTree::CategoryTree(wxWindow* pParent, const wxPoint& pLocation, const wxSize& pSize)
-    : wxTreeCtrl(pParent, wxID_ANY, pLocation, pSize, wxTR_HIDE_ROOT | wxTR_TWIST_BUTTONS | wxTR_DEFAULT_STYLE | wxTR_MULTIPLE)
+CategoryTree::CategoryTree(wxWindow* p_parent, const wxPoint& p_location, const wxSize& p_size)
+    : wxTreeCtrl(p_parent, wxID_ANY, p_location, p_size, wxTR_HIDE_ROOT | wxTR_TWIST_BUTTONS | wxTR_DEFAULT_STYLE | wxTR_MULTIPLE)
 {
     // Initialize tree
-    CategoryTreeImageList* images = new CategoryTreeImageList();
+    auto images = new CategoryTreeImageList();
     this->AssignImageList(images);
     this->AddRoot(wxT("Root"));
 
     // Hookup events
-    this->Connect(wxEVT_COMMAND_TREE_ITEM_EXPANDING, wxTreeEventHandler(CategoryTree::OnItemExpanding));
-    this->Connect(wxEVT_COMMAND_TREE_ITEM_COLLAPSING, wxTreeEventHandler(CategoryTree::OnItemCollapsing));
-    this->Connect(wxEVT_COMMAND_TREE_SEL_CHANGED, wxTreeEventHandler(CategoryTree::OnSelChanged));
-    this->Connect(wxEVT_COMMAND_TREE_ITEM_MENU, wxTreeEventHandler(CategoryTree::OnContextMenu));
-    this->Connect(wxID_SAVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CategoryTree::OnExtractConvertedFiles));
-    this->Connect(wxID_SAVEAS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CategoryTree::OnExtractRawFiles));
+    this->Connect(wxEVT_COMMAND_TREE_ITEM_EXPANDING, wxTreeEventHandler(CategoryTree::onItemExpanding));
+    this->Connect(wxEVT_COMMAND_TREE_ITEM_COLLAPSING, wxTreeEventHandler(CategoryTree::onItemCollapsing));
+    this->Connect(wxEVT_COMMAND_TREE_SEL_CHANGED, wxTreeEventHandler(CategoryTree::onSelChanged));
+    this->Connect(wxEVT_COMMAND_TREE_ITEM_MENU, wxTreeEventHandler(CategoryTree::onContextMenu));
+    this->Connect(wxID_SAVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CategoryTree::onExtractConvertedFiles));
+    this->Connect(wxID_SAVEAS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CategoryTree::onExtractRawFiles));
 }
+
+//============================================================================/
 
 CategoryTree::~CategoryTree()
 {
-    if (mIndex) {
-        mIndex->RemoveListener(this);
+    if (m_index) {
+        m_index->removeListener(this);
     }
 
-    for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-        (*it)->OnTreeDestruction(*this);
+    for (auto it = m_listeners.begin(); it != m_listeners.end(); it++) {
+        (*it)->onTreeDestruction(*this);
     }
 }
 
-void CategoryTree::AddEntry(const DatIndexEntry& pEntry)
+//============================================================================/
+
+void CategoryTree::addEntry(const DatIndexEntry& p_entry)
 {
-    wxTreeItemId category = this->EnsureHasCategory(*pEntry.GetCategory());
+    auto category = this->ensureHasCategory(*p_entry.category());
     if (category.IsOk()) {
         if (this->IsExpanded(category)) {
-            wxTreeItemId node = this->AddEntry(category, pEntry);
-            this->SetItemData(node, new CategoryTreeItem(CategoryTreeItem::DT_Entry, &pEntry));
+            auto node = this->addEntry(category, p_entry);
+            this->SetItemData(node, new CategoryTreeItem(CategoryTreeItem::DT_Entry, &p_entry));
         } else {
-            CategoryTreeItem* itemData = (CategoryTreeItem*)this->GetItemData(category);
-            if (itemData->GetDataType() != CategoryTreeItem::DT_Category) { return; }
-            itemData->SetDirty(true);
+            auto itemData = static_cast<CategoryTreeItem*>(this->GetItemData(category));
+            if (itemData->dataType() != CategoryTreeItem::DT_Category) { return; }
+            itemData->setDirty(true);
         }
     }
 }
 
-wxTreeItemId CategoryTree::EnsureHasCategory(const DatIndexCategory& pCategory, bool pForce) 
+//============================================================================/
+
+wxTreeItemId CategoryTree::ensureHasCategory(const DatIndexCategory& p_category, bool p_force) 
 {
     wxTreeItemId parent;
-    bool parentIsRoot = false;
+    auto parentIsRoot = false;
 
     // Determine parent node
-    if (pCategory.GetParent()) {
-        parent = this->EnsureHasCategory(*pCategory.GetParent());
+    if (p_category.parent()) {
+        parent = this->ensureHasCategory(*p_category.parent());
     } else {
         parent = this->GetRootItem();
         parentIsRoot = true;
     }
 
-    if (!pForce) {
+    if (!p_force) {
         // If parent is invalid, it means the tree isn't expanded and we shouldn't add this
         if (!parentIsRoot && (!parent.IsOk() || !this->IsExpanded(parent))) {
             return wxTreeItemId();
@@ -117,41 +125,45 @@ wxTreeItemId CategoryTree::EnsureHasCategory(const DatIndexCategory& pCategory, 
     }
 
     wxTreeItemIdValue cookie;
-    wxTreeItemId child = this->GetFirstChild(parent, cookie);
+    auto child = this->GetFirstChild(parent, cookie);
 
     // Scan for existing node
     while (child.IsOk()) {
-        CategoryTreeItem* data = (CategoryTreeItem*)this->GetItemData(child);
-        if (data->GetDataType() != CategoryTreeItem::DT_Category) { break; }
-        if (data->GetData() == &pCategory) { return child; }
+        auto data = static_cast<const CategoryTreeItem*>(this->GetItemData(child));
+        if (data->dataType() != CategoryTreeItem::DT_Category) { break; }
+        if (data->data() == &p_category) { return child; }
         child = this->GetNextChild(parent, cookie);
     }
 
     // Node does not exist, add it
-    wxTreeItemId thisNode = this->AddCategoryEntry(parent, pCategory.GetName());
-    CategoryTreeItem* itemData = new CategoryTreeItem(CategoryTreeItem::DT_Category, &pCategory);
-    itemData->SetDirty(true);
+    auto thisNode = this->addCategoryEntry(parent, p_category.name());
+    auto itemData = new CategoryTreeItem(CategoryTreeItem::DT_Category, &p_category);
+    itemData->setDirty(true);
     this->SetItemData(thisNode, itemData);
     // All category nodes have children
     this->SetItemHasChildren(thisNode);
     return thisNode;
 }
 
-wxTreeItemId CategoryTree::AddEntry(const wxTreeItemId& pParent, const DatIndexEntry& pEntry)
+//============================================================================/
+
+wxTreeItemId CategoryTree::addEntry(const wxTreeItemId& p_parent, const DatIndexEntry& p_entry)
 {
-    if (pEntry.GetName().IsNumber()) {
+    if (p_entry.name().IsNumber()) {
         ulong number;
-        pEntry.GetName().ToULong(&number);
-        return this->AddNumberEntry(pParent, pEntry, number);
+        p_entry.name().ToULong(&number);
+        return this->addNumberEntry(p_parent, p_entry, number);
     }
 
     // NaN :)
-    return this->AddTextEntry(pParent, pEntry);
+    return this->addTextEntry(p_parent, p_entry);
 }
 
-wxTreeItemId CategoryTree::AddNumberEntry(const wxTreeItemId& pParent, const DatIndexEntry& pEntry, uint pName) {
+//============================================================================/
+
+wxTreeItemId CategoryTree::addNumberEntry(const wxTreeItemId& p_parent, const DatIndexEntry& p_entry, uint p_name) {
     wxTreeItemIdValue cookie;
-    wxTreeItemId child = this->GetFirstChild(pParent, cookie);
+    auto child = this->GetFirstChild(p_parent, cookie);
     wxTreeItemId previous;
 
     while (child.IsOk()) {
@@ -161,92 +173,100 @@ wxTreeItemId CategoryTree::AddNumberEntry(const wxTreeItemId& pParent, const Dat
         ulong number;
         text.ToULong(&number);
         // Compare
-        if (number > pName) { break; }
+        if (number > p_name) { break; }
         // Move to next
         previous = child;
-        child    = this->GetNextChild(pParent, cookie);
+        child    = this->GetNextChild(p_parent, cookie);
     }
 
     // This item should be first if there *is* something in this list, but previous is nothing
     if (child.IsOk() && !previous.IsOk()) {
-        return this->InsertItem(pParent, 0, pEntry.GetName(), this->GetImageForEntry(pEntry));
+        return this->InsertItem(p_parent, 0, p_entry.name(), this->getImageForEntry(p_entry));
     }
     // This item should be squashed in if both child and previous are ok
     if (child.IsOk() && previous.IsOk()) {
-        return this->InsertItem(pParent, previous, pEntry.GetName(), this->GetImageForEntry(pEntry));
+        return this->InsertItem(p_parent, previous, p_entry.name(), this->getImageForEntry(p_entry));
     }
     // If the above fails, it means we went through the entire list without finding a proper spot
-    return this->AppendItem(pParent, pEntry.GetName(), this->GetImageForEntry(pEntry));
+    return this->AppendItem(p_parent, p_entry.name(), this->getImageForEntry(p_entry));
 }
 
-wxTreeItemId CategoryTree::AddTextEntry(const wxTreeItemId& pParent, const DatIndexEntry& pEntry)
+//============================================================================/
+
+wxTreeItemId CategoryTree::addTextEntry(const wxTreeItemId& p_parent, const DatIndexEntry& p_entry)
 {
     wxTreeItemIdValue cookie;
-    wxTreeItemId child = this->GetFirstChild(pParent, cookie);
     wxTreeItemId previous;
+    auto child = this->GetFirstChild(p_parent, cookie);
 
     while (child.IsOk()) {
-        wxString text = this->GetItemText(child);
+        auto text = this->GetItemText(child);
         // Compare
-        if (text > pEntry.GetName()) { break; }
+        if (text > p_entry.name()) { break; }
         // Move to next
         previous = child;
-        child    = this->GetNextChild(pParent, cookie);
+        child    = this->GetNextChild(p_parent, cookie);
     }
 
     // This item should be first if there *is* something in this list, but previous is nothing
     if (child.IsOk() && !previous.IsOk()) {
-        return this->InsertItem(pParent, 0, pEntry.GetName(), this->GetImageForEntry(pEntry));
+        return this->InsertItem(p_parent, 0, p_entry.name(), this->getImageForEntry(p_entry));
     }
     // This item should be squashed in if both child and previous are ok
     if (child.IsOk() && previous.IsOk()) {
-        return this->InsertItem(pParent, previous, pEntry.GetName(), this->GetImageForEntry(pEntry));
+        return this->InsertItem(p_parent, previous, p_entry.name(), this->getImageForEntry(p_entry));
     }
     // If the above fails, it means we went through the entire list without finding a proper spot
-    return this->AppendItem(pParent, pEntry.GetName(), this->GetImageForEntry(pEntry));
+    return this->AppendItem(p_parent, p_entry.name(), this->getImageForEntry(p_entry));
 }
 
-wxTreeItemId CategoryTree::AddCategoryEntry(const wxTreeItemId& pParent, const wxString& pDisplayName)
+//============================================================================/
+
+wxTreeItemId CategoryTree::addCategoryEntry(const wxTreeItemId& p_parent, const wxString& p_displayName)
 {
     wxTreeItemIdValue cookie;
-    wxTreeItemId child = this->GetFirstChild(pParent, cookie);
     wxTreeItemId previous;
+    auto child = this->GetFirstChild(p_parent, cookie);
 
     while (child.IsOk()) {
-        wxString text = this->GetItemText(child);
+        auto text = this->GetItemText(child);
         // Compare
-        if (text > pDisplayName) { break; }
-        // Categories have NULL item data
-        CategoryTreeItem* data = (CategoryTreeItem*)this->GetItemData(child);
-        if (data->GetDataType() != CategoryTreeItem::DT_Category) { break; }
+        if (text > p_displayName) { break; }
+        // Categories have nullptr item data
+        auto data = static_cast<const CategoryTreeItem*>(this->GetItemData(child));
+        if (data->dataType() != CategoryTreeItem::DT_Category) { break; }
         // Move to next
         previous = child;
-        child    = this->GetNextChild(pParent, cookie);
+        child    = this->GetNextChild(p_parent, cookie);
     }
 
     // This item should be first if there *is* something in this list, but previous is nothing
     if (child.IsOk() && !previous.IsOk()) {
-        return this->InsertItem(pParent, 0, pDisplayName, CategoryTreeImageList::IT_ClosedFolder);
+        return this->InsertItem(p_parent, 0, p_displayName, CategoryTreeImageList::IT_ClosedFolder);
     }
     // This item should be squashed in if both child and previous are ok
     if (child.IsOk() && previous.IsOk()) {
-        return this->InsertItem(pParent, previous, pDisplayName, CategoryTreeImageList::IT_ClosedFolder);
+        return this->InsertItem(p_parent, previous, p_displayName, CategoryTreeImageList::IT_ClosedFolder);
     }
     // If the above fails, it means we went through the entire list without finding a proper spot
-    return this->AppendItem(pParent, pDisplayName, CategoryTreeImageList::IT_ClosedFolder);
+    return this->AppendItem(p_parent, p_displayName, CategoryTreeImageList::IT_ClosedFolder);
 }
 
-void CategoryTree::ClearEntries()
+//============================================================================/
+
+void CategoryTree::clearEntries()
 {
     this->DeleteAllItems();
     this->AddRoot(wxT("Root"));
 
-    for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-        (*it)->OnTreeCleared(*this);
+    for (ListenerSet::iterator it = m_listeners.begin(); it != m_listeners.end(); it++) {
+        (*it)->onTreeCleared(*this);
     }
 }
 
-Array<const DatIndexEntry*> CategoryTree::GetSelectedEntries() const
+//============================================================================/
+
+Array<const DatIndexEntry*> CategoryTree::getSelectedEntries() const
 {
     wxArrayTreeItemIds ids;
     this->GetSelections(ids);
@@ -257,11 +277,11 @@ Array<const DatIndexEntry*> CategoryTree::GetSelectedEntries() const
     // Start with counting the total amount of entries
     uint count = 0;
     for (uint i = 0; i < ids.Count(); i++) {
-        const CategoryTreeItem* itemData = (const CategoryTreeItem*)this->GetItemData(ids[i]);
-        if (itemData->GetDataType() == CategoryTreeItem::DT_Entry) {
+        auto itemData = static_cast<const CategoryTreeItem*>(this->GetItemData(ids[i]));
+        if (itemData->dataType() == CategoryTreeItem::DT_Entry) {
             count++;
-        } else if (itemData->GetDataType() == CategoryTreeItem::DT_Category) {
-            count += ((const DatIndexCategory*)itemData->GetData())->GetNumEntries(true);
+        } else if (itemData->dataType() == CategoryTreeItem::DT_Category) {
+            count += static_cast<const DatIndexCategory*>(itemData->data())->numEntries(true);
         }
     }
 
@@ -270,71 +290,78 @@ Array<const DatIndexEntry*> CategoryTree::GetSelectedEntries() const
     if (count) {
         uint index = 0;
         for (uint i = 0; i < ids.Count(); i++) {
-            CategoryTreeItem* itemData = (CategoryTreeItem*)this->GetItemData(ids[i]);
-            if (itemData->GetDataType() == CategoryTreeItem::DT_Entry) {
-                retval[index++] = (const DatIndexEntry*)itemData->GetData();
-            } else if (itemData->GetDataType() == CategoryTreeItem::DT_Category) {
-                this->AddCategoryEntriesToArray(retval, index, *(const DatIndexCategory*)itemData->GetData());
+            auto itemData = static_cast<const CategoryTreeItem*>(this->GetItemData(ids[i]));
+            if (itemData->dataType() == CategoryTreeItem::DT_Entry) {
+                retval[index++] = static_cast<const DatIndexEntry*>(itemData->data());
+            } else if (itemData->dataType() == CategoryTreeItem::DT_Category) {
+                this->addCategoryEntriesToArray(retval, index, *static_cast<const DatIndexCategory*>(itemData->data()));
             }
         }
-        wxASSERT(index == count);
+        Assert(index == count);
     }
 
     return retval;
 }
 
-void CategoryTree::AddCategoryEntriesToArray(Array<const DatIndexEntry*>& pArray, uint& pIndex, const DatIndexCategory& pCategory) const
+//============================================================================/
+
+void CategoryTree::addCategoryEntriesToArray(Array<const DatIndexEntry*>& p_array, uint& p_index, const DatIndexCategory& p_category) const
 {
     // Loop through subcategories
-    for (uint i = 0; i < pCategory.GetNumSubCategories(); i++) {
-        this->AddCategoryEntriesToArray(pArray, pIndex, *pCategory.GetSubCategory(i));
+    for (uint i = 0; i < p_category.numSubCategories(); i++) {
+        this->addCategoryEntriesToArray(p_array, p_index, *p_category.subCategory(i));
     }
 
     // Loop through entries
-    for (uint i = 0; i < pCategory.GetNumEntries(); i++) {
-        pArray[pIndex++] = pCategory.GetEntry(i);
+    for (uint i = 0; i < p_category.numEntries(); i++) {
+        p_array[p_index++] = p_category.entry(i);
     }
 }
 
-void CategoryTree::SetIndex(DatIndex* pIndex)
+//============================================================================/
+
+void CategoryTree::setDatIndex(const std::shared_ptr<DatIndex>& p_index)
 {
-    if (mIndex) { mIndex->RemoveListener(this); }
+    if (m_index) { m_index->removeListener(this); }
 
-    this->ClearEntries();
-    mIndex = pIndex;
+    this->clearEntries();
+    m_index = p_index;
 
-    if (mIndex) {
-        mIndex->AddListener(this);
+    if (m_index) {
+        m_index->addListener(this);
 
-        for (uint i = 0; i < mIndex->GetNumEntries(); i++) {
-            this->AddEntry(*mIndex->GetEntry(i));
+        for (uint i = 0; i < m_index->numEntries(); i++) {
+            this->addEntry(*m_index->entry(i));
         }
     }
 }
 
-DatIndex* CategoryTree::GetIndex()
+//============================================================================/
+
+std::shared_ptr<DatIndex> CategoryTree::datIndex() const
 {
-    return mIndex;
+    return m_index;
 }
 
-const DatIndex* CategoryTree::GetIndex() const
+//============================================================================/
+
+void CategoryTree::addListener(ICategoryTreeListener* p_listener)
 {
-    return mIndex;
+    m_listeners.insert(p_listener);
 }
 
-void CategoryTree::AddListener(ICategoryTreeListener* pListener)
+//============================================================================/
+
+void CategoryTree::removeListener(ICategoryTreeListener* p_listener)
 {
-    mListeners.insert(pListener);
+    m_listeners.erase(p_listener);
 }
 
-void CategoryTree::RemoveListener(ICategoryTreeListener* pListener)
-{
-    mListeners.erase(pListener);
-}
+//============================================================================/
 
-int CategoryTree::GetImageForEntry(const DatIndexEntry& pEntry)
+int CategoryTree::getImageForEntry(const DatIndexEntry& p_entry)
 {
-    switch (pEntry.GetFileType()) {
+    switch (p_entry.fileType()) {
     case ANFT_ATEX:
     case ANFT_ATTX:
     case ANFT_ATEC:
@@ -355,13 +382,15 @@ int CategoryTree::GetImageForEntry(const DatIndexEntry& pEntry)
     }
 }
 
-void CategoryTree::OnItemExpanding(wxTreeEvent& pEvent)
+//============================================================================/
+
+void CategoryTree::onItemExpanding(wxTreeEvent& p_event)
 {
-    wxTreeItemId id = pEvent.GetItem();
-    CategoryTreeItem* itemData = (CategoryTreeItem*)this->GetItemData(id);
+    auto id = p_event.GetItem();
+    auto itemData = static_cast<CategoryTreeItem*>(this->GetItemData(id));
 
     // If this is not a category, skip it
-    if (itemData && itemData->GetDataType() != CategoryTreeItem::DT_Category) {
+    if (itemData && itemData->dataType() != CategoryTreeItem::DT_Category) {
         return;
     }
 
@@ -369,43 +398,45 @@ void CategoryTree::OnItemExpanding(wxTreeEvent& pEvent)
     this->SetItemImage(id, CategoryTreeImageList::IT_OpenFolder);
 
     // Skip if the category isn't dirty
-    if (!itemData->IsDirty()) { 
+    if (!itemData->isDirty()) { 
         return; 
     } else {
         this->DeleteChildren(id);
     }
 
     // Fetch the category info
-    DatIndexCategory* category = (DatIndexCategory*)itemData->GetData();
+    auto category = static_cast<const DatIndexCategory*>(itemData->data());
     if (!category) { return; }
 
     // Add all contained entries
-    for (uint i = 0; i < category->GetNumEntries(); i++) {
-        DatIndexEntry* entry = category->GetEntry(i);
+    for (uint i = 0; i < category->numEntries(); i++) {
+        auto entry = category->entry(i);
         if (!entry) { continue; }
         //this->AddEntry(id, *entry);
-        this->AppendItem(id, entry->GetName(), this->GetImageForEntry(*entry), -1, new CategoryTreeItem(CategoryTreeItem::DT_Entry, entry));
+        this->AppendItem(id, entry->name(), this->getImageForEntry(*entry), -1, new CategoryTreeItem(CategoryTreeItem::DT_Entry, entry));
     }
     this->SortChildren(id);
 
     // Add sub-categories last
-    for (uint i = 0; i < category->GetNumSubCategories(); i++) {
-        DatIndexCategory* subcategory = category->GetSubCategory(i);
+    for (uint i = 0; i < category->numSubCategories(); i++) {
+        auto subcategory = category->subCategory(i);
         if (!subcategory) { continue; }
-        this->EnsureHasCategory(*subcategory, true);
+        this->ensureHasCategory(*subcategory, true);
     }
 
     // Un-dirty!
-    itemData->SetDirty(false);
+    itemData->setDirty(false);
 }
 
-void CategoryTree::OnItemCollapsing(wxTreeEvent& pEvent)
+//============================================================================/
+
+void CategoryTree::onItemCollapsing(wxTreeEvent& p_event)
 {
-    wxTreeItemId id = pEvent.GetItem();
-    CategoryTreeItem* itemData = (CategoryTreeItem*)this->GetItemData(id);
+    auto id = p_event.GetItem();
+    auto* itemData = static_cast<const CategoryTreeItem*>(this->GetItemData(id));
 
     // Skip if this is not a category
-    if (!itemData || itemData->GetDataType() != CategoryTreeItem::DT_Category) {
+    if (!itemData || itemData->dataType() != CategoryTreeItem::DT_Category) {
         return;
     }
 
@@ -413,32 +444,36 @@ void CategoryTree::OnItemCollapsing(wxTreeEvent& pEvent)
     this->SetItemImage(id, CategoryTreeImageList::IT_ClosedFolder);
 }
 
-void CategoryTree::OnSelChanged(wxTreeEvent& pEvent)
+//============================================================================/
+
+void CategoryTree::onSelChanged(wxTreeEvent& pEvent)
 {
     wxArrayTreeItemIds ids;
     this->GetSelections(ids);
     
     // Only raise events if only one entry was selected
     if (ids.Count() == 1) {
-        CategoryTreeItem* itemData = (CategoryTreeItem*)this->GetItemData(ids[0]);
+        auto itemData = static_cast<const CategoryTreeItem*>(this->GetItemData(ids[0]));
         if (!itemData) { return; }
 
         // raise the correct event
-        switch (itemData->GetDataType()) {
+        switch (itemData->dataType()) {
         case CategoryTreeItem::DT_Category:
-            for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-                (*it)->OnTreeCategoryClicked(*this, *(const DatIndexCategory*)itemData->GetData());
+            for (ListenerSet::iterator it = m_listeners.begin(); it != m_listeners.end(); it++) {
+                (*it)->onTreeCategoryClicked(*this, *static_cast<const DatIndexCategory*>(itemData->data()));
             }
             break;
         case CategoryTreeItem::DT_Entry:
-            for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-                (*it)->OnTreeEntryClicked(*this, *(const DatIndexEntry*)itemData->GetData());
+            for (ListenerSet::iterator it = m_listeners.begin(); it != m_listeners.end(); it++) {
+                (*it)->onTreeEntryClicked(*this, *static_cast<const DatIndexEntry*>(itemData->data()));
             }
         }
     }
 }
 
-void CategoryTree::OnContextMenu(wxTreeEvent& pEvent)
+//============================================================================/
+
+void CategoryTree::onContextMenu(wxTreeEvent& p_event)
 {
     wxArrayTreeItemIds ids;
     this->GetSelections(ids);
@@ -446,16 +481,16 @@ void CategoryTree::OnContextMenu(wxTreeEvent& pEvent)
     if (ids.Count() > 0) {
         // Start with counting the total amount of entries
         uint count = 0;
-        const DatIndexEntry* firstEntry = NULL;
+        const DatIndexEntry* firstEntry = nullptr;
         for (uint i = 0; i < ids.Count(); i++) {
-            const CategoryTreeItem* itemData = (const CategoryTreeItem*)this->GetItemData(ids[i]);
-            if (itemData->GetDataType() == CategoryTreeItem::DT_Entry) {
-                if (!firstEntry) { firstEntry = (const DatIndexEntry*)itemData->GetData(); }
+            auto itemData = static_cast<const CategoryTreeItem*>(this->GetItemData(ids[i]));
+            if (itemData->dataType() == CategoryTreeItem::DT_Entry) {
+                if (!firstEntry) { firstEntry = (const DatIndexEntry*)itemData->data(); }
                 count++;
-            } else if (itemData->GetDataType() == CategoryTreeItem::DT_Category) {
-                const DatIndexCategory* category = (const DatIndexCategory*)itemData->GetData();
-                count += category->GetNumEntries(true);
-                if (!firstEntry && category->GetNumEntries()) { firstEntry = category->GetEntry(0); }
+            } else if (itemData->dataType() == CategoryTreeItem::DT_Category) {
+                auto category = static_cast<const DatIndexCategory*>(itemData->data());
+                count += category->numEntries(true);
+                if (!firstEntry && category->numEntries()) { firstEntry = category->entry(0); }
             }
         }
         
@@ -463,8 +498,8 @@ void CategoryTree::OnContextMenu(wxTreeEvent& pEvent)
         if (count > 0) {
             wxMenu newMenu;
             if (count == 1) {
-                newMenu.Append(wxID_SAVE, wxString::Format(wxT("Extract file %s..."), firstEntry->GetName()));
-                newMenu.Append(wxID_SAVEAS, wxString::Format(wxT("Extract file %s (raw)..."), firstEntry->GetName()));
+                newMenu.Append(wxID_SAVE, wxString::Format(wxT("Extract file %s..."), firstEntry->name()));
+                newMenu.Append(wxID_SAVEAS, wxString::Format(wxT("Extract file %s (raw)..."), firstEntry->name()));
             } else {
                 newMenu.Append(wxID_SAVE, wxString::Format(wxT("Extract %d files..."), count));
                 newMenu.Append(wxID_SAVEAS, wxString::Format(wxT("Extract %d files (raw)..."), count));
@@ -474,37 +509,47 @@ void CategoryTree::OnContextMenu(wxTreeEvent& pEvent)
     }
 }
 
-void CategoryTree::OnExtractRawFiles(wxCommandEvent& pEvent)
+//============================================================================/
+
+void CategoryTree::onExtractRawFiles(wxCommandEvent& p_event)
 {
-    for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-        (*it)->OnTreeExtractRaw(*this);
+    for (ListenerSet::iterator it = m_listeners.begin(); it != m_listeners.end(); it++) {
+        (*it)->onTreeExtractRaw(*this);
     }
 }
 
-void CategoryTree::OnExtractConvertedFiles(wxCommandEvent& pEvent)
+//============================================================================/
+
+void CategoryTree::onExtractConvertedFiles(wxCommandEvent& p_event)
 {
-    for (ListenerSet::iterator it = mListeners.begin(); it != mListeners.end(); it++) {
-        (*it)->OnTreeExtractConverted(*this);
+    for (ListenerSet::iterator it = m_listeners.begin(); it != m_listeners.end(); it++) {
+        (*it)->onTreeExtractConverted(*this);
     }
 }
 
-void CategoryTree::OnIndexFileAdded(DatIndex& pIndex, const DatIndexEntry& pEntry)
+//============================================================================/
+
+void CategoryTree::onIndexFileAdded(DatIndex& p_index, const DatIndexEntry& p_entry)
 {
-    Ensure::NotNull(&pEntry);
-    this->AddEntry(pEntry);
+    Ensure::notNull(&p_entry);
+    this->addEntry(p_entry);
 }
 
-void CategoryTree::OnIndexCleared(DatIndex& pIndex)
+//============================================================================/
+
+void CategoryTree::onIndexCleared(DatIndex& p_index)
 {
-    wxASSERT(&pIndex == mIndex);
-    this->ClearEntries();
+    Assert(&p_index == m_index.get());
+    this->clearEntries();
 }
 
-void CategoryTree::OnIndexDestruction(DatIndex& pIndex)
+//============================================================================/
+
+void CategoryTree::onIndexDestruction(DatIndex& p_index)
 {
-    wxASSERT(&pIndex == mIndex);
-    mIndex = NULL;
-    this->ClearEntries();
+    Assert(&p_index == m_index.get());
+    m_index = nullptr;
+    this->clearEntries();
 }
 
 }; // namespace gw2b

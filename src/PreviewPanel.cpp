@@ -34,13 +34,13 @@
 namespace gw2b
 {
 
-PreviewPanel::PreviewPanel(wxWindow* pParent, const wxPoint& pLocation, const wxSize& pSize)
-    : wxPanel(pParent, wxID_ANY, pLocation, pSize)
-    , mCurrentView(NULL)
-    , mCurrentDataType(FileReader::DT_None)
+PreviewPanel::PreviewPanel(wxWindow* p_parent, const wxPoint& p_location, const wxSize& p_size)
+    : wxPanel(p_parent, wxID_ANY, p_location, p_size)
+    , m_currentView(nullptr)
+    , m_currentDataType(FileReader::DT_None)
 {
     // FINE I'LL USE A GOD DAMN SIZER STUPID WXWIDGETS
-    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto sizer = new wxBoxSizer(wxHORIZONTAL);
     this->SetSizer(sizer);
 }
 
@@ -48,38 +48,38 @@ PreviewPanel::~PreviewPanel()
 {
 }
 
-bool PreviewPanel::PreviewFile(DatFile& pDatFile, const DatIndexEntry& pEntry)
+bool PreviewPanel::previewFile(DatFile& p_datFile, const DatIndexEntry& p_entry)
 {
-    Array<byte> entryData = pDatFile.ReadFile(pEntry.GetMftEntry());
+    auto entryData = p_datFile.readFile(p_entry.mftEntry());
     if (!entryData.GetSize()) { return false; }
 
     // Create file reader
-    FileReader* reader = FileReader::GetReaderForData(entryData, pEntry.GetFileType());
+    auto reader = FileReader::readerForData(entryData, p_entry.fileType());
 
     if (reader) {
-        if (mCurrentView) {
+        if (m_currentView) {
             // Check if we can re-use the current viewer
-            if (mCurrentDataType == reader->GetDataType()) {
-                mCurrentView->SetReader(reader);
+            if (m_currentDataType == reader->dataType()) {
+                m_currentView->setReader(reader);
                 return true;
             }
         
             // Destroy the old viewer
-            if (mCurrentView) {
+            if (m_currentView) {
                 this->GetSizer()->Remove(0);
-                mCurrentView->Destroy();
+                m_currentView->Destroy();
             }
         }
 
-        mCurrentView = this->CreateViewerForDataType(reader->GetDataType(), pDatFile);
-        if (mCurrentView) {
+        m_currentView = this->createViewerForDataType(reader->dataType(), p_datFile);
+        if (m_currentView) {
             // Workaround for wxWidgets fuckups
-            this->GetSizer()->Add(mCurrentView, wxSizerFlags().Expand().Proportion(1));
+            this->GetSizer()->Add(m_currentView, wxSizerFlags().Expand().Proportion(1));
             this->GetSizer()->Layout();
             this->GetSizer()->Fit(this);
             // Set the reader
-            mCurrentView->SetReader(reader);
-            mCurrentDataType = reader->GetDataType();
+            m_currentView->setReader(reader);
+            m_currentDataType = reader->dataType();
             return true;
         }
     }
@@ -87,11 +87,11 @@ bool PreviewPanel::PreviewFile(DatFile& pDatFile, const DatIndexEntry& pEntry)
     return false;
 }
 
-Viewer* PreviewPanel::CreateViewerForDataType(FileReader::DataType pDataType, DatFile& pDatFile)
+Viewer* PreviewPanel::createViewerForDataType(FileReader::DataType p_dataType, DatFile& p_datFile)
 {
-    Viewer* newViewer = NULL;
+    Viewer* newViewer = nullptr;
 
-    switch (pDataType) {
+    switch (p_dataType) {
     case FileReader::DT_Image:
         newViewer = new ImageViewer(this);
         break;
@@ -104,8 +104,8 @@ Viewer* PreviewPanel::CreateViewerForDataType(FileReader::DataType pDataType, Da
         break;
     }
 
-    INeedDatFile* needer = dynamic_cast<INeedDatFile*>(newViewer);
-    if (needer) { needer->SetDatFile(&pDatFile); }
+    auto needer = dynamic_cast<INeedDatFile*>(newViewer);
+    if (needer) { needer->setDatFile(&p_datFile); }
 
     return newViewer;
 }
