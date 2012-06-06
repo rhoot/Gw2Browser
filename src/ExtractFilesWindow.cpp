@@ -68,8 +68,14 @@ void ExtractFilesWindow::onIdleEvt(wxIdleEvent& p_event)
 
     // Extract current file
     this->extractFile(*m_entries[m_currentProgress]);
-    m_progress->Update(m_currentProgress, wxString::Format(wxT("Extracting file %d/%d..."), m_currentProgress, m_entries.GetSize()));
-    m_currentProgress++;
+    bool shouldContinue = m_progress->Update(m_currentProgress, wxString::Format(wxT("Extracting file %d/%d..."), m_currentProgress, m_entries.GetSize()));
+
+    if (shouldContinue) {
+        m_currentProgress++;
+    } else {
+        m_currentProgress = m_entries.GetSize();
+    }
+
     p_event.RequestMore();
 }
 
@@ -96,7 +102,7 @@ void ExtractFilesWindow::extractFile(const DatIndexEntry& p_entry)
 
         if (reader) {
             contents = reader->convertData();
-            filename.SetExt(reader->extension());
+            filename.SetExt(wxString(reader->extension()).AfterFirst(wxT('.')));
         }
     }
 
