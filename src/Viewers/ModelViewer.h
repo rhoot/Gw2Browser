@@ -72,6 +72,7 @@ class ModelViewer : public Viewer, public INeedDatFile
     std::unique_ptr<IDirect3D9, AutoReleaser>       m_d3d;
     std::unique_ptr<IDirect3DDevice9, AutoReleaser> m_device;
     std::unique_ptr<ID3DXEffect, AutoReleaser>      m_effect;
+    std::unique_ptr<ID3DXFont, AutoReleaser>        m_font;
 
     D3DPRESENT_PARAMETERS       m_presentParams;
     Model                       m_model;
@@ -94,6 +95,7 @@ public:
 
     void focus();
     void drawMesh(uint p_meshIndex);
+    void drawText(uint p_x, uint p_y, const wxString& p_text);
 
 private:
     void onPaintEvt(wxPaintEvent& p_event);

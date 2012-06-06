@@ -63,6 +63,11 @@ ModelViewer::ModelViewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize&
         wxMessageBox(wxString::Format(wxT("Error 0x%08x while loading shader: %s"), result, static_cast<const char*>(errors->GetBufferPointer())));
     }
 
+    // Load font
+    ID3DXFont* font = nullptr;
+    ::D3DXCreateFontA(m_device.get(), 18, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI", &font);
+    m_font.reset(font);
+
     // Hook up events
     this->Connect(wxEVT_PAINT, wxPaintEventHandler(ModelViewer::onPaintEvt));
     this->Connect(wxEVT_MOTION, wxMouseEventHandler(ModelViewer::onMotionEvt));
@@ -283,10 +288,20 @@ void ModelViewer::render()
     m_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
     this->updateMatrices();
 
+    uint vertexCount   = 0;
+    uint triangleCount = 0;
+
     this->beginFrame(0x353535);
     for (uint i = 0; i < m_model.GetNumMeshes(); i++) {
         this->drawMesh(i);
+        vertexCount   += m_model.GetMesh(i).mVertices.GetSize();
+        triangleCount += m_model.GetMesh(i).mTriangles.GetSize();
     }
+
+    this->drawText(0, 0,    wxString::Format(wxT("Meshes: %d"), m_model.GetNumMeshes()));
+    this->drawText(0, 0x18, wxString::Format(wxT("Vertices: %d"), vertexCount));
+    this->drawText(0, 0x30, wxString::Format(wxT("Triangles: %d"), triangleCount));
+    
     this->endFrame();
 }
 
@@ -334,6 +349,16 @@ void ModelViewer::drawMesh(uint p_meshIndex)
     // End
     m_effect->End();
 }
+
+void ModelViewer::drawText(uint p_x, uint p_y, const wxString& p_text)
+{
+    if (m_font.get()) {
+        RECT outRect;
+        ::SetRect(&outRect, p_x, p_y, p_x + 0x200, p_y + 0x14);
+        m_font->DrawTextW(NULL, p_text.wchar_str(), -1, &outRect, DT_LEFT | DT_NOCLIP, 0xFFFFFFFF);
+    }
+}
+
 
 void ModelViewer::updateMatrices()
 {
