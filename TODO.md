@@ -19,3 +19,5 @@ rendering pipelines. Sadly, it shows.
 
 * Allow individual file types to add entries to the context menu. For example,
 models could get an *export with textures* option.
+
+* External filename database, for known files (such as the exe- and dll-files).
