@@ -29,91 +29,91 @@
 namespace gw2b
 {
 
-uint32 VertexDefinition::sFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX2);
+uint32 VertexDefinition::s_fvf(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX2);
 
-ModelViewer::ModelViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& pSize)
-    : Viewer(pParent, pPos, pSize)
-    , mLastMousePos(std::numeric_limits<int>::min(), std::numeric_limits<int>::min())
+ModelViewer::ModelViewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize& p_size)
+    : Viewer(p_parent, p_pos, p_size)
+    , m_lastMousePos(std::numeric_limits<int>::min(), std::numeric_limits<int>::min())
 {
-    ::memset(&mPresentParams, 0, sizeof(mPresentParams));
-    mPresentParams.PresentationInterval    = D3DPRESENT_INTERVAL_IMMEDIATE;
-    mPresentParams.SwapEffect              = D3DSWAPEFFECT_DISCARD;
-    mPresentParams.Windowed                = true;
-    mPresentParams.BackBufferCount         = 1;
-    mPresentParams.BackBufferWidth         = wxSystemSettings::GetMetric(wxSYS_SCREEN_X);
-    mPresentParams.BackBufferHeight        = wxSystemSettings::GetMetric(wxSYS_SCREEN_Y);
-    mPresentParams.BackBufferFormat        = D3DFMT_A8R8G8B8;
-    mPresentParams.EnableAutoDepthStencil  = true;
-    mPresentParams.AutoDepthStencilFormat  = D3DFMT_D16;
+    ::memset(&m_presentParams, 0, sizeof(m_presentParams));
+    m_presentParams.PresentationInterval    = D3DPRESENT_INTERVAL_IMMEDIATE;
+    m_presentParams.SwapEffect              = D3DSWAPEFFECT_DISCARD;
+    m_presentParams.Windowed                = true;
+    m_presentParams.BackBufferCount         = 1;
+    m_presentParams.BackBufferWidth         = wxSystemSettings::GetMetric(wxSYS_SCREEN_X);
+    m_presentParams.BackBufferHeight        = wxSystemSettings::GetMetric(wxSYS_SCREEN_Y);
+    m_presentParams.BackBufferFormat        = D3DFMT_A8R8G8B8;
+    m_presentParams.EnableAutoDepthStencil  = true;
+    m_presentParams.AutoDepthStencilFormat  = D3DFMT_D16;
 
     // Init Direct3D
     IDirect3DDevice9* device = nullptr;
-    mD3D.reset(::Direct3DCreate9(D3D_SDK_VERSION));
-    mD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, this->GetHandle(), D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE, &mPresentParams, &device);
-    mDevice.reset(device);
+    m_d3d.reset(::Direct3DCreate9(D3D_SDK_VERSION));
+    m_d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, this->GetHandle(), D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE, &m_presentParams, &device);
+    m_device.reset(device);
 
     // Load shader
     ID3DXEffect* effect = nullptr;
     ID3DXBuffer* errors = nullptr;
     uint32 shaderFlags  = ifDebug(D3DXSHADER_DEBUG, 0);
-    HRESULT result = ::D3DXCreateEffectFromFileW(mDevice.get(), L"data/model_view.hlsl", nullptr, nullptr, shaderFlags, nullptr, &effect, &errors);
-    mEffect.reset(effect);
+    HRESULT result = ::D3DXCreateEffectFromFileW(m_device.get(), L"data/model_view.hlsl", nullptr, nullptr, shaderFlags, nullptr, &effect, &errors);
+    m_effect.reset(effect);
 
     if (FAILED(result)) {
         wxMessageBox(wxString::Format(wxT("Error 0x%08x while loading shader: %s"), result, static_cast<const char*>(errors->GetBufferPointer())));
     }
 
     // Hook up events
-    this->Connect(wxEVT_PAINT, wxPaintEventHandler(ModelViewer::OnPaintEvt));
-    this->Connect(wxEVT_MOTION, wxMouseEventHandler(ModelViewer::OnMotionEvt));
-    this->Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(ModelViewer::OnMouseWheelEvt));
-    this->Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(ModelViewer::OnKeyDownEvt));
+    this->Connect(wxEVT_PAINT, wxPaintEventHandler(ModelViewer::onPaintEvt));
+    this->Connect(wxEVT_MOTION, wxMouseEventHandler(ModelViewer::onMotionEvt));
+    this->Connect(wxEVT_MOUSEWHEEL, wxMouseEventHandler(ModelViewer::onMouseWheelEvt));
+    this->Connect(wxEVT_KEY_DOWN, wxKeyEventHandler(ModelViewer::onKeyDownEvt));
 }
 
 ModelViewer::~ModelViewer()
 {
-    for (uint i = 0; i < mMeshCache.GetSize(); i++) {
-        if (mMeshCache[i].mIndexBuffer)  { mMeshCache[i].mIndexBuffer->Release();  }
-        if (mMeshCache[i].mVertexBuffer) { mMeshCache[i].mVertexBuffer->Release(); }
+    for (uint i = 0; i < m_meshCache.GetSize(); i++) {
+        if (m_meshCache[i].indexBuffer)  { m_meshCache[i].indexBuffer->Release();  }
+        if (m_meshCache[i].vertexBuffer) { m_meshCache[i].vertexBuffer->Release(); }
     }
-    for (uint i = 0; i < mTextureCache.GetSize(); i++) {
-        if (mTextureCache[i].mDiffuseMap) { mTextureCache[i].mDiffuseMap->Release(); }
-        if (mTextureCache[i].mNormalMap)  { mTextureCache[i].mNormalMap->Release();  }
+    for (uint i = 0; i < m_textureCache.GetSize(); i++) {
+        if (m_textureCache[i].diffuseMap) { m_textureCache[i].diffuseMap->Release(); }
+        if (m_textureCache[i].normalMap)  { m_textureCache[i].normalMap->Release();  }
     }
 }
 
 void ModelViewer::clear()
 {
-    for (uint i = 0; i < mMeshCache.GetSize(); i++) {
-        if (mMeshCache[i].mIndexBuffer)  { mMeshCache[i].mIndexBuffer->Release();  }
-        if (mMeshCache[i].mVertexBuffer) { mMeshCache[i].mVertexBuffer->Release(); }
+    for (uint i = 0; i < m_meshCache.GetSize(); i++) {
+        if (m_meshCache[i].indexBuffer)  { m_meshCache[i].indexBuffer->Release();  }
+        if (m_meshCache[i].vertexBuffer) { m_meshCache[i].vertexBuffer->Release(); }
     }
-    for (uint i = 0; i < mTextureCache.GetSize(); i++) {
-        if (mTextureCache[i].mDiffuseMap) { mTextureCache[i].mDiffuseMap->Release(); }
-        if (mTextureCache[i].mNormalMap)  { mTextureCache[i].mNormalMap->Release();  }
+    for (uint i = 0; i < m_textureCache.GetSize(); i++) {
+        if (m_textureCache[i].diffuseMap) { m_textureCache[i].diffuseMap->Release(); }
+        if (m_textureCache[i].normalMap)  { m_textureCache[i].normalMap->Release();  }
     }
-    mTextureCache.Clear();
-    mMeshCache.Clear();
-    mModel = Model();
+    m_textureCache.Clear();
+    m_meshCache.Clear();
+    m_model = Model();
     Viewer::clear();
 }
 
-void ModelViewer::setReader(FileReader* pReader)
+void ModelViewer::setReader(FileReader* p_reader)
 {
-    Ensure::isOfType<ModelReader>(pReader);
-    Viewer::setReader(pReader);
+    Ensure::isOfType<ModelReader>(p_reader);
+    Viewer::setReader(p_reader);
 
     // Load model
-    ModelReader* reader = this->GetModelReader();
-    mModel = reader->GetModel();
+    auto reader = this->modelReader();
+    m_model = reader->GetModel();
 
     // Create DX mesh cache
-    mMeshCache.SetSize(mModel.GetNumMeshes());
+    m_meshCache.SetSize(m_model.GetNumMeshes());
 
     // Load meshes
-    for (uint i = 0; i < mModel.GetNumMeshes(); i++) {
-        const Mesh& mesh = mModel.GetMesh(i);
-        MeshCache& cache = mMeshCache[i];
+    for (uint i = 0; i < m_model.GetNumMeshes(); i++) {
+        auto& mesh  = m_model.GetMesh(i);
+        auto& cache = m_meshCache[i];
 
         // Create and populate the buffers
         uint vertexCount = mesh.mVertices.GetSize();
@@ -121,73 +121,73 @@ void ModelViewer::setReader(FileReader* pReader)
         uint indexCount  = mesh.mTriangles.GetSize() * 3;
         uint indexSize   = sizeof(uint16);
 
-        if (!this->CreateBuffers(cache, vertexCount, vertexSize, indexCount, indexSize)) { continue; }
-        if (!this->PopulateBuffers(mesh, cache)) { 
-            releasePointer(cache.mIndexBuffer);
-            releasePointer(cache.mVertexBuffer);
+        if (!this->createBuffers(cache, vertexCount, vertexSize, indexCount, indexSize)) { continue; }
+        if (!this->populateBuffers(mesh, cache)) { 
+            releasePointer(cache.indexBuffer);
+            releasePointer(cache.vertexBuffer);
             continue;
         }
     }
 
     // Create DX texture cache
-    mTextureCache.SetSize(mModel.GetNumMaterialData());
+    m_textureCache.SetSize(m_model.GetNumMaterialData());
 
     // Load textures
-    for (uint i = 0; i < mModel.GetNumMaterialData(); i++) {
-        const MaterialData& material = mModel.GetMaterialData(i);
-        TextureCache& cache = mTextureCache[i];
+    for (uint i = 0; i < m_model.GetNumMaterialData(); i++) {
+        auto& material = m_model.GetMaterialData(i);
+        auto& cache    = m_textureCache[i];
 
         // Load diffuse texture
         if (material.mDiffuseTexture) {
-            cache.mDiffuseMap = this->LoadTexture(material.mDiffuseTexture);
+            cache.diffuseMap = this->loadTexture(material.mDiffuseTexture);
         } else {
-            cache.mDiffuseMap = nullptr;
+            cache.diffuseMap = nullptr;
         }
 
         // Load normal map
         if (material.mNormalMap) {
-            cache.mNormalMap = this->LoadTexture(material.mNormalMap);
+            cache.normalMap = this->loadTexture(material.mNormalMap);
         } else {
-            cache.mNormalMap = nullptr;
+            cache.normalMap = nullptr;
         }
     }
 
     // Re-focus and re-render
-    this->Focus();
+    this->focus();
     this->Refresh(false);
 }
 
-bool ModelViewer::CreateBuffers(MeshCache& pCache, uint pVertexCount, uint pVertexSize, uint pIndexCount, uint pIndexSize)
+bool ModelViewer::createBuffers(MeshCache& p_cache, uint p_vertexCount, uint p_vertexSize, uint p_indexCount, uint p_indexSize)
 {
-    pCache.mIndexBuffer  = nullptr;
-    pCache.mVertexBuffer = nullptr;
+    p_cache.indexBuffer  = nullptr;
+    p_cache.vertexBuffer = nullptr;
 
     // 0 indices or 0 vertices, either is an empty mesh
-    if (!pVertexCount || !pIndexCount) {
+    if (!p_vertexCount || !p_indexCount) {
         return false;
     }
 
     // Allocate vertex buffer and bail if it fails
-    if (FAILED(mDevice->CreateVertexBuffer(pVertexCount * pVertexSize, D3DUSAGE_WRITEONLY, VertexDefinition::sFVF,
-        D3DPOOL_DEFAULT, &pCache.mVertexBuffer, nullptr))) 
+    if (FAILED(m_device->CreateVertexBuffer(p_vertexCount * p_vertexSize, D3DUSAGE_WRITEONLY, VertexDefinition::s_fvf,
+        D3DPOOL_DEFAULT, &p_cache.vertexBuffer, nullptr))) 
     {
         return false;
     }
 
     // Allocate index buffer and bail if it fails
-    if (FAILED(mDevice->CreateIndexBuffer(pIndexCount * pIndexSize, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16,
-        D3DPOOL_DEFAULT, &pCache.mIndexBuffer, nullptr))) 
+    if (FAILED(m_device->CreateIndexBuffer(p_indexCount * p_indexSize, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16,
+        D3DPOOL_DEFAULT, &p_cache.indexBuffer, nullptr))) 
     {
-        pCache.mVertexBuffer->Release();
-        pCache.mVertexBuffer = nullptr;
-        pCache.mIndexBuffer  = nullptr;
+        p_cache.vertexBuffer->Release();
+        p_cache.vertexBuffer = nullptr;
+        p_cache.indexBuffer  = nullptr;
         return false;
     }
 
     return true;
 }
 
-bool ModelViewer::PopulateBuffers(const Mesh& pMesh, MeshCache& pCache)
+bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
 {
     uint vertexCount = pMesh.mVertices.GetSize();
     uint vertexSize  = sizeof(VertexDefinition);
@@ -196,59 +196,59 @@ bool ModelViewer::PopulateBuffers(const Mesh& pMesh, MeshCache& pCache)
 
     // Lock vertex buffer
     VertexDefinition* vertices;
-    if (FAILED(pCache.mVertexBuffer->Lock(0, vertexCount * vertexSize, reinterpret_cast<void**>(&vertices), 0))){
+    if (FAILED(p_cache.vertexBuffer->Lock(0, vertexCount * vertexSize, reinterpret_cast<void**>(&vertices), 0))){
         return false;
     }
 
     // Populate vertex buffer
     for (uint j = 0; j < vertexCount; j++) {
-        vertices[j].mPosition = pMesh.mVertices[j].mPosition;
+        vertices[j].position = pMesh.mVertices[j].mPosition;
 
         // Normal
         if (pMesh.mVertices[j].mHasNormal) {
-            vertices[j].mNormal = pMesh.mVertices[j].mNormal;
+            vertices[j].normal = pMesh.mVertices[j].mNormal;
         } else {
-            vertices[j].mNormal.x = 0;
-            vertices[j].mNormal.y = 0;
-            vertices[j].mNormal.z = 1;
+            vertices[j].normal.x = 0;
+            vertices[j].normal.y = 0;
+            vertices[j].normal.z = 1;
         }
 
         // Color
         if (pMesh.mVertices[j].mHasColor) {
-            vertices[j].mDiffuse = pMesh.mVertices[j].mColor;
+            vertices[j].diffuse = pMesh.mVertices[j].mColor;
         } else {
-            ::memset(&vertices[j].mDiffuse, 0xff, sizeof(uint32));
+            ::memset(&vertices[j].diffuse, 0xff, sizeof(uint32));
         }
 
         // UV1
         if (pMesh.mVertices[j].mHasUV > 0) {
-            vertices[j].mUV[0] = pMesh.mVertices[j].mUV[0];
+            vertices[j].uv[0] = pMesh.mVertices[j].mUV[0];
         } else {
-            ::memset(&vertices[j].mUV[0], 0, sizeof(XMFLOAT2));
+            ::memset(&vertices[j].uv[0], 0, sizeof(XMFLOAT2));
         }
 
         // UV2
         if (pMesh.mVertices[j].mHasUV > 1) {
-            vertices[j].mUV[1] = pMesh.mVertices[j].mUV[1];
+            vertices[j].uv[1] = pMesh.mVertices[j].mUV[1];
         } else {
-            ::memset(&vertices[j].mUV[1], 0, sizeof(XMFLOAT2));
+            ::memset(&vertices[j].uv[1], 0, sizeof(XMFLOAT2));
         }
     }
-    Assert(SUCCEEDED(pCache.mVertexBuffer->Unlock()));
+    Assert(SUCCEEDED(p_cache.vertexBuffer->Unlock()));
 
     // Lock index buffer
     uint16* indices;
-    if (FAILED(pCache.mIndexBuffer->Lock(0, indexCount * indexSize, reinterpret_cast<void**>(&indices), 0))) {
+    if (FAILED(p_cache.indexBuffer->Lock(0, indexCount * indexSize, reinterpret_cast<void**>(&indices), 0))) {
         return false;
     }
     // Copy index buffer
     ::memcpy(indices, pMesh.mTriangles.GetPointer(), indexCount * indexSize);
-    Assert(SUCCEEDED(pCache.mIndexBuffer->Unlock()));
+    Assert(SUCCEEDED(p_cache.indexBuffer->Unlock()));
 
     return true;
 }
 
-void ModelViewer::BeginFrame(uint32 pClearColor)
+void ModelViewer::beginFrame(uint32 p_clearColor)
 {
     wxSize clientSize = this->GetClientSize();
 
@@ -259,108 +259,105 @@ void ModelViewer::BeginFrame(uint32 pClearColor)
     viewport.MaxZ   = 1;
     viewport.MinZ   = 0;
 
-    mDevice->SetViewport(&viewport);
-    mDevice->BeginScene();
-    mDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, pClearColor, 1, 0);
+    m_device->SetViewport(&viewport);
+    m_device->BeginScene();
+    m_device->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, p_clearColor, 1, 0);
 }
 
-void ModelViewer::EndFrame()
+void ModelViewer::endFrame()
 {
     D3DVIEWPORT9 viewport;
-    mDevice->GetViewport(&viewport);
+    m_device->GetViewport(&viewport);
 
     RECT sourceRect;
     ::memset(&sourceRect, 0, sizeof(sourceRect));
     sourceRect.right = viewport.Width;
     sourceRect.bottom = viewport.Height;
 
-    mDevice->EndScene();
-    mDevice->Present(&sourceRect, nullptr, nullptr, nullptr);
+    m_device->EndScene();
+    m_device->Present(&sourceRect, nullptr, nullptr, nullptr);
 }
 
-void ModelViewer::Render()
+void ModelViewer::render()
 {
-    mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-    this->UpdateMatrices();
+    m_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+    this->updateMatrices();
 
-    this->BeginFrame(0x353535);
-    for (uint i = 0; i < mModel.GetNumMeshes(); i++) {
-        this->DrawMesh(i);
+    this->beginFrame(0x353535);
+    for (uint i = 0; i < m_model.GetNumMeshes(); i++) {
+        this->drawMesh(i);
     }
-    this->EndFrame();
+    this->endFrame();
 }
 
-void ModelViewer::OnPaintEvt(wxPaintEvent& pEvent)
+void ModelViewer::onPaintEvt(wxPaintEvent& p_event)
 {
-    this->Render();
+    this->render();
 }
 
-void ModelViewer::DrawMesh(uint pMeshIndex)
+void ModelViewer::drawMesh(uint p_meshIndex)
 {
-    const MeshCache& mesh = mMeshCache[pMeshIndex];
+    auto& mesh = m_meshCache[p_meshIndex];
 
     // No mesh to draw?
-    if (mesh.mIndexBuffer == nullptr || mesh.mVertexBuffer == nullptr) {
+    if (mesh.indexBuffer == nullptr || mesh.vertexBuffer == nullptr) {
         return;
     }
 
     // Count vertices / primitives
-    uint vertexCount    = mModel.GetMesh(pMeshIndex).mVertices.GetSize();
-    uint primitiveCount = mModel.GetMesh(pMeshIndex).mTriangles.GetSize();
-    int  materialIndex  = mModel.GetMesh(pMeshIndex).mMaterialIndex;
+    uint vertexCount    = m_model.GetMesh(p_meshIndex).mVertices.GetSize();
+    uint primitiveCount = m_model.GetMesh(p_meshIndex).mTriangles.GetSize();
+    int  materialIndex  = m_model.GetMesh(p_meshIndex).mMaterialIndex;
     
     // Set buffers
-    if (FAILED(mDevice->SetFVF(VertexDefinition::sFVF))) { return; }
-    if (FAILED(mDevice->SetStreamSource(0, mesh.mVertexBuffer, 0, sizeof(VertexDefinition)))) { return; }
-    if (FAILED(mDevice->SetIndices(mesh.mIndexBuffer))) { return; }
+    if (FAILED(m_device->SetFVF(VertexDefinition::s_fvf))) { return; }
+    if (FAILED(m_device->SetStreamSource(0, mesh.vertexBuffer, 0, sizeof(VertexDefinition)))) { return; }
+    if (FAILED(m_device->SetIndices(mesh.indexBuffer))) { return; }
 
     // Begin drawing
     uint numPasses;
-    mEffect->SetTechnique("RenderScene");
-    mEffect->Begin(&numPasses, 0);
+    m_effect->SetTechnique("RenderScene");
+    m_effect->Begin(&numPasses, 0);
 
     // Update texture
-    if (materialIndex >= 0 && mTextureCache[materialIndex].mDiffuseMap) {
-        mEffect->SetTexture("g_DiffuseTex", mTextureCache[materialIndex].mDiffuseMap);
+    if (materialIndex >= 0 && m_textureCache[materialIndex].diffuseMap) {
+        m_effect->SetTexture("g_DiffuseTex", m_textureCache[materialIndex].diffuseMap);
     }
 
     // Draw each shader pass
     for (uint i = 0; i < numPasses; i++) {
-        mEffect->BeginPass(i);
-        mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, vertexCount, 0, primitiveCount);
-        mEffect->EndPass();
+        m_effect->BeginPass(i);
+        m_device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, vertexCount, 0, primitiveCount);
+        m_effect->EndPass();
     }
 
     // End
-    mEffect->End();
+    m_effect->End();
 }
 
-void ModelViewer::UpdateMatrices()
+void ModelViewer::updateMatrices()
 {
     // All models are located at 0,0,0 with no rotation, so no world matrix is needed
 
-    XMMATRIX viewMatrix;
-    XMMATRIX projectionMatrix;
-
     // View matrix
-    viewMatrix = mCamera.CalculateViewMatrix();
+    auto viewMatrix = m_camera.calculateViewMatrix();
 
     // Projection matrix
     wxSize clientSize = this->GetClientSize();
     float aspectRatio = (static_cast<float>(clientSize.x) / static_cast<float>(clientSize.y));
-    projectionMatrix  = ::XMMatrixPerspectiveFovLH((5.0f / 12.0f) * XM_PI, aspectRatio, 0.1f, 2000);
+    auto projMatrix   = ::XMMatrixPerspectiveFovLH((5.0f / 12.0f) * XM_PI, aspectRatio, 0.1f, 2000);
 
     // WorldViewProjection matrix
     XMFLOAT4X4 worldViewProjMatrix;
-    ::XMStoreFloat4x4(&worldViewProjMatrix, ::XMMatrixMultiply(viewMatrix, projectionMatrix));
+    ::XMStoreFloat4x4(&worldViewProjMatrix, ::XMMatrixMultiply(viewMatrix, projMatrix));
 
-    mEffect->SetMatrix("g_WorldViewProjMatrix", reinterpret_cast<D3DXMATRIX*>(&worldViewProjMatrix));
+    m_effect->SetMatrix("g_WorldViewProjMatrix", reinterpret_cast<D3DXMATRIX*>(&worldViewProjMatrix));
 }
 
-IDirect3DTexture9* ModelViewer::LoadTexture(uint pFileId)
+IDirect3DTexture9* ModelViewer::loadTexture(uint p_fileId)
 {
-    uint entryNumber      = this->datFile()->entryNumFromFileId(pFileId);
-    Array<byte> fileData  = this->datFile()->readEntry(entryNumber);
+    auto entryNumber = this->datFile()->entryNumFromFileId(p_fileId);
+    auto fileData    = this->datFile()->readEntry(entryNumber);
 
     // Bail if read failed
     if (fileData.GetSize() == 0) { return nullptr; }
@@ -368,17 +365,17 @@ IDirect3DTexture9* ModelViewer::LoadTexture(uint pFileId)
     // Convert to image
     ANetFileType fileType;
     this->datFile()->identifyFileType(fileData.GetPointer(), fileData.GetSize(), fileType);
-    FileReader* reader = FileReader::readerForData(fileData, fileType);
+    auto reader = FileReader::readerForData(fileData, fileType);
     
     // Bail if not an image
-    ImageReader* imgReader = dynamic_cast<ImageReader*>(reader);
+    auto imgReader = dynamic_cast<ImageReader*>(reader);
     if (!imgReader) {
         deletePointer(reader);
         return nullptr;
     }
 
     // Convert to PNG and bail if invalid
-    Array<byte> pngData = imgReader->convertData();
+    auto pngData = imgReader->convertData();
     if (pngData.GetSize() == 0) {
         deletePointer(reader);
         return nullptr;
@@ -386,24 +383,24 @@ IDirect3DTexture9* ModelViewer::LoadTexture(uint pFileId)
 
     // Finally, load texture from in-memory PNG.
     IDirect3DTexture9* texture = nullptr;
-    ::D3DXCreateTextureFromFileInMemory(mDevice.get(), pngData.GetPointer(), pngData.GetSize(), &texture);
+    ::D3DXCreateTextureFromFileInMemory(m_device.get(), pngData.GetPointer(), pngData.GetSize(), &texture);
 
     // Delete reader and return
     deletePointer(reader);
     return texture;
 }
 
-void ModelViewer::Focus()
+void ModelViewer::focus()
 {
     float fov      = (5.0f / 12.0f) * XM_PI;
-    uint meshCount = mModel.GetNumMeshes();
+    uint meshCount = m_model.GetNumMeshes();
     
     if (!meshCount) { return; }
 
     // Calculate complete bounds
     Bounds bounds;
     for (uint i = 0; i < meshCount; i++) {
-        const Bounds& meshBounds = mModel.GetMesh(i).mBounds;
+        auto& meshBounds = m_model.GetMesh(i).mBounds;
 
         if (i > 0) {
             bounds.mMinX = wxMin(bounds.mMinX, meshBounds.mMinX);
@@ -426,57 +423,57 @@ void ModelViewer::Focus()
     // Calculate new pivot point
     XMFLOAT3 min(bounds.mMinX, bounds.mMinY, bounds.mMinZ);
     XMFLOAT3 max(bounds.mMaxX, bounds.mMaxY, bounds.mMaxZ);
-    XMVECTOR minVector    = ::XMLoadFloat3(&min);
-    XMVECTOR maxVector    = ::XMLoadFloat3(&max);
-    XMVECTOR centerVector = ::XMVectorScale(::XMVectorAdd(minVector, maxVector), 0.5f);
+    auto minVector    = ::XMLoadFloat3(&min);
+    auto maxVector    = ::XMLoadFloat3(&max);
+    auto centerVector = ::XMVectorScale(::XMVectorAdd(minVector, maxVector), 0.5f);
 
     XMFLOAT3 center;
     ::XMStoreFloat3(&center, centerVector);
 
     // Update camera and re-render
-    mCamera.SetPivot(center);
-    mCamera.SetDistance(distance);
+    m_camera.setPivot(center);
+    m_camera.setDistance(distance);
     this->Refresh(false);
 }
 
-void ModelViewer::OnMotionEvt(wxMouseEvent& pEvent)
+void ModelViewer::onMotionEvt(wxMouseEvent& p_event)
 {
-    if (mLastMousePos.x == std::numeric_limits<int>::min() && 
-        mLastMousePos.y == std::numeric_limits<int>::min()) 
+    if (m_lastMousePos.x == std::numeric_limits<int>::min() && 
+        m_lastMousePos.y == std::numeric_limits<int>::min()) 
     {
-        mLastMousePos = pEvent.GetPosition();
+        m_lastMousePos = p_event.GetPosition();
     }
 
     // Yaw/Pitch
-    if (pEvent.LeftIsDown()) {
+    if (p_event.LeftIsDown()) {
         float rotateSpeed = (XM_PI / 180.0f);   // 1 degree per pixel
-        mCamera.RotateYaw(rotateSpeed * -(pEvent.GetX() - mLastMousePos.x));
-        mCamera.RotatePitch(rotateSpeed * (pEvent.GetY() - mLastMousePos.y));
+        m_camera.addYaw(rotateSpeed * -(p_event.GetX() - m_lastMousePos.x));
+        m_camera.addPitch(rotateSpeed * (p_event.GetY() - m_lastMousePos.y));
         this->Refresh(false);
     }
 
     // Pan
-    if (pEvent.MiddleIsDown()) {
-        float xPan = -(pEvent.GetX() - mLastMousePos.x);
-        float yPan = -(pEvent.GetY() - mLastMousePos.y);
-        mCamera.Pan(xPan, yPan);
+    if (p_event.MiddleIsDown()) {
+        float xPan = -(p_event.GetX() - m_lastMousePos.x);
+        float yPan = -(p_event.GetY() - m_lastMousePos.y);
+        m_camera.pan(xPan, yPan);
         this->Refresh(false);
     }
 
-    mLastMousePos = pEvent.GetPosition();
+    m_lastMousePos = p_event.GetPosition();
 }
 
-void ModelViewer::OnMouseWheelEvt(wxMouseEvent& pEvent)
+void ModelViewer::onMouseWheelEvt(wxMouseEvent& p_event)
 {
-    float zoomSteps = static_cast<float>(pEvent.GetWheelRotation()) / static_cast<float>(pEvent.GetWheelDelta());
-    mCamera.MultiplyDistance(-zoomSteps);
+    float zoomSteps = static_cast<float>(p_event.GetWheelRotation()) / static_cast<float>(p_event.GetWheelDelta());
+    m_camera.multiplyDistance(-zoomSteps);
     this->Refresh(false);
 }
 
-void ModelViewer::OnKeyDownEvt(wxKeyEvent& pEvent)
+void ModelViewer::onKeyDownEvt(wxKeyEvent& p_event)
 {
-    if (pEvent.GetKeyCode() == 'F') {
-        this->Focus();
+    if (p_event.GetKeyCode() == 'F') {
+        this->focus();
     }
 }
 

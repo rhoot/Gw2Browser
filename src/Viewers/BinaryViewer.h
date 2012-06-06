@@ -34,14 +34,14 @@ class HexControl;
 
 class BinaryViewer : public Viewer
 {
-    HexControl*     mHexControl;
-    Array<byte>     mBinaryData;
+    HexControl*     m_hexControl;
+    Array<byte>     m_binaryData;
 public:
-    BinaryViewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
+    BinaryViewer(wxWindow* p_parent, const wxPoint& p_pos = wxDefaultPosition, const wxSize& p_size = wxDefaultSize);
     virtual ~BinaryViewer();
 
-    virtual void clear();
-    virtual void setReader(FileReader* pReader);
+    virtual void clear() override;
+    virtual void setReader(FileReader* p_reader) override;
 }; // class BinaryViewer
 
 }; // namespace gw2b

@@ -56,8 +56,8 @@ enum FourCC
     FCC_DXTA  = 0x41545844,
 };
 
-ImageReader::ImageReader(const Array<byte>& pData, ANetFileType pFileType)
-    : FileReader(pData, pFileType)
+ImageReader::ImageReader(const Array<byte>& p_data, ANetFileType p_fileType)
+    : FileReader(p_data, p_fileType)
 {
 }
 
@@ -65,7 +65,7 @@ ImageReader::~ImageReader()
 {
 }
 
-wxImage ImageReader::GetImage() const
+wxImage ImageReader::getImage() const
 {
     Assert(m_data.GetSize() >= 4);
 
@@ -74,13 +74,13 @@ wxImage ImageReader::GetImage() const
     uint8* alphas = nullptr;
 
     // Read the correct type of data
-    uint32 fourcc = *reinterpret_cast<const uint32*>(m_data.GetPointer());
+    auto fourcc = *reinterpret_cast<const uint32*>(m_data.GetPointer());
     if (fourcc != FCC_DDS) {
-        if (!this->ReadAtexData(size, colors, alphas)) {
+        if (!this->readATEX(size, colors, alphas)) {
             return wxImage();
         }
     } else {
-        if (!this->ReadDdsData(size, colors, alphas)) {
+        if (!this->readDDS(size, colors, alphas)) {
             return wxImage();
         }
     }
@@ -99,7 +99,7 @@ wxImage ImageReader::GetImage() const
 
 Array<byte> ImageReader::convertData() const
 {
-    wxImage image = this->GetImage();
+    auto image = this->getImage();
 
     // Bail if invalid
     if (!image.IsOk()) {
@@ -113,85 +113,85 @@ Array<byte> ImageReader::convertData() const
     }
 
     // Reset the position of the stream
-    wxStreamBuffer* buffer = stream.GetOutputStreamBuffer();
+    auto buffer = stream.GetOutputStreamBuffer();
     buffer->Seek(0, wxFromStart);
 
     // Read the data from the stream and into a buffer
-    Array<byte> data = Array<byte>(buffer->GetBytesLeft());
+    Array<byte> data(buffer->GetBytesLeft());
     buffer->Read(data.GetPointer(), data.GetSize());
 
     // Return the PNG data
     return data;
 }
 
-bool ImageReader::ReadDdsData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const
+bool ImageReader::readDDS(wxSize& po_size, BGR*& po_colors, uint8*& po_alphas) const
 {
     // Get header
-    if (m_data.GetSize() < sizeof(DdsHeader)) { return false; }
-    const DdsHeader* header = reinterpret_cast<const DdsHeader*>(m_data.GetPointer());
+    if (m_data.GetSize() < sizeof(DDSHeader)) { return false; }
+    auto header = reinterpret_cast<const DDSHeader*>(m_data.GetPointer());
     
     // Ensure some of the values are correct
-    if (header->mMagic != FCC_DDS || 
-        header->mSize != sizeof(DdsHeader) - 4 || 
-        header->mPixelFormat.mSize != sizeof(DdsPixelFormat))
+    if (header->magic != FCC_DDS || 
+        header->size != sizeof(DDSHeader) - 4 || 
+        header->pixelFormat.size != sizeof(DDSPixelFormat))
     {
         return false;
     }
 
     // Determine the pixel format
-    if (header->mPixelFormat.mFlags & 0x40) {               // 0x40 = DDPF_RGB, uncompressed data
-        if (!this->ProcessUncompressedDDS(header, reinterpret_cast<RGB*&>(poColors), poAlphas)) {
+    if (header->pixelFormat.flags & 0x40) {               // 0x40 = DDPF_RGB, uncompressed data
+        if (!this->processUncompressedDDS(header, reinterpret_cast<RGB*&>(po_colors), po_alphas)) {
             return false;
         }
-    } else if (header->mPixelFormat.mFlags & 0x4) {         // 0x4 = DDPF_FOURCC, compressed
+    } else if (header->pixelFormat.flags & 0x4) {         // 0x4 = DDPF_FOURCC, compressed
         const BGRA* data = reinterpret_cast<const BGRA*>(&m_data[sizeof(*header)]);
-        switch (header->mPixelFormat.mFourCC) {
+        switch (header->pixelFormat.fourCC) {
         case FCC_DXT1:
-            this->ProcessDXT1(data, header->mWidth, header->mHeight, poColors, poAlphas);
+            this->processDXT1(data, header->width, header->height, po_colors, po_alphas);
             break;
         case FCC_DXT2:
         case FCC_DXT3:
-            this->ProcessDXT3(data, header->mWidth, header->mHeight, poColors, poAlphas);
+            this->processDXT3(data, header->width, header->height, po_colors, po_alphas);
             break;
         case FCC_DXT4:
         case FCC_DXT5:
-            this->ProcessDXT5(data, header->mWidth, header->mHeight, poColors, poAlphas);
+            this->processDXT5(data, header->width, header->height, po_colors, po_alphas);
             break;
         }
-    } else if (header->mPixelFormat.mFlags & 0x20000) {     // 0x20000 = DDPF_LUMINANCE, single-byte color
-        if (!this->ProcessLuminanceDDS(header, reinterpret_cast<RGB*&>(poColors))) {
+    } else if (header->pixelFormat.flags & 0x20000) {     // 0x20000 = DDPF_LUMINANCE, single-byte color
+        if (!this->processLuminanceDDS(header, reinterpret_cast<RGB*&>(po_colors))) {
             return false;
         }
     }
 
-    if (!!poColors) {
-        poSize.Set(header->mWidth, header->mHeight);
+    if (!!po_colors) {
+        po_size.Set(header->width, header->height);
     }
 
-    return !!poColors;
+    return !!po_colors;
 }
 
-bool ImageReader::ProcessLuminanceDDS(const DdsHeader* pHeader, RGB*& poColors) const
+bool ImageReader::processLuminanceDDS(const DDSHeader* p_header, RGB*& po_colors) const
 {
     // Ensure the image is 8-bit
-    if (pHeader->mPixelFormat.mRGBBitCount != 8) { return false; }
+    if (p_header->pixelFormat.rgbBitCount != 8) { return false; }
 
     // Determine the size of the pixel data
-    uint numPixels = pHeader->mWidth * pHeader->mHeight;
-    uint dataSize  = (numPixels * pHeader->mPixelFormat.mRGBBitCount) >> 3;
+    uint numPixels = p_header->width * p_header->height;
+    uint dataSize  = (numPixels * p_header->pixelFormat.rgbBitCount) >> 3;
 
     // Image data buffer too small?
-    if (m_data.GetSize() < (sizeof(*pHeader) + dataSize)) { return false; }
+    if (m_data.GetSize() < (sizeof(*p_header) + dataSize)) { return false; }
 
     // Read the data (we've already determined that the data is 8bpp above)
-    const uint8* pixelData = static_cast<const uint8*>(&m_data[sizeof(*pHeader)]);
+    auto pixelData = static_cast<const uint8*>(&m_data[sizeof(*p_header)]);
 
 #pragma omp parallel for
-    for (int y = 0; y < static_cast<int>(pHeader->mHeight); y++) {
-        uint32 curPixel  = (y * pHeader->mWidth);
+    for (int y = 0; y < static_cast<int>(p_header->height); y++) {
+        uint32 curPixel  = (y * p_header->width);
 
-        for (uint x = 0; x < pHeader->mWidth; x++) {
-            ::memset(&poColors[curPixel], pixelData[curPixel], sizeof(poColors[curPixel]));
+        for (uint x = 0; x < p_header->width; x++) {
+            ::memset(&po_colors[curPixel], pixelData[curPixel], sizeof(po_colors[curPixel]));
             curPixel++;
         }
     }
@@ -199,47 +199,47 @@ bool ImageReader::ProcessLuminanceDDS(const DdsHeader* pHeader, RGB*& poColors) 
     return true;
 }
 
-bool ImageReader::ProcessUncompressedDDS(const DdsHeader* pHeader, RGB*& poColors, uint8*& poAlphas) const
+bool ImageReader::processUncompressedDDS(const DDSHeader* p_header, RGB*& po_colors, uint8*& po_alphas) const
 {
     // Ensure the image is 32-bit. Until a non-32 bit texture is found,
     // there's no point adding support for it
-    if (pHeader->mPixelFormat.mRGBBitCount != 32) { return false; }
+    if (p_header->pixelFormat.rgbBitCount != 32) { return false; }
 
     // Determine the size of the pixel data
-    uint numPixels = pHeader->mWidth * pHeader->mHeight;
-    uint dataSize  = (numPixels * pHeader->mPixelFormat.mRGBBitCount) >> 3;
+    uint numPixels = p_header->width * p_header->height;
+    uint dataSize  = (numPixels * p_header->pixelFormat.rgbBitCount) >> 3;
 
     // Image data buffer too small?
-    if (m_data.GetSize() < (sizeof(*pHeader) + dataSize)) { return false; }
+    if (m_data.GetSize() < (sizeof(*p_header) + dataSize)) { return false; }
 
     // Color data
     RGBA shift;
-    poColors = allocate<RGB>(numPixels);
-    shift.r = lowestSetBit(pHeader->mPixelFormat.mRBitMask);
-    shift.g = lowestSetBit(pHeader->mPixelFormat.mGBitMask);
-    shift.b = lowestSetBit(pHeader->mPixelFormat.mBBitMask);
+    po_colors = allocate<RGB>(numPixels);
+    shift.r = lowestSetBit(p_header->pixelFormat.rBitMask);
+    shift.g = lowestSetBit(p_header->pixelFormat.gBitMask);
+    shift.b = lowestSetBit(p_header->pixelFormat.bBitMask);
 
     // Alpha data
-    bool hasAlpha = (pHeader->mPixelFormat.mFlags & 0x1);    // 0x1 = DDPF_ALPHAPIXELS, alpha is present
+    bool hasAlpha = (p_header->pixelFormat.flags & 0x1);    // 0x1 = DDPF_ALPHAPIXELS, alpha is present
     if (hasAlpha) { 
-        poAlphas = allocate<uint8>(numPixels); 
-        shift.a  = lowestSetBit(pHeader->mPixelFormat.mABitMask);
+        po_alphas = allocate<uint8>(numPixels); 
+        shift.a  = lowestSetBit(p_header->pixelFormat.aBitMask);
     }
 
     // Read the data (we've already determined that the data is 32bpp)
-    const uint32* pixelData = reinterpret_cast<const uint32*>(&m_data[sizeof(*pHeader)]);
+    auto pixelData = reinterpret_cast<const uint32*>(&m_data[sizeof(*p_header)]);
 
 #pragma omp parallel for
-    for (int y = 0; y < static_cast<int>(pHeader->mHeight); y++) {
-        uint32 curPixel = (y * pHeader->mWidth);
+    for (int y = 0; y < static_cast<int>(p_header->height); y++) {
+        uint32 curPixel = (y * p_header->width);
 
-        for (uint x = 0; x < pHeader->mWidth; x++) {
-            poColors[curPixel].r = (pixelData[curPixel] & pHeader->mPixelFormat.mRBitMask) >> shift.r;
-            poColors[curPixel].g = (pixelData[curPixel] & pHeader->mPixelFormat.mGBitMask) >> shift.g;
-            poColors[curPixel].b = (pixelData[curPixel] & pHeader->mPixelFormat.mBBitMask) >> shift.b;
+        for (uint x = 0; x < p_header->width; x++) {
+            po_colors[curPixel].r = (pixelData[curPixel] & p_header->pixelFormat.rBitMask) >> shift.r;
+            po_colors[curPixel].g = (pixelData[curPixel] & p_header->pixelFormat.gBitMask) >> shift.g;
+            po_colors[curPixel].b = (pixelData[curPixel] & p_header->pixelFormat.bBitMask) >> shift.b;
 
             if (hasAlpha) {
-                poAlphas[curPixel] = (pixelData[curPixel] & pHeader->mPixelFormat.mABitMask) >> shift.a;
+                po_alphas[curPixel] = (pixelData[curPixel] & p_header->pixelFormat.aBitMask) >> shift.a;
             }
 
             curPixel++;
@@ -249,21 +249,21 @@ bool ImageReader::ProcessUncompressedDDS(const DdsHeader* pHeader, RGB*& poColor
     return true;
 }
 
-bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const
+bool ImageReader::readATEX(wxSize& po_size, BGR*& po_colors, uint8*& po_alphas) const
 {
-    Assert(IsValidHeader(m_data.GetPointer(), m_data.GetSize()));
-    const ANetAtexHeader* atex = reinterpret_cast<const ANetAtexHeader*>(m_data.GetPointer());
+    Assert(isValidHeader(m_data.GetPointer(), m_data.GetSize()));
+    auto atex = reinterpret_cast<const ANetAtexHeader*>(m_data.GetPointer());
 
     // Determine mipmap0 size and bail if the file is too small
     if (m_data.GetSize() >= sizeof(ANetAtexHeader) + sizeof(uint32)) {
-        uint32 mipMap0Size = *reinterpret_cast<const uint32*>(&m_data[sizeof(ANetAtexHeader)]);
+        auto mipMap0Size = *reinterpret_cast<const uint32*>(&m_data[sizeof(ANetAtexHeader)]);
 
         if (mipMap0Size + sizeof(ANetAtexHeader) > m_data.GetSize()) {
-            poSize.Set(0, 0);
+            po_size.Set(0, 0);
             return false;
         }
     } else {
-        poSize.Set(0, 0);
+        po_size.Set(0, 0);
         return false;
     }
 
@@ -278,53 +278,53 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
     descriptor.c = 0;
 
     // Init some fields
-    const uint* data = reinterpret_cast<const uint*>(m_data.GetPointer());
-    poColors = nullptr;
-    poAlphas = nullptr;
+    auto data = reinterpret_cast<const uint*>(m_data.GetPointer());
+    po_colors = nullptr;
+    po_alphas = nullptr;
 
     // Allocate output
-    BGRA* output     = allocate<BGRA>(atex->width * atex->height);
+    auto output      = allocate<BGRA>(atex->width * atex->height);
     descriptor.image = reinterpret_cast<unsigned char*>(output);
 
     // Uncompress
     switch (atex->formatInteger) {
     case FCC_DXT1:
         if (::AtexDecompress(data, m_data.GetSize(), 0xf, descriptor, reinterpret_cast<uint*>(output))) {
-            this->ProcessDXT1(output, atex->width, atex->height, poColors, poAlphas);
+            this->processDXT1(output, atex->width, atex->height, po_colors, po_alphas);
         }
         break;
     case FCC_DXT2:
     case FCC_DXT3:
     case FCC_DXTN:
         if (::AtexDecompress(data, m_data.GetSize(), 0x11, descriptor, reinterpret_cast<uint*>(output))) {
-            this->ProcessDXT3(output, atex->width, atex->height, poColors, poAlphas);
+            this->processDXT3(output, atex->width, atex->height, po_colors, po_alphas);
         }
         break;
     case FCC_DXT4:
     case FCC_DXT5:
         if (::AtexDecompress(data, m_data.GetSize(), 0x13, descriptor, reinterpret_cast<uint*>(output))) {
-            this->ProcessDXT5(output, atex->width, atex->height, poColors, poAlphas);
+            this->processDXT5(output, atex->width, atex->height, po_colors, po_alphas);
         }
         break;
     case FCC_DXTA:
         if (::AtexDecompress(data, m_data.GetSize(), 0x14, descriptor, reinterpret_cast<uint*>(output))) {
-            this->ProcessDXTA(reinterpret_cast<uint64*>(output), atex->width, atex->height, poColors);
+            this->processDXTA(reinterpret_cast<uint64*>(output), atex->width, atex->height, po_colors);
         }
         break;
     case FCC_DXTL:
         if (::AtexDecompress(data, m_data.GetSize(), 0x12, descriptor, reinterpret_cast<uint*>(output))) {
-            this->ProcessDXT5(output, atex->width, atex->height, poColors, poAlphas);
+            this->processDXT5(output, atex->width, atex->height, po_colors, po_alphas);
 
             for (uint i = 0; i < (static_cast<uint>(atex->width) * static_cast<uint>(atex->height)); i++) {
-                poColors[i].r = (poColors[i].r * poAlphas[i]) / 0xff;
-                poColors[i].g = (poColors[i].g * poAlphas[i]) / 0xff;
-                poColors[i].b = (poColors[i].b * poAlphas[i]) / 0xff;
+                po_colors[i].r = (po_colors[i].r * po_alphas[i]) / 0xff;
+                po_colors[i].g = (po_colors[i].g * po_alphas[i]) / 0xff;
+                po_colors[i].b = (po_colors[i].b * po_alphas[i]) / 0xff;
             }
         }
         break;
     case FCC_3DCX:
         if (::AtexDecompress(data, m_data.GetSize(), 0x13, descriptor, reinterpret_cast<uint*>(output))) {
-            this->Process3DCX(reinterpret_cast<RGBA*>(output), atex->width, atex->height, poColors, poAlphas);
+            this->process3DCX(reinterpret_cast<RGBA*>(output), atex->width, atex->height, po_colors, po_alphas);
         }
         break;
     default:
@@ -334,35 +334,35 @@ bool ImageReader::ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas)
 
     freePointer(output);
 
-    if (poColors) { 
-        poSize.Set(atex->width, atex->height); 
+    if (po_colors) { 
+        po_size.Set(atex->width, atex->height); 
         return true;
     }
 
     return false;
 }
 
-bool ImageReader::IsValidHeader(const byte* pData, uint pSize)
+bool ImageReader::isValidHeader(const byte* p_data, uint p_size)
 {
-    if (pSize < 0x10) { return false; }
-    uint32 fourcc = *reinterpret_cast<const uint32*>(pData);
+    if (p_size < 0x10) { return false; }
+    auto fourcc = *reinterpret_cast<const uint32*>(p_data);
 
     // Is this a DDS file?
     if (fourcc == FCC_DDS) {
-        if (pSize < sizeof(DdsHeader)) { return false; }
-        const DdsHeader* dds = reinterpret_cast<const DdsHeader*>(pData);
+        if (p_size < sizeof(DDSHeader)) { return false; }
+        auto dds = reinterpret_cast<const DDSHeader*>(p_data);
 
-        bool isUncompressedRgb  = !!(dds->mPixelFormat.mFlags &    0x40);
-        bool isCompressedRgb    = !!(dds->mPixelFormat.mFlags &     0x4);
-        bool isLuminanceTexture = !!(dds->mPixelFormat.mFlags & 0x20000);
-        bool is8Bit             = (dds->mPixelFormat.mRGBBitCount ==  8);
-        bool is32Bit            = (dds->mPixelFormat.mRGBBitCount == 32);
+        bool isUncompressedRgb  = !!(dds->pixelFormat.flags &    0x40);
+        bool isCompressedRgb    = !!(dds->pixelFormat.flags &     0x4);
+        bool isLuminanceTexture = !!(dds->pixelFormat.flags & 0x20000);
+        bool is8Bit             = (dds->pixelFormat.rgbBitCount ==  8);
+        bool is32Bit            = (dds->pixelFormat.rgbBitCount == 32);
 
         return (isCompressedRgb || (isLuminanceTexture && is8Bit) || (isUncompressedRgb && is32Bit));
     }
 
-    const ANetAtexHeader* atex = reinterpret_cast<const ANetAtexHeader*>(pData);
-    uint32 compression   = atex->formatInteger;
+    auto atex        = reinterpret_cast<const ANetAtexHeader*>(p_data);
+    auto compression = atex->formatInteger;
 
     // The compression algorithm for non-power-of-two textures is unknown
     if (!isPowerOfTwo(atex->width) || !isPowerOfTwo(atex->height)) {
@@ -373,87 +373,89 @@ bool ImageReader::IsValidHeader(const byte* pData, uint pSize)
         (fourcc == FCC_ATEU) || (fourcc == FCC_ATEC) || (fourcc == FCC_ATET)) 
     {
         return (compression == FCC_DXT1) || 
-                (compression == FCC_DXT2) || 
-                (compression == FCC_DXT3) || 
-                (compression == FCC_DXT4) || 
-                (compression == FCC_DXT5) || 
-                (compression == FCC_DXTN) || 
-                (compression == FCC_DXTL) || 
-                (compression == FCC_DXTA) ||
-                (compression == FCC_3DCX);
+               (compression == FCC_DXT2) || 
+               (compression == FCC_DXT3) || 
+               (compression == FCC_DXT4) || 
+               (compression == FCC_DXT5) || 
+               (compression == FCC_DXTN) || 
+               (compression == FCC_DXTL) || 
+               (compression == FCC_DXTA) ||
+               (compression == FCC_3DCX);
     }
 
     return false;
 }
 
-void ImageReader::ProcessDXTColor(BGR* pColors, uint8* pAlphas, const DXTColor& pBlockColor, bool pIsDXT1) const
+void ImageReader::processDXTColor(BGR* p_colors, uint8* p_alphas, const DXTColor& p_blockColor, bool p_isDXT1) const
 {
-    // Color 0
-    pColors[0].r = (pBlockColor.mRed1   << 3) | (pBlockColor.mRed1   >> 2 );
-    pColors[0].g = (pBlockColor.mGreen1 << 2) | (pBlockColor.mGreen1 >> 4 );
-    pColors[0].b = (pBlockColor.mBlue1  << 3) | (pBlockColor.mBlue1  >> 2 );
-    // Color 1
-    pColors[1].r = (pBlockColor.mRed2   << 3) | (pBlockColor.mRed2   >> 2 );
-    pColors[1].g = (pBlockColor.mGreen2 << 2) | (pBlockColor.mGreen2 >> 4 );
-    pColors[1].b = (pBlockColor.mBlue2  << 3) | (pBlockColor.mBlue2  >> 2 );
-    // Colors 2 and 3
-    if (!pIsDXT1 || pBlockColor.mColor1 > pBlockColor.mColor2) {
-        pColors[2].r = (pColors[0].r * 2 + pColors[1].r) / 3;
-        pColors[2].g = (pColors[0].g * 2 + pColors[1].g) / 3;
-        pColors[2].b = (pColors[0].b * 2 + pColors[1].b) / 3;
-        pColors[3].r = (pColors[0].r + pColors[1].r * 2) / 3;
-        pColors[3].g = (pColors[0].g + pColors[1].g * 2) / 3;
-        pColors[3].b = (pColors[0].b + pColors[1].b * 2) / 3;
-        // Alpha is only being set for DXT1
-        if (pAlphas) { ::memset(pAlphas, 0xff, 4); }
+    static XMFLOAT4 unpackedColorScale(255.f/31.f, 255.f/63.f, 255.f/31.f, 255.f);
+
+    XMU565 color1Src(p_blockColor.color1);
+    XMU565 color2Src(p_blockColor.color2);
+    XMVECTOR colors[4];
+
+
+    colors[0] = ::XMVectorSetW(::XMLoadU565(&color1Src), 1.0f);
+    colors[0] = ::XMVectorSwizzle(colors[0], 2, 1, 0, 3);
+    colors[1] = ::XMVectorSetW(::XMLoadU565(&color2Src), 1.0f);
+    colors[1] = ::XMVectorSwizzle(colors[1], 2, 1, 0, 3);
+
+    if (!p_isDXT1 || p_blockColor.color1 > p_blockColor.color2) {
+        colors[2] = ::XMVectorLerp(colors[0], colors[1], (1.0f / 3.0f));
+        colors[2] = ::XMVectorSetW(colors[2], 1.0f);
+        colors[3] = ::XMVectorLerp(colors[0], colors[1], (2.0f / 3.0f));
+        colors[3] = ::XMVectorSetW(colors[3], 1.0f);
     } else {
-        pColors[2].r = (pColors[0].r + pColors[1].r) >> 1;
-        pColors[2].g = (pColors[0].g + pColors[1].g) >> 1;
-        pColors[2].b = (pColors[0].b + pColors[1].b) >> 1;
-        ::memset(&pColors[3], 0, sizeof(pColors[3]));
-        // Alpha is only being set for DXT1
-        if (pAlphas) {
-            ::memset(pAlphas, 0xff, 3);
-            pAlphas[3] = 0x0;
-        }
+        colors[2] = ::XMVectorLerp(colors[0], colors[1], 0.5f);
+        colors[2] = ::XMVectorSetW(colors[2], 1.0f);
+        colors[3] = ::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    XMVECTOR colorScale = ::XMLoadFloat4(&unpackedColorScale);
+
+    for (uint i = 0; i < ArraySize(colors); i++) {
+        XMUBYTE4 color;
+        ::XMStoreUByte4(&color, ::XMVectorMultiply(colors[i], colorScale));
+        ::memcpy(&p_colors[i], &color, sizeof(p_colors[i]));
+        if (p_alphas) { p_alphas[i] = color.w; }
     }
 }
 
-void ImageReader::ProcessDXT1(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const {
-    uint numPixels  = (pWidth * pHeight);
+void ImageReader::processDXT1(const BGRA* p_data, uint p_width, uint p_height, BGR*& po_colors, uint8*& po_alphas) const {
+    uint numPixels  = (p_width * p_height);
     uint numBlocks  = numPixels >> 4;
-    const DXT1Block* blocks = reinterpret_cast<const DXT1Block*>(pData);
+    const DXT1Block* blocks = reinterpret_cast<const DXT1Block*>(p_data);
 
-    poColors = allocate<BGR>(numPixels);
-    poAlphas = allocate<uint8>(numPixels);
+    po_colors = allocate<BGR>(numPixels);
+    po_alphas = allocate<uint8>(numPixels);
 
-    const uint numHorizBlocks = pWidth >> 2;
-    const uint numVertBlocks  = pHeight >> 2;
+    const uint numHorizBlocks = p_width >> 2;
+    const uint numVertBlocks  = p_height >> 2;
 
 #pragma omp parallel for
     for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
         for (uint x = 0; x < numHorizBlocks; x++)
         {
             const DXT1Block& block = blocks[(y * numHorizBlocks) + x];
-            this->ProcessDXT1Block(poColors, poAlphas, block, x * 4, y * 4, pWidth);
+            this->processDXT1Block(po_colors, po_alphas, block, x * 4, y * 4, p_width);
         }    
     }
 }
 
-void ImageReader::ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const
+void ImageReader::processDXT1Block(BGR* p_colors, uint8* p_alphas, const DXT1Block& p_block, uint p_blockX, uint p_blockY, uint p_width) const
 {
-    uint32 indices = pBlock.mIndices;
+    uint32 indices = p_block.indices;
     BGR colors[4];
     uint8 alphas[4];
 
-    this->ProcessDXTColor(colors, alphas, pBlock.mColors, true);
+    this->processDXTColor(colors, alphas, p_block.colors, true);
 
     for (uint y = 0; y < 4; y++) {
-        uint curPixel = (pBlockY + y) * pWidth + pBlockX;
+        uint curPixel = (p_blockY + y) * p_width + p_blockX;
 
         for (uint x = 0; x < 4; x++) {
-            BGR& color   = pColors[curPixel];
-            uint8& alpha = pAlphas[curPixel];
+            BGR& color   = p_colors[curPixel];
+            uint8& alpha = p_alphas[curPixel];
 
             uint index = (indices & 3);
             ::memcpy(&color, &colors[index], sizeof(color));
@@ -465,34 +467,34 @@ void ImageReader::ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block
     }
 }
 
-void ImageReader::ProcessDXTA(const uint64* pData, uint pWidth, uint pHeight, BGR*& poColors) const
+void ImageReader::processDXTA(const uint64* p_data, uint p_width, uint p_height, BGR*& po_colors) const
 {
-    uint numPixels    = (pWidth * pHeight);
+    uint numPixels    = (p_width * p_height);
     uint numBlocks    = numPixels >> 4;
 
-    poColors = allocate<BGR>(numPixels);
+    po_colors = allocate<BGR>(numPixels);
 
-    const uint numHorizBlocks = pWidth >> 2;
-    const uint numVertBlocks  = pHeight >> 2;
+    const uint numHorizBlocks = p_width >> 2;
+    const uint numVertBlocks  = p_height >> 2;
 
 #pragma omp parallel for
     for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
         for (uint x = 0; x < numHorizBlocks; x++)
         {
-            uint64 block = pData[(y * numHorizBlocks) + x];
-            this->ProcessDXTABlock(poColors, block, x * 4, y * 4, pWidth);
+            uint64 block = p_data[(y * numHorizBlocks) + x];
+            this->processDXTABlock(po_colors, block, x * 4, y * 4, p_width);
         }    
     }
 }
 
-void ImageReader::ProcessDXTABlock(BGR* pColors, uint64 pBlock, uint pBlockX, uint pBlockY, uint pWidth) const
+void ImageReader::processDXTABlock(BGR* p_colors, uint64 p_block, uint p_blockX, uint p_blockY, uint p_width) const
 {
     uint8  alphas[8];
 
     // Alpha 1 and 2
-    alphas[0] = (pBlock & 0xff);
-    alphas[1] = (pBlock & 0xff00) >> 8;
-    pBlock  >>= 16;
+    alphas[0] = (p_block & 0xff);
+    alphas[1] = (p_block & 0xff00) >> 8;
+    p_block  >>= 16;
     // Alpha 3 to 8
     if (alphas[0] > alphas[1]) {
         for (uint i = 2; i < 8; i++) {
@@ -507,52 +509,52 @@ void ImageReader::ProcessDXTABlock(BGR* pColors, uint64 pBlock, uint pBlockX, ui
     }
 
     for (uint y = 0; y < 4; y++) {
-        uint curPixel = (pBlockY + y) * pWidth + pBlockX;
+        uint curPixel = (p_blockY + y) * p_width + p_blockX;
 
         for (uint x = 0; x < 4; x++) {
-            ::memset(&pColors[curPixel], alphas[pBlock & 0x7], sizeof(pColors[curPixel]));
+            ::memset(&p_colors[curPixel], alphas[p_block & 0x7], sizeof(p_colors[curPixel]));
             curPixel++;
-            pBlock >>= 3;
+            p_block >>= 3;
         }
     }
 }
 
-void ImageReader::ProcessDXT3(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
+void ImageReader::processDXT3(const BGRA* p_data, uint p_width, uint p_height, BGR*& po_colors, uint8*& po_alphas) const
 {
-    uint numPixels  = (pWidth * pHeight);
+    uint numPixels  = (p_width * p_height);
     uint numBlocks  = numPixels >> 4;
-    const DXT3Block* blocks = reinterpret_cast<const DXT3Block*>(pData);
+    const DXT3Block* blocks = reinterpret_cast<const DXT3Block*>(p_data);
 
-    poColors = allocate<BGR>(numPixels);
-    poAlphas = allocate<uint8>(numPixels);
+    po_colors = allocate<BGR>(numPixels);
+    po_alphas = allocate<uint8>(numPixels);
     
-    const uint numHorizBlocks = pWidth >> 2;
-    const uint numVertBlocks  = pHeight >> 2;
+    const uint numHorizBlocks = p_width >> 2;
+    const uint numVertBlocks  = p_height >> 2;
 
 #pragma omp parallel for
     for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
         for (uint x = 0; x < numHorizBlocks; x++)
         {
             const DXT3Block& block = blocks[(y * numHorizBlocks) + x];
-            this->ProcessDXT3Block(poColors, poAlphas, block, x * 4, y * 4, pWidth);
+            this->processDXT3Block(po_colors, po_alphas, block, x * 4, y * 4, p_width);
         }
     }
 }
 
-void ImageReader::ProcessDXT3Block(BGR* pColors, uint8* pAlphas, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const
+void ImageReader::processDXT3Block(BGR* p_colors, uint8* p_alphas, const DXT3Block& p_block, uint p_blockX, uint p_blockY, uint p_width) const
 {
-    uint32 indices    = pBlock.mIndices;
-    uint64 blockAlpha = pBlock.mAlpha;
+    uint32 indices    = p_block.indices;
+    uint64 blockAlpha = p_block.alpha;
     BGR colors[4];
 
-    this->ProcessDXTColor(colors, nullptr, pBlock.mColors, false);
+    this->processDXTColor(colors, nullptr, p_block.colors, false);
 
     for (uint y = 0; y < 4; y++) {
-        uint curPixel = (pBlockY + y) * pWidth + pBlockX;
+        uint curPixel = (p_blockY + y) * p_width + p_blockX;
 
         for (uint x = 0; x < 4; x++) {
-            BGR& color   = pColors[curPixel];
-            uint8& alpha = pAlphas[curPixel];
+            BGR& color   = p_colors[curPixel];
+            uint8& alpha = p_alphas[curPixel];
 
             uint index = (indices & 3);
             ::memcpy(&color, &colors[index], sizeof(color));
@@ -565,36 +567,36 @@ void ImageReader::ProcessDXT3Block(BGR* pColors, uint8* pAlphas, const DXT3Block
     }
 }
 
-void ImageReader::ProcessDXT5(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
+void ImageReader::processDXT5(const BGRA* p_data, uint p_width, uint p_height, BGR*& po_colors, uint8*& po_alphas) const
 {
-    uint numPixels    = (pWidth * pHeight);
+    uint numPixels    = (p_width * p_height);
     uint numBlocks    = numPixels >> 4;
-    const DXT3Block* blocks = reinterpret_cast<const DXT3Block*>(pData);
+    const DXT3Block* blocks = reinterpret_cast<const DXT3Block*>(p_data);
 
-    poColors = allocate<BGR>(numPixels);
-    poAlphas = allocate<uint8>(numPixels);
+    po_colors = allocate<BGR>(numPixels);
+    po_alphas = allocate<uint8>(numPixels);
 
-    const uint numHorizBlocks = pWidth >> 2;
-    const uint numVertBlocks  = pHeight >> 2;
+    const uint numHorizBlocks = p_width >> 2;
+    const uint numVertBlocks  = p_height >> 2;
 
 #pragma omp parallel for
     for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
         for (uint x = 0; x < numHorizBlocks; x++)
         {
             const DXT3Block& block = blocks[(y * numHorizBlocks) + x];
-            this->ProcessDXT5Block(poColors, poAlphas, block, x * 4, y * 4, pWidth);
+            this->processDXT5Block(po_colors, po_alphas, block, x * 4, y * 4, p_width);
         }
     }
 }
 
-void ImageReader::ProcessDXT5Block(BGR* pColors, uint8* pAlphas, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const
+void ImageReader::processDXT5Block(BGR* p_colors, uint8* p_alphas, const DXT3Block& p_block, uint p_blockX, uint p_blockY, uint p_width) const
 {
-    uint32 indices    = pBlock.mIndices;
-    uint64 blockAlpha = pBlock.mAlpha;
+    uint32 indices    = p_block.indices;
+    uint64 blockAlpha = p_block.alpha;
     BGR    colors[4];
     uint8  alphas[8];
 
-    this->ProcessDXTColor(colors, nullptr, pBlock.mColors, false);
+    this->processDXTColor(colors, nullptr, p_block.colors, false);
 
     // Alpha 1 and 2
     alphas[0]    = (blockAlpha & 0xff);
@@ -614,11 +616,11 @@ void ImageReader::ProcessDXT5Block(BGR* pColors, uint8* pAlphas, const DXT3Block
     }
 
     for (uint y = 0; y < 4; y++) {
-        uint curPixel = (pBlockY + y) * pWidth + pBlockX;
+        uint curPixel = (p_blockY + y) * p_width + p_blockX;
 
         for (uint x = 0; x < 4; x++) {
-            BGR& color = pColors[curPixel];
-            uint8& alpha = pAlphas[curPixel];
+            BGR& color = p_colors[curPixel];
+            uint8& alpha = p_alphas[curPixel];
 
             uint index = (indices & 3);
             ::memcpy(&color, &colors[index], sizeof(color));
@@ -631,17 +633,17 @@ void ImageReader::ProcessDXT5Block(BGR* pColors, uint8* pAlphas, const DXT3Block
     }
 }
 
-void ImageReader::Process3DCX(const RGBA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const
+void ImageReader::process3DCX(const RGBA* p_data, uint p_width, uint p_height, BGR*& po_colors, uint8*& po_alphas) const
 {
-    uint numPixels  = (pWidth * pHeight);
+    uint numPixels  = (p_width * p_height);
     uint numBlocks  = numPixels >> 4;
-    const DCXBlock* blocks = reinterpret_cast<const DCXBlock*>(pData);
+    const DCXBlock* blocks = reinterpret_cast<const DCXBlock*>(p_data);
 
-    poColors = allocate<BGR>(numPixels);
-    poAlphas = nullptr; // 3DCX does not use alpha
+    po_colors = allocate<BGR>(numPixels);
+    po_alphas = nullptr; // 3DCX does not use alpha
 
-    const uint numHorizBlocks = pWidth >> 2;
-    const uint numVertBlocks  = pHeight >> 2;
+    const uint numHorizBlocks = p_width >> 2;
+    const uint numVertBlocks  = p_height >> 2;
 
 #pragma omp parallel for
     for (int y = 0; y < static_cast<int>(numVertBlocks); y++) {
@@ -649,18 +651,18 @@ void ImageReader::Process3DCX(const RGBA* pData, uint pWidth, uint pHeight, BGR*
         {
             const DCXBlock& block = blocks[(y * numHorizBlocks) + x];
             // 3DCX actually uses RGB and not BGR, so *pretend* that's what the output is
-            this->Process3DCXBlock(reinterpret_cast<RGB*>(poColors), block, x * 4, y * 4, pWidth);
+            this->process3DCXBlock(reinterpret_cast<RGB*>(po_colors), block, x * 4, y * 4, p_width);
         }
     }
 }
 
-void ImageReader::Process3DCXBlock(RGB* pColors, const DCXBlock& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const
+void ImageReader::process3DCXBlock(RGB* p_colors, const DCXBlock& p_block, uint p_blockX, uint p_blockY, uint p_width) const
 {
     const float floatToByte = 127.5f;
     const float byteToFloat = (1.0f / floatToByte);
 
-    uint64 red   = pBlock.mRed;
-    uint64 green = pBlock.mGreen;
+    uint64 red   = p_block.red;
+    uint64 green = p_block.green;
     uint8 reds[8];
     uint8 greens[8];
 
@@ -699,10 +701,10 @@ void ImageReader::Process3DCXBlock(RGB* pColors, const DCXBlock& pBlock, uint pB
 
     struct { float r; float g; float b; } normal;
     for (uint y = 0; y < 4; y++) {
-        uint curPixel = (pBlockY + y) * pWidth + pBlockX;
+        uint curPixel = (p_blockY + y) * p_width + p_blockX;
 
         for (uint x = 0; x < 4; x++) {
-            RGB& color   = pColors[curPixel];
+            RGB& color   = p_colors[curPixel];
 
             // Get normal
             normal.r = ((float)reds[red & 7]     * byteToFloat) - 1.0f;

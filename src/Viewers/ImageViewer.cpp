@@ -31,19 +31,19 @@
 namespace gw2b
 {
 
-ImageViewer::ImageViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& pSize)
-    : Viewer(pParent, pPos, pSize)
-    , mImageControl(nullptr)
+ImageViewer::ImageViewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize& p_size)
+    : Viewer(p_parent, p_pos, p_size)
+    , m_imageControl(nullptr)
 {
-    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    auto sizer = new wxBoxSizer(wxVERTICAL);
 
     // Toolbar
-    wxToolBar* toolbar = this->BuildToolbar();
+    auto toolbar = this->buildToolbar();
     sizer->Add(toolbar, wxSizerFlags().Expand().FixedMinSize());
 
     // Hex control
-    mImageControl = new ImageControl(this);
-    sizer->Add(mImageControl, wxSizerFlags().Expand().Proportion(1));
+    m_imageControl = new ImageControl(this);
+    sizer->Add(m_imageControl, wxSizerFlags().Expand().Proportion(1));
 
     // Layout
     this->SetSizer(sizer);
@@ -56,67 +56,67 @@ ImageViewer::~ImageViewer()
 
 void ImageViewer::clear()
 {
-    mImageControl->SetImage(wxImage());
+    m_imageControl->SetImage(wxImage());
     Viewer::clear();
 }
 
-void ImageViewer::setReader(FileReader* pReader)
+void ImageViewer::setReader(FileReader* p_reader)
 {
-    Ensure::isOfType<ImageReader>(pReader);
-    Viewer::setReader(pReader);
+    Ensure::isOfType<ImageReader>(p_reader);
+    Viewer::setReader(p_reader);
 
-    if (pReader) {
-        mImage = GetImageReader()->GetImage();
-        mImageControl->SetImage(mImage);
+    if (p_reader) {
+        m_image = imageReader()->getImage();
+        m_imageControl->SetImage(m_image);
     }
 }
 
-wxToolBar* ImageViewer::BuildToolbar()
+wxToolBar* ImageViewer::buildToolbar()
 {
-    wxToolBar* toolbar = new wxToolBar(this, wxID_ANY);
-    wxWindowID id      = this->NewControlId(4);
+    auto toolbar = new wxToolBar(this, wxID_ANY);
+    auto id      = this->NewControlId(4);
 
     // Add the newly generated IDs
     for (uint i = 0; i < 4; i++) {
-        mToolbarButtonIds.Add(id++);
+        m_toolbarButtonIds.Add(id++);
     }
 
     // Load all toolbar button icons
     toolbar->SetToolBitmapSize(wxSize(16, 16));
-    mToolbarButtonIcons.push_back(data::loadPNG(data::toggle_red_png,   data::toggle_red_png_size));
-    mToolbarButtonIcons.push_back(data::loadPNG(data::toggle_green_png, data::toggle_green_png_size));
-    mToolbarButtonIcons.push_back(data::loadPNG(data::toggle_blue_png,  data::toggle_blue_png_size));
-    mToolbarButtonIcons.push_back(data::loadPNG(data::toggle_alpha_png, data::toggle_alpha_png_size));
+    m_toolbarButtonIcons.push_back(data::loadPNG(data::toggle_red_png,   data::toggle_red_png_size));
+    m_toolbarButtonIcons.push_back(data::loadPNG(data::toggle_green_png, data::toggle_green_png_size));
+    m_toolbarButtonIcons.push_back(data::loadPNG(data::toggle_blue_png,  data::toggle_blue_png_size));
+    m_toolbarButtonIcons.push_back(data::loadPNG(data::toggle_alpha_png, data::toggle_alpha_png_size));
 
     // Toggle channel buttons
     for (uint i = 0; i < 4; i++) {
-        wxToolBarToolBase* button = new wxToolBarToolBase(toolbar, mToolbarButtonIds[i], wxEmptyString, mToolbarButtonIcons[i], mToolbarButtonIcons[i], wxITEM_CHECK);
+        auto button = new wxToolBarToolBase(toolbar, m_toolbarButtonIds[i], wxEmptyString, m_toolbarButtonIcons[i], m_toolbarButtonIcons[i], wxITEM_CHECK);
         toolbar->AddTool(button);
         button->Toggle(true);
-        mToolbarButtons.Add(button);
-        this->Connect(mToolbarButtonIds[i], wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler(ImageViewer::OnToolbarClickedEvt));
+        m_toolbarButtons.Add(button);
+        this->Connect(m_toolbarButtonIds[i], wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler(ImageViewer::onToolbarClickedEvt));
     }
 
     toolbar->Realize();
     return toolbar;
 }
 
-void ImageViewer::OnToolbarClickedEvt(wxCommandEvent& pEvent)
+void ImageViewer::onToolbarClickedEvt(wxCommandEvent& pEvent)
 {
-    wxWindowID id = pEvent.GetId();
+    auto id = pEvent.GetId();
 
     // Toggle red
-    if (id == mToolbarButtonIds[0]) {
-        mImageControl->ToggleChannel(ImageControl::IC_Red, mToolbarButtons[0]->IsToggled());
+    if (id == m_toolbarButtonIds[0]) {
+        m_imageControl->ToggleChannel(ImageControl::IC_Red, m_toolbarButtons[0]->IsToggled());
     // Toggle green
-    } else if (id == mToolbarButtonIds[1]) {
-        mImageControl->ToggleChannel(ImageControl::IC_Green, mToolbarButtons[1]->IsToggled());
+    } else if (id == m_toolbarButtonIds[1]) {
+        m_imageControl->ToggleChannel(ImageControl::IC_Green, m_toolbarButtons[1]->IsToggled());
     // Toggle blue
-    } else if (id == mToolbarButtonIds[2]) {
-        mImageControl->ToggleChannel(ImageControl::IC_Blue, mToolbarButtons[2]->IsToggled());        
+    } else if (id == m_toolbarButtonIds[2]) {
+        m_imageControl->ToggleChannel(ImageControl::IC_Blue, m_toolbarButtons[2]->IsToggled());        
     // Toggle alpha
-    } else if (id == mToolbarButtonIds[3]) {
-        mImageControl->ToggleChannel(ImageControl::IC_Alpha, mToolbarButtons[3]->IsToggled());        
+    } else if (id == m_toolbarButtonIds[3]) {
+        m_imageControl->ToggleChannel(ImageControl::IC_Alpha, m_toolbarButtons[3]->IsToggled());        
     } else {
         pEvent.Skip();
     }

@@ -22,22 +22,24 @@
 */
 
 #include "stdafx.h"
+
 #include "BinaryViewer.h"
-#include "FileReader.h"
+
 #include "BinaryViewer/HexControl.h"
+#include "FileReader.h"
 
 namespace gw2b
 {
 
-BinaryViewer::BinaryViewer(wxWindow* pParent, const wxPoint& pPos, const wxSize& pSize)
-    : Viewer(pParent, pPos, pSize)
-    , mHexControl(nullptr)
+BinaryViewer::BinaryViewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize& p_size)
+    : Viewer(p_parent, p_pos, p_size)
+    , m_hexControl(nullptr)
 {
-    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto sizer = new wxBoxSizer(wxHORIZONTAL);
     
     // Hex control
-    mHexControl = new HexControl(this);
-    sizer->Add(mHexControl, wxSizerFlags().Expand().Proportion(1));
+    m_hexControl = new HexControl(this);
+    sizer->Add(m_hexControl, wxSizerFlags().Expand().Proportion(1));
 
     // Layout
     this->SetSizer(sizer);
@@ -50,8 +52,8 @@ BinaryViewer::~BinaryViewer()
 
 void BinaryViewer::clear()
 {
-    mHexControl->SetData(nullptr, 0);
-    mBinaryData.Clear();
+    m_hexControl->setData(nullptr, 0);
+    m_binaryData.Clear();
     Viewer::clear();
 }
 
@@ -60,8 +62,8 @@ void BinaryViewer::setReader(FileReader* pReader)
     Viewer::setReader(pReader);
 
     if (pReader) {
-        mBinaryData = pReader->convertData();
-        mHexControl->SetData(mBinaryData.GetPointer(), mBinaryData.GetSize());
+        m_binaryData = pReader->convertData();
+        m_hexControl->setData(m_binaryData.GetPointer(), m_binaryData.GetSize());
     }
 }
 

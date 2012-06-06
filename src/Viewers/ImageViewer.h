@@ -36,26 +36,26 @@ class ImageReader;
 
 class ImageViewer : public Viewer
 {
-    ImageControl*       mImageControl;
-    wxImage             mImage;
-    Array<wxWindowID>   mToolbarButtonIds;
-    std::vector<wxBitmap>   mToolbarButtonIcons;
-    Array<wxToolBarToolBase*>   mToolbarButtons;
+    ImageControl*               m_imageControl;
+    wxImage                     m_image;
+    Array<wxWindowID>           m_toolbarButtonIds;
+    std::vector<wxBitmap>       m_toolbarButtonIcons;
+    Array<wxToolBarToolBase*>   m_toolbarButtons;
 public:
-    ImageViewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
+    ImageViewer(wxWindow* p_parent, const wxPoint& p_pos = wxDefaultPosition, const wxSize& p_size = wxDefaultSize);
     virtual ~ImageViewer();
 
-    virtual void clear();
-    virtual void setReader(FileReader* pReader);
+    virtual void clear() override;
+    virtual void setReader(FileReader* p_reader) override;
     /** Gets the image reader containing the data displayed by this viewer.
      *  \return ImageReader*    Reader containing the data. */
-    ImageReader* GetImageReader()               { return (ImageReader*)this->reader(); }
+    ImageReader* imageReader()               { return reinterpret_cast<ImageReader*>(this->reader()); }       // already asserted with a dynamic_cast
     /** Gets the image reader containing the data displayed by this viewer.
      *  \return ImageReader*    Reader containing the data. */
-    const ImageReader* GetImageReader() const   { return (const ImageReader*)this->reader(); }
+    const ImageReader* imageReader() const   { return reinterpret_cast<const ImageReader*>(this->reader()); } // already asserted with a dynamic_cast
 private:
-    wxToolBar* BuildToolbar();
-    void OnToolbarClickedEvt(wxCommandEvent& pEvent);
+    wxToolBar* buildToolbar();
+    void onToolbarClickedEvt(wxCommandEvent& p_event);
 }; // class ImageViewer
 
 }; // namespace gw2b

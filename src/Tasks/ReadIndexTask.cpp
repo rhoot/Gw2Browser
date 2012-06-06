@@ -27,24 +27,24 @@
 namespace gw2b
 {
 
-ReadIndexTask::ReadIndexTask(const std::shared_ptr<DatIndex>& pIndex, const wxString& pFilename, uint64 pDatTimeStamp)
-    : mIndex(pIndex)
-    , mReader(*pIndex)
-    , mFilename(pFilename)
-    , mErrorOccured(false)
-    , mDatTimeStamp(pDatTimeStamp)
+ReadIndexTask::ReadIndexTask(const std::shared_ptr<DatIndex>& p_index, const wxString& p_filename, uint64 p_datTimestamp)
+    : m_index(p_index)
+    , m_reader(*p_index)
+    , m_filename(p_filename)
+    , m_errorOccured(false)
+    , m_datTimestamp(p_datTimestamp)
 {
-    Ensure::notNull(pIndex.get());
+    Ensure::notNull(p_index.get());
 }
 
 bool ReadIndexTask::init()
 {
-    mIndex->clear();
-    mIndex->setDirty(false);
+    m_index->clear();
+    m_index->setDirty(false);
 
-    bool result = mReader.open(mFilename);
-    if (result) { result = (mIndex->datTimestamp() == mDatTimeStamp); }
-    if (result) { this->setMaxProgress(mReader.numEntries() + mReader.numCategories()); }
+    bool result = m_reader.open(m_filename);
+    if (result) { result = (m_index->datTimestamp() == m_datTimestamp); }
+    if (result) { this->setMaxProgress(m_reader.numEntries() + m_reader.numCategories()); }
 
     return result;
 }
@@ -52,9 +52,9 @@ bool ReadIndexTask::init()
 void ReadIndexTask::perform()
 {
     if (!this->isDone()) {
-        mErrorOccured = !(mReader.read(7) & DatIndexReader::RR_Success);
-        if (mErrorOccured) { mIndex->clear(); }
-        uint progress = mReader.currentEntry() + mReader.currentCategory();
+        m_errorOccured = !(m_reader.read(7) & DatIndexReader::RR_Success);
+        if (m_errorOccured) { m_index->clear(); }
+        uint progress = m_reader.currentEntry() + m_reader.currentCategory();
         this->setCurrentProgress(progress);
         this->setText(wxT("Reading .dat index..."));
     }
@@ -67,12 +67,12 @@ void ReadIndexTask::abort()
 
 void ReadIndexTask::clean()
 {
-    mReader.close();
+    m_reader.close();
 }
 
 bool ReadIndexTask::isDone() const
 {
-    return (mErrorOccured || !mReader.isOpen() || mReader.isDone());
+    return (m_errorOccured || !m_reader.isOpen() || m_reader.isDone());
 }
 
 }; // namespace gw2b

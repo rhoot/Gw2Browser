@@ -37,12 +37,12 @@ class DatIndex;
 
 class WriteIndexTask : public Task
 {
-    std::shared_ptr<DatIndex>   mIndex;
-    DatIndexWriter              mWriter;
-    wxFileName                  mFilename;
-    bool                        mErrorOccured;
+    std::shared_ptr<DatIndex>   m_index;
+    DatIndexWriter              m_writer;
+    wxFileName                  m_filename;
+    bool                        m_errorOccured;
 public:
-    WriteIndexTask(const std::shared_ptr<DatIndex>& pIndex, const wxFileName& pFilename);
+    WriteIndexTask(const std::shared_ptr<DatIndex>& p_index, const wxFileName& p_filename);
 
     virtual bool init();
     virtual void perform();

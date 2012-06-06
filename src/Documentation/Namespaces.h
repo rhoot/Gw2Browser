@@ -1,4 +1,4 @@
-/** \file       Namespaces.h
+/** \file       Documentation/Namespaces.h
  *  \brief      Contains documentation for namespaces. 
  *  \author     Rhoot
  */

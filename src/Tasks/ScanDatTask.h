@@ -37,19 +37,19 @@ class DatIndexCategory;
 
 class ScanDatTask : public Task
 {
-    std::shared_ptr<DatIndex>   mIndex;
-    Array<byte>                 mOutputBuffer;
-    DatFile&                    mDatFile;
+    std::shared_ptr<DatIndex>   m_index;
+    Array<byte>                 m_outputBuffer;
+    DatFile&                    m_datFile;
 public:
-    ScanDatTask(const std::shared_ptr<DatIndex>& pIndex, DatFile& pDatFile);
+    ScanDatTask(const std::shared_ptr<DatIndex>& p_index, DatFile& p_datFile);
     virtual ~ScanDatTask();
 
-    virtual bool init();
-    virtual void perform();
+    virtual bool init() override ;
+    virtual void perform() override;
 private:
-    uint GetRequiredIdentificationSize(byte* pData, uint pSize, ANetFileType pFileType);
-    DatIndexCategory* Categorize(ANetFileType pFileType, byte* pData, uint pSize);
-    void EnsureBufferSize(uint pSize);
+    uint requiredIdentificationSize(const byte* p_data, uint p_size, ANetFileType p_fileType);
+    DatIndexCategory* categorize(ANetFileType p_fileType, const byte* p_data, uint p_size);
+    void ensureBufferSize(uint p_size);
 }; // class ScanDatTask
 
 }; // namespace gw2b

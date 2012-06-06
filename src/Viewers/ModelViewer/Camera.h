@@ -31,33 +31,33 @@ namespace gw2b
 
 class Camera
 {
-    XMFLOAT3 mPivot;
-    float mDistance;
-    float mYaw;
-    float mPitch;
+    XMFLOAT3 m_pivot;
+    float m_distance;
+    float m_yaw;
+    float m_pitch;
 public:
     Camera();
     ~Camera();
 
-    XMMATRIX CalculateViewMatrix() const;
-    XMMATRIX CalculateRotationMatrix() const;
+    XMMATRIX calculateViewMatrix() const;
+    XMMATRIX calculateRotationMatrix() const;
 
-    float GetYaw() const;
-    void RotateYaw(float pYaw);
-    void SetYaw(float pYaw);
+    float yaw() const;
+    void addYaw(float p_yaw);
+    void setYaw(float p_yaw);
 
-    float GetPitch() const;
-    void RotatePitch(float pPitch);
-    void SetPitch(float pPitch);
-    float ClampPitch(float pPitch);
+    float pitch() const;
+    void addPitch(float p_pitch);
+    void setPitch(float p_pitch);
+    float clampPitch(float p_pitch);
 
-    float GetDistance() const;
-    void MultiplyDistance(float pMultiplier);
-    void SetDistance(float pDistance);
+    float distance() const;
+    void multiplyDistance(float p_multiplier);
+    void setDistance(float p_distance);
 
-    const XMFLOAT3& GetPivot() const;
-    void Pan(float pX, float pY);
-    void SetPivot(const XMFLOAT3& pPivot);
+    const XMFLOAT3& pivot() const;
+    void pan(float p_x, float p_y);
+    void setPivot(const XMFLOAT3& p_pivot);
     
 }; // class Camera
 

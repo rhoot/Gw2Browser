@@ -1,4 +1,4 @@
-/** \file       Viewers/BinaryViewer/HexControl.h
+/** \file       Viewers/BinaryViewer/HexControl.cpp
  *  \brief      Contains declaration of the hex view control.
  *  \author     Rhoot
  */
@@ -34,20 +34,20 @@
 namespace gw2b
 {
 
-HexControl::HexControl(wxWindow* pParent, const wxPoint& pPosition, const wxSize& pSize)
-    : wxScrolledWindow(pParent, wxID_ANY, pPosition, pSize, wxBORDER_THEME)
-    , mData(nullptr)
-    , mDataSize(0)
+HexControl::HexControl(wxWindow* p_parent, const wxPoint& p_position, const wxSize& p_size)
+    : wxScrolledWindow(p_parent, wxID_ANY, p_position, p_size, wxBORDER_THEME)
+    , m_data(nullptr)
+    , m_dataSize(0)
 {
     this->SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
     this->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT));
     this->SetFont(wxSystemSettings::GetFont(wxSYS_ANSI_FIXED_FONT));
 
-    this->Connect(wxEVT_PAINT,  wxPaintEventHandler(HexControl::OnPaintEvt));
+    this->Connect(wxEVT_PAINT,  wxPaintEventHandler(HexControl::onPaintEvt));
 }
 
-void HexControl::OnDraw(wxDC& pDC, wxRect& pRegion)
+void HexControl::onDraw(wxDC& p_DC, wxRect& p_region)
 {
     RedrawState state;
 
@@ -56,103 +56,103 @@ void HexControl::OnDraw(wxDC& pDC, wxRect& pRegion)
     wxBitmap buffer(clientSize.x, clientSize.y);
     
     // Get sizes of stuff
-    //pDC.GetClippingBox(state.mClipping);
-    state.mCharSize.Set(pDC.GetCharWidth(), pDC.GetCharHeight());
-    state.mClipping   = pRegion;
-    state.mNumLines   = (mDataSize == 0 ? 1 : ((mDataSize - 1) >> 4) + 1);
-    state.mLineHeight = state.mCharSize.x + LINE_SPACING;
-    state.mFirstLine  = wxMax(0, (state.mClipping.y - OUTER_SPACING) / (int)state.mLineHeight);
-    state.mLastLine   = wxMin(state.mNumLines - 1, (state.mClipping.GetBottom() - OUTER_SPACING) / (int)state.mLineHeight);
+    //p_DC.GetClippingBox(state.mClipping);
+    state.charSize.Set(p_DC.GetCharWidth(), p_DC.GetCharHeight());
+    state.clipping   = p_region;
+    state.numLines   = (m_dataSize == 0 ? 1 : ((m_dataSize - 1) >> 4) + 1);
+    state.lineHeight = state.charSize.x + LINE_SPACING;
+    state.firstLine  = wxMax(0, (state.clipping.y - OUTER_SPACING) / static_cast<int>(state.lineHeight));
+    state.lastLine   = wxMin(state.numLines - 1, (state.clipping.GetBottom() - OUTER_SPACING) / static_cast<int>(state.lineHeight));
 
     // Calculate the offset area
-    state.mOffsetArea.x      = OUTER_SPACING;
-    state.mOffsetArea.y      = OUTER_SPACING;
-    state.mOffsetArea.width  = (state.mCharSize.x * 9);
-    state.mOffsetArea.height = (state.mNumLines * (state.mLineHeight)) - LINE_SPACING;
+    state.offsetArea.x      = OUTER_SPACING;
+    state.offsetArea.y      = OUTER_SPACING;
+    state.offsetArea.width  = (state.charSize.x * 9);
+    state.offsetArea.height = (state.numLines * (state.lineHeight)) - LINE_SPACING;
 
     // Calculate the hex area
-    state.mHexArea.x         = state.mOffsetArea.GetRight() + SECTION_SPACING;
-    state.mHexArea.y         = OUTER_SPACING;
-    state.mHexArea.width     = ((state.mCharSize.x * 2 + HEX_COLUMN_SPACING) * BYTES_PER_LINE) - HEX_COLUMN_SPACING;
-    state.mHexArea.height    = state.mOffsetArea.height;
+    state.hexArea.x         = state.offsetArea.GetRight() + SECTION_SPACING;
+    state.hexArea.y         = OUTER_SPACING;
+    state.hexArea.width     = ((state.charSize.x * 2 + HEX_COLUMN_SPACING) * BYTES_PER_LINE) - HEX_COLUMN_SPACING;
+    state.hexArea.height    = state.offsetArea.height;
 
     // Calculate the text area
-    state.mTextArea.x        = state.mHexArea.GetRight() + SECTION_SPACING;
-    state.mTextArea.y        = OUTER_SPACING;
-    state.mTextArea.width    = (state.mCharSize.x * BYTES_PER_LINE);
-    state.mTextArea.height   = state.mOffsetArea.height;
+    state.textArea.x        = state.hexArea.GetRight() + SECTION_SPACING;
+    state.textArea.y        = OUTER_SPACING;
+    state.textArea.width    = (state.charSize.x * BYTES_PER_LINE);
+    state.textArea.height   = state.offsetArea.height;
 
     // Perform the redrawing
-    this->UpdateScrollbars(pDC, state);
-    this->DrawOffsets(pDC, state);
-    this->DrawHexArea(pDC, state);
-    this->DrawTextArea(pDC, state);
+    this->updateScrollbars(p_DC, state);
+    this->drawOffsets(p_DC, state);
+    this->drawHexArea(p_DC, state);
+    this->drawTextArea(p_DC, state);
 }
 
-void HexControl::UpdateScrollbars(wxDC& pDC, RedrawState& pState)
+void HexControl::updateScrollbars(wxDC& p_DC, RedrawState& p_state)
 {
-    uint totalWidth  = pState.mTextArea.GetRight() + OUTER_SPACING;
-    uint totalHeight = pState.mOffsetArea.GetBottom() + OUTER_SPACING;
+    uint totalWidth  = p_state.textArea.GetRight() + OUTER_SPACING;
+    uint totalHeight = p_state.offsetArea.GetBottom() + OUTER_SPACING;
     this->SetVirtualSize(totalWidth, totalHeight);
-    this->SetScrollRate(pState.mCharSize.x, pState.mCharSize.y + LINE_SPACING);
+    this->SetScrollRate(p_state.charSize.x, p_state.charSize.y + LINE_SPACING);
 }
 
-void HexControl::DrawOffsets(wxDC& pDC, RedrawState& pState)
+void HexControl::drawOffsets(wxDC& p_DC, RedrawState& p_state)
 {
     // Don't redraw unless necessary
-    if (!pState.mOffsetArea.Intersects(pState.mClipping)) { return; }
+    if (!p_state.offsetArea.Intersects(p_state.clipping)) { return; }
 
     // Loop through the lines and draw each one
-    for (uint i = pState.mFirstLine; i <= pState.mLastLine; i++) {
-        uint left = pState.mOffsetArea.x;
-        uint top  = pState.mOffsetArea.y + (i * pState.mLineHeight);
-        pDC.DrawText(wxString::Format(wxT("%08xh"), i * BYTES_PER_LINE), left, top);
+    for (uint i = p_state.firstLine; i <= p_state.lastLine; i++) {
+        uint left = p_state.offsetArea.x;
+        uint top  = p_state.offsetArea.y + (i * p_state.lineHeight);
+        p_DC.DrawText(wxString::Format(wxT("%08xh"), i * BYTES_PER_LINE), left, top);
     }
 }
 
-void HexControl::DrawHexArea(wxDC& pDC, RedrawState& pState)
+void HexControl::drawHexArea(wxDC& p_DC, RedrawState& p_state)
 {
     // Don't redraw unless necessary
-    if (!pState.mHexArea.Intersects(pState.mClipping)) { return; }
+    if (!p_state.hexArea.Intersects(p_state.clipping)) { return; }
 
     // Loop through the lines
-    int byteWidth = (pState.mCharSize.x * 2) + HEX_COLUMN_SPACING;
-    for (uint i = pState.mFirstLine; i <= pState.mLastLine; i++) {
+    int byteWidth = (p_state.charSize.x * 2) + HEX_COLUMN_SPACING;
+    for (uint i = p_state.firstLine; i <= p_state.lastLine; i++) {
         // Determine the characters that need drawing
-        int firstChar = (pState.mClipping.x - pState.mHexArea.x) / byteWidth;
-        int lastChar  = (pState.mClipping.GetRight() - pState.mHexArea.x) / byteWidth;
+        int firstChar = (p_state.clipping.x - p_state.hexArea.x) / byteWidth;
+        int lastChar  = (p_state.clipping.GetRight() - p_state.hexArea.x) / byteWidth;
         firstChar = wxMax(0, firstChar);
         lastChar  = wxMin(BYTES_PER_LINE - 1, lastChar);
 
-        if (firstChar >= static_cast<int>(mDataSize)) {
+        if (firstChar >= static_cast<int>(m_dataSize)) {
             break;
         }
 
         // Display the byte
         for (int j = firstChar; j <= lastChar; j++) {
             uint index = (i * BYTES_PER_LINE) + j;
-            if (index >= mDataSize) { break; }
-            uint left  = pState.mHexArea.x + (j * byteWidth);
-            uint top   = pState.mHexArea.y + (i * pState.mLineHeight);
-            pDC.DrawText(wxString::Format(wxT("%02x"), mData[index]), left, top);
+            if (index >= m_dataSize) { break; }
+            uint left  = p_state.hexArea.x + (j * byteWidth);
+            uint top   = p_state.hexArea.y + (i * p_state.lineHeight);
+            p_DC.DrawText(wxString::Format(wxT("%02x"), m_data[index]), left, top);
         }
     }
 }
 
-void HexControl::DrawTextArea(wxDC& pDC, RedrawState& pState)
+void HexControl::drawTextArea(wxDC& p_DC, RedrawState& p_state)
 {
     // Don't redraw unless necessary
-    if (!pState.mTextArea.Intersects(pState.mClipping)) { return; }
+    if (!p_state.textArea.Intersects(p_state.clipping)) { return; }
 
     // Loop through the lines
-    for (uint i = pState.mFirstLine; i <= pState.mLastLine; i++) {
+    for (uint i = p_state.firstLine; i <= p_state.lastLine; i++) {
         // Determine the characters that need drawing
-        int firstChar = (pState.mClipping.x - pState.mTextArea.x) / pState.mCharSize.x;
-        int lastChar  = (pState.mClipping.GetRight() - pState.mTextArea.x) / pState.mCharSize.x;
+        int firstChar = (p_state.clipping.x - p_state.textArea.x) / p_state.charSize.x;
+        int lastChar  = (p_state.clipping.GetRight() - p_state.textArea.x) / p_state.charSize.x;
         firstChar = wxMax(0, firstChar);
         lastChar  = wxMin(BYTES_PER_LINE - 1, lastChar);
 
-        if (firstChar >= static_cast<int>(mDataSize)) {
+        if (firstChar >= static_cast<int>(m_dataSize)) {
             break;
         }
 
@@ -160,19 +160,19 @@ void HexControl::DrawTextArea(wxDC& pDC, RedrawState& pState)
         wxString output;
         for (int j = firstChar; j <= lastChar; j++) {
             uint index = (i * BYTES_PER_LINE) + j;
-            if (index >= mDataSize) { break; }
-            char sign = this->FilterTextChar(mData[index]);
+            if (index >= m_dataSize) { break; }
+            char sign = this->filterTextChar(m_data[index]);
             output.Append(sign);
         }
 
         // Display the bytes
-        uint left = pState.mTextArea.x + (firstChar * pState.mCharSize.x);
-        uint top  = pState.mTextArea.y + (i * pState.mLineHeight);
-        pDC.DrawText(output, left, top);
+        uint left = p_state.textArea.x + (firstChar * p_state.charSize.x);
+        uint top  = p_state.textArea.y + (i * p_state.lineHeight);
+        p_DC.DrawText(output, left, top);
     }
 }
 
-char HexControl::FilterTextChar(byte pChar)
+char HexControl::filterTextChar(byte pChar)
 {
 	if (pChar != 173 && ((pChar > 31 && pChar < 127) || pChar > 159))
         return pChar;
@@ -180,21 +180,21 @@ char HexControl::FilterTextChar(byte pChar)
         return '.';
 }
 
-void HexControl::SetData(const byte* pData, uint pSize)
+void HexControl::setData(const byte* pData, uint p_size)
 {
-    if (pSize) {
+    if (p_size) {
         Ensure::notNull(pData);
-        mData     = pData;
-        mDataSize = pSize;
+        m_data     = pData;
+        m_dataSize = p_size;
     } else {
-        mData     = nullptr;
-        mDataSize = 0;
+        m_data     = nullptr;
+        m_dataSize = 0;
     }
 
     this->Refresh();
 }
 
-void HexControl::OnPaintEvt(wxPaintEvent& pEvent)
+void HexControl::onPaintEvt(wxPaintEvent& pEvent)
 {
     wxAutoBufferedPaintDC dc(this);
     dc.Clear();
@@ -205,7 +205,7 @@ void HexControl::OnPaintEvt(wxPaintEvent& pEvent)
     vX *= pX;
     vY *= pY;
 
-    wxPoint pt = dc.GetDeviceOrigin();
+    auto pt = dc.GetDeviceOrigin();
     dc.SetDeviceOrigin(pt.x - vX, pt.y - vY);
     dc.SetUserScale(this->GetScaleX(), this->GetScaleY());
 
@@ -213,7 +213,7 @@ void HexControl::OnPaintEvt(wxPaintEvent& pEvent)
         wxRect updRect(upd.GetRect());
         updRect.x += vX;
         updRect.y += vY;
-        this->OnDraw(dc, updRect);
+        this->onDraw(dc, updRect);
     }
 }
 

@@ -37,25 +37,25 @@ namespace gw2b
 
 struct VertexDefinition
 {
-    XMFLOAT3 mPosition;
-    XMFLOAT3 mNormal;
-    uint32 mDiffuse;
-    XMFLOAT2 mUV[2];
-    static uint32 sFVF;
+    XMFLOAT3 position;
+    XMFLOAT3 normal;
+    uint32 diffuse;
+    XMFLOAT2 uv[2];
+    static uint32 s_fvf;
 };
 
 #pragma pack(pop)
 
 struct MeshCache
 {
-    IDirect3DIndexBuffer9*  mIndexBuffer;
-    IDirect3DVertexBuffer9* mVertexBuffer;
+    IDirect3DIndexBuffer9*  indexBuffer;
+    IDirect3DVertexBuffer9* vertexBuffer;
 };
 
 struct TextureCache
 {
-    IDirect3DTexture9*  mDiffuseMap;
-    IDirect3DTexture9*  mNormalMap;
+    IDirect3DTexture9*  diffuseMap;
+    IDirect3DTexture9*  normalMap;
 };
 
 struct AutoReleaser
@@ -69,45 +69,44 @@ struct AutoReleaser
 
 class ModelViewer : public Viewer, public INeedDatFile
 {
-    std::unique_ptr<IDirect3D9, AutoReleaser>       mD3D;
-    std::unique_ptr<IDirect3DDevice9, AutoReleaser> mDevice;
-    std::unique_ptr<ID3DXEffect, AutoReleaser>      mEffect;
+    std::unique_ptr<IDirect3D9, AutoReleaser>       m_d3d;
+    std::unique_ptr<IDirect3DDevice9, AutoReleaser> m_device;
+    std::unique_ptr<ID3DXEffect, AutoReleaser>      m_effect;
 
-    D3DPRESENT_PARAMETERS       mPresentParams;
-    Model                       mModel;
-    Array<MeshCache>            mMeshCache;
-    Array<TextureCache>         mTextureCache;
-    Camera                      mCamera;
-    wxPoint                     mLastMousePos;
+    D3DPRESENT_PARAMETERS       m_presentParams;
+    Model                       m_model;
+    Array<MeshCache>            m_meshCache;
+    Array<TextureCache>         m_textureCache;
+    Camera                      m_camera;
+    wxPoint                     m_lastMousePos;
 public:
-    ModelViewer(wxWindow* pParent, const wxPoint& pPos = wxDefaultPosition, const wxSize& pSize = wxDefaultSize);
+    ModelViewer(wxWindow* p_parent, const wxPoint& p_pos = wxDefaultPosition, const wxSize& p_size = wxDefaultSize);
     virtual ~ModelViewer();
 
-    virtual void clear();
-    virtual void setReader(FileReader* pReader);
+    virtual void clear() override;
+    virtual void setReader(FileReader* p_reader) override;
     /** Gets the image reader containing the data displayed by this viewer.
      *  \return ModelReader*    Reader containing the data. */
-    ModelReader* GetModelReader()               { return (ModelReader*)this->reader(); }
+    ModelReader* modelReader()                  { return reinterpret_cast<ModelReader*>(this->reader()); }       // already asserted with a dynamic_cast
     /** Gets the image reader containing the data displayed by this viewer.
      *  \return ModelReader*    Reader containing the data. */
-    const ModelReader* GetModelReader() const   { return (const ModelReader*)this->reader(); }
+    const ModelReader* modelReader() const      { return reinterpret_cast<const ModelReader*>(this->reader()); } // already asserted with a dynamic_cast
 
-    void Focus();
-
-    void DrawMesh(uint pMeshIndex);
+    void focus();
+    void drawMesh(uint p_meshIndex);
 
 private:
-    void OnPaintEvt(wxPaintEvent& pEvent);
-    void OnMotionEvt(wxMouseEvent& pEvent);
-    void OnMouseWheelEvt(wxMouseEvent& pEvent);
-    void OnKeyDownEvt(wxKeyEvent& pEvent);
-    void BeginFrame(uint32 pClearColor);
-    void EndFrame();
-    void Render();
-    bool CreateBuffers(MeshCache& pCache, uint pVertexCount, uint pVertexSize, uint pIndexCount, uint pIndexSize);
-    bool PopulateBuffers(const Mesh& pMesh, MeshCache& pCache);
-    void UpdateMatrices();
-    IDirect3DTexture9* LoadTexture(uint pFileId);
+    void onPaintEvt(wxPaintEvent& p_event);
+    void onMotionEvt(wxMouseEvent& p_event);
+    void onMouseWheelEvt(wxMouseEvent& p_event);
+    void onKeyDownEvt(wxKeyEvent& p_event);
+    void beginFrame(uint32 p_clearColor);
+    void endFrame();
+    void render();
+    bool createBuffers(MeshCache& p_cache, uint p_vertexCount, uint p_vertexSize, uint p_indexCount, uint p_indexSize);
+    bool populateBuffers(const Mesh& p_mesh, MeshCache& p_cache);
+    void updateMatrices();
+    IDirect3DTexture9* loadTexture(uint p_fileId);
 }; // class ImageViewer
 
 }; // namespace gw2b

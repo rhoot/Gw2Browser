@@ -62,7 +62,7 @@ FileReader* FileReader::readerForData(const Array<byte>& p_data, ANetFileType p_
     case ANFT_ATEU:
     case ANFT_ATET:
     case ANFT_DDS:
-        if (ImageReader::IsValidHeader(p_data.GetPointer(), p_data.GetSize())) {
+        if (ImageReader::isValidHeader(p_data.GetPointer(), p_data.GetSize())) {
             return new ImageReader(p_data, p_fileType);
         }
         break;

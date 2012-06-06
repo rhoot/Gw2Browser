@@ -45,8 +45,8 @@ union BGRA
         uint8 r;
         uint8 a;
     };
-    uint8 mParts[4];
-    uint32 mColor;
+    uint8 parts[4];
+    uint32 color;
 };
 
 union RGBA
@@ -57,8 +57,8 @@ union RGBA
         uint8 b;
         uint8 a;
     };
-    uint8 mParts[4];
-    uint32 mColor;
+    uint8 parts[4];
+    uint32 color;
 };
 
 struct BGR
@@ -75,74 +75,70 @@ struct RGB
     uint8   b;
 };
 
-struct DXTColor
+union DXTColor
 {
-    union {
-        struct {
-            uint16 mRed1    : 5;
-            uint16 mGreen1  : 6;
-            uint16 mBlue1   : 5;
-        };
-        uint16 mColor1;
+    struct {
+        uint16 red1    : 5;
+        uint16 green1  : 6;
+        uint16 blue1   : 5;
+        uint16 red2    : 5;
+        uint16 green2  : 6;
+        uint16 blue2   : 5;
     };
-    union {
-        struct {
-            uint16 mRed2    : 5;
-            uint16 mGreen2  : 6;
-            uint16 mBlue2   : 5;
-        };
-        uint16 mColor2;
+    struct {
+        uint16 color1;
+        uint16 color2;
     };
 };
 
 struct DXT1Block
 {
-    DXTColor mColors;
-    uint32   mIndices;
+    DXTColor colors;
+    uint32   indices;
 };
 
 struct DXT3Block
 {
-    uint64   mAlpha;
-    DXTColor mColors;
-    uint32   mIndices;
+    uint64   alpha;
+    DXTColor colors;
+    uint32   indices;
 };
 
 struct DCXBlock     // Should be 3DCXBlock, but names can't start with a number D:
 {
-    uint64  mGreen;
-    uint64  mRed;
+    uint64  green;
+    uint64  red;
 };
 
-struct DdsPixelFormat
+struct DDSPixelFormat
 {
-    uint32          mSize;                  /**< Structure size; set to 32 (bytes). */
-    uint32          mFlags;                 /**< Values which indicate what type of data is in the surface. */
-    uint32          mFourCC;                /**< Four-character codes for specifying compressed or custom formats. */
-    uint32          mRGBBitCount;           /**< Number of bits in an RGB (possibly including alpha) format. */
-    uint32          mRBitMask;              /**< Red (or lumiannce or Y) mask for reading color data. */
-    uint32          mGBitMask;              /**< Green (or U) mask for reading color data. */
-    uint32          mBBitMask;              /**< Blue (or V) mask for reading color data. */
-    uint32          mABitMask;              /**< Alpha mask for reading alpha data. */
+    uint32          size;                   /**< Structure size; set to 32 (bytes). */
+    uint32          flags;                  /**< Values which indicate what type of data is in the surface. */
+    uint32          fourCC;                 /**< Four-character codes for specifying compressed or custom formats. */
+    uint32          rgbBitCount;            /**< Number of bits in an RGB (possibly including alpha) format. */
+    uint32          rBitMask;               /**< Red (or lumiannce or Y) mask for reading color data. */
+    uint32          gBitMask;               /**< Green (or U) mask for reading color data. */
+    uint32          bBitMask;               /**< Blue (or V) mask for reading color data. */
+    uint32          aBitMask;               /**< Alpha mask for reading alpha data. */
 };
 
-struct DdsHeader
+struct DDSHeader
 {
-    uint32          mMagic;                 /**< Identifies a DDS file. This member must be set to 0x20534444. */
-    uint32          mSize;                  /**< Size of structure. This member must be set to 124. */
-    uint32          mFlags;                 /**< Flags to indicate which members contain valid data. */
-    uint32          mHeight;                /**< Surface height (in pixels). */
-    uint32          mWidth;                 /**< Surface width (in pixels). */
-    uint32          mPitchOrLinearSize;     /**< The pitch or number of bytes per scan line in an uncompressed texture; the total number of bytes in the top level texture for a compressed texture. */
-    uint32          mDepth;                 /**< Depth of a volume texture (in pixels), otherwise unused. */
-    uint32          mMipMapCount;           /**< Number of mipmap levels, otherwise unused. */
-    uint32          mReserved1[11];         /**< Unused. */
-    DdsPixelFormat  mPixelFormat;           /**< The pixel format. */
-    uint32          mCaps;                  /**< Specifies the complexity of the surfaces stored. */
-    uint32          mCaps2;                 /**< Additional detail about the surfaces stored. */
-    uint32          mCaps3;                 /**< Unused. */
-    uint32          mCaps4;                 /**< Unused. */
-    uint32          mReserved2;             /**< Unused. */
+    uint32          magic;                  /**< Identifies a DDS file. This member must be set to 0x20534444. */
+    uint32          size;                   /**< Size of structure. This member must be set to 124. */
+    uint32          flags;                  /**< Flags to indicate which members contain valid data. */
+    uint32          height;                 /**< Surface height (in pixels). */
+    uint32          width;                  /**< Surface width (in pixels). */
+    uint32          pitchOrLinearSize;      /**< The pitch or number of bytes per scan line in an uncompressed texture; the total number of bytes in the top level texture for a compressed texture. */
+    uint32          depth;                  /**< Depth of a volume texture (in pixels), otherwise unused. */
+    uint32          mipMapCount;            /**< Number of mipmap levels, otherwise unused. */
+    uint32          reserved1[11];          /**< Unused. */
+    DDSPixelFormat  pixelFormat;            /**< The pixel format. */
+    uint32          caps;                   /**< Specifies the complexity of the surfaces stored. */
+    uint32          caps2;                  /**< Additional detail about the surfaces stored. */
+    uint32          caps3;                  /**< Unused. */
+    uint32          caps4;                  /**< Unused. */
+    uint32          reserved2;              /**< Unused. */
 };
 
 #pragma pack(pop)
@@ -151,46 +147,46 @@ class ImageReader : public FileReader
 {
 public:
     /** Constructor.
-     *  \param[in]  pData       Data to be handled by this reader.
-     *  \param[in]  pFileType   File type of the given data. */
-    ImageReader(const Array<byte>& pData, ANetFileType pFileType);
+     *  \param[in]  p_data       Data to be handled by this reader.
+     *  \param[in]  p_fileType   File type of the given data. */
+    ImageReader(const Array<byte>& p_data, ANetFileType p_fileType);
     /** Destructor. Clears all data. */
     virtual ~ImageReader();
 
     /** Gets the type of data contained in this file. Not to be confused with
      *  file type.
      *  \return DataType    type of data. */
-    virtual DataType dataType() const        { return DT_Image; }
+    virtual DataType dataType() const override          { return DT_Image; }
     /** Gets an appropriate file extension for the contents of this reader.
      *  \return wxString    File extension. */
-    virtual const wxChar* extension() const  { return wxT(".png"); }
+    virtual const wxChar* extension() const override    { return wxT(".png"); }
     /** Converts the data associated with this file into PNG.
      *  \return Array<byte> converted data. */
     virtual Array<byte> convertData() const;
     /** Gets the image contained in the data owned by this reader.
      *  \return wxImage     Newly created image. */
-    wxImage GetImage() const;
+    wxImage getImage() const;
     /** Determines whether the header of this image is valid.
      *  \return bool    true if valid, false if not. */
-    static bool IsValidHeader(const byte* pData, uint pSize);
+    static bool isValidHeader(const byte* p_data, uint p_size);
 private:
-    bool ReadDdsData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const;
-    bool ReadAtexData(wxSize& poSize, BGR*& poColors, uint8*& poAlphas) const;
+    bool readDDS(wxSize& po_size, BGR*& po_colors, uint8*& po_alphas) const;
+    bool readATEX(wxSize& po_size, BGR*& po_colors, uint8*& po_alphas) const;
 
-    bool ProcessLuminanceDDS(const DdsHeader* pHeader, RGB*& poColors) const;
-    bool ProcessUncompressedDDS(const DdsHeader* pHeader, RGB*& poColors, uint8*& poAlphas) const;
+    bool processLuminanceDDS(const DDSHeader* p_header, RGB*& po_colors) const;
+    bool processUncompressedDDS(const DDSHeader* p_header, RGB*& po_colors, uint8*& po_alphas) const;
 
-    void ProcessDXTColor(BGR* pColors, uint8* pAlphas, const DXTColor& pBlockColor, bool pIsDXT1) const;
-    void ProcessDXT1(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
-    void ProcessDXT1Block(BGR* pColors, uint8* pAlphas, const DXT1Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    void ProcessDXT3(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
-    void ProcessDXT3Block(BGR* pColors, uint8* pAlphas, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    void ProcessDXT5(const BGRA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
-    void ProcessDXT5Block(BGR* pColors, uint8* pAlphas, const DXT3Block& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    void ProcessDXTA(const uint64* pData, uint pWidth, uint pHeight, BGR*& poColors) const;
-    void ProcessDXTABlock(BGR* pColors, uint64 pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
-    void Process3DCX(const RGBA* pData, uint pWidth, uint pHeight, BGR*& poColors, uint8*& poAlphas) const;
-    void Process3DCXBlock(RGB* pColors, const DCXBlock& pBlock, uint pBlockX, uint pBlockY, uint pWidth) const;
+    void processDXTColor(BGR* p_colors, uint8* p_alphas, const DXTColor& p_blockColor, bool p_isDXT1) const;
+    void processDXT1(const BGRA* p_data, uint p_width, uint p_height, BGR*& po_colors, uint8*& po_alphas) const;
+    void processDXT1Block(BGR* p_colors, uint8* p_alphas, const DXT1Block& p_block, uint p_blockX, uint p_blockY, uint p_width) const;
+    void processDXT3(const BGRA* p_data, uint p_width, uint p_height, BGR*& po_colors, uint8*& po_alphas) const;
+    void processDXT3Block(BGR* p_colors, uint8* p_alphas, const DXT3Block& p_block, uint p_blockX, uint p_blockY, uint p_width) const;
+    void processDXT5(const BGRA* p_data, uint p_width, uint p_height, BGR*& po_colors, uint8*& po_alphas) const;
+    void processDXT5Block(BGR* p_colors, uint8* p_alphas, const DXT3Block& p_block, uint p_blockX, uint p_blockY, uint p_width) const;
+    void processDXTA(const uint64* p_data, uint p_width, uint p_height, BGR*& po_colors) const;
+    void processDXTABlock(BGR* p_colors, uint64 p_block, uint p_blockX, uint p_blockY, uint p_width) const;
+    void process3DCX(const RGBA* p_data, uint p_width, uint p_height, BGR*& po_colors, uint8*& po_alphas) const;
+    void process3DCXBlock(RGB* p_colors, const DCXBlock& p_block, uint p_blockX, uint p_blockY, uint p_width) const;
 }; // class ImageReader
 
 }; // namespace gw2b
