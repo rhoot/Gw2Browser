@@ -388,34 +388,35 @@ bool ImageReader::isValidHeader(const byte* p_data, uint p_size)
 
 void ImageReader::processDXTColor(BGR* p_colors, uint8* p_alphas, const DXTColor& p_blockColor, bool p_isDXT1) const
 {
-    static XMFLOAT4 unpackedColorScale(255.f/31.f, 255.f/63.f, 255.f/31.f, 255.f);
+    static XMFLOAT4 unpackedColorScale(255.f/31.f, 255.f/63.f, 255.f/31.f, 1.f);
 
     XMU565 color1Src(p_blockColor.color1);
     XMU565 color2Src(p_blockColor.color2);
     XMVECTOR colors[4];
 
+    XMVECTOR colorScale = ::XMLoadFloat4(&unpackedColorScale);
 
-    colors[0] = ::XMVectorSetW(::XMLoadU565(&color1Src), 1.0f);
+    colors[0] = ::XMVectorSetW(::XMLoadU565(&color1Src), 255.0f);
     colors[0] = ::XMVectorSwizzle(colors[0], 2, 1, 0, 3);
-    colors[1] = ::XMVectorSetW(::XMLoadU565(&color2Src), 1.0f);
+    colors[0] = ::XMVectorMultiply(colors[0], colorScale);
+    colors[1] = ::XMVectorSetW(::XMLoadU565(&color2Src), 255.0f);
     colors[1] = ::XMVectorSwizzle(colors[1], 2, 1, 0, 3);
+    colors[1] = ::XMVectorMultiply(colors[1], colorScale);
 
     if (!p_isDXT1 || p_blockColor.color1 > p_blockColor.color2) {
         colors[2] = ::XMVectorLerp(colors[0], colors[1], (1.0f / 3.0f));
-        colors[2] = ::XMVectorSetW(colors[2], 1.0f);
+        colors[2] = ::XMVectorSetW(colors[2], 255.0f);
         colors[3] = ::XMVectorLerp(colors[0], colors[1], (2.0f / 3.0f));
-        colors[3] = ::XMVectorSetW(colors[3], 1.0f);
+        colors[3] = ::XMVectorSetW(colors[3], 255.0f);
     } else {
         colors[2] = ::XMVectorLerp(colors[0], colors[1], 0.5f);
-        colors[2] = ::XMVectorSetW(colors[2], 1.0f);
+        colors[2] = ::XMVectorSetW(colors[2], 255.0f);
         colors[3] = ::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
-    XMVECTOR colorScale = ::XMLoadFloat4(&unpackedColorScale);
-
     for (uint i = 0; i < ArraySize(colors); i++) {
         XMUBYTE4 color;
-        ::XMStoreUByte4(&color, ::XMVectorMultiply(colors[i], colorScale));
+        ::XMStoreUByte4(&color, colors[i]);
         ::memcpy(&p_colors[i], &color, sizeof(p_colors[i]));
         if (p_alphas) { p_alphas[i] = color.w; }
     }
