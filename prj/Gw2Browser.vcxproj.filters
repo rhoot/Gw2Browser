@@ -168,9 +168,6 @@
     <ClInclude Include="..\src\PackFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Readers\SoundReader.h">
-      <Filter>Header Files\Readers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Identifiers\BaseIdentifier.h">
       <Filter>Header Files\Identifiers</Filter>
     </ClInclude>
@@ -261,9 +258,6 @@
       <Filter>Source Files\Util</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Readers\ModelReader.cpp">
-      <Filter>Source Files\Readers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Readers\SoundReader.cpp">
       <Filter>Source Files\Readers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\PackFile.cpp">

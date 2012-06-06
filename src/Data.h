@@ -62,6 +62,9 @@ extern const byte exe_png[];
 // File: data/image.png
 extern const uint image_png_size;
 extern const byte image_png[];
+// File: data/model_view.hlsl
+extern const uint model_view_hlsl_size;
+extern const byte model_view_hlsl[];
 // File: data/open_folder.png
 extern const uint open_folder_png_size;
 extern const byte open_folder_png[];

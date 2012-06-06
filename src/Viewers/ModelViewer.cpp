@@ -22,9 +22,12 @@
 */
 
 #include "stdafx.h"
+
 #include "ModelViewer.h"
-#include "DatFile.h"
+
 #include "Readers/ImageReader.h"
+#include "DatFile.h"
+#include "Data.h"
 
 namespace gw2b
 {
@@ -56,7 +59,7 @@ ModelViewer::ModelViewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize&
     ID3DXEffect* effect = nullptr;
     ID3DXBuffer* errors = nullptr;
     uint32 shaderFlags  = ifDebug(D3DXSHADER_DEBUG, 0);
-    HRESULT result = ::D3DXCreateEffectFromFileW(m_device.get(), L"data/model_view.hlsl", nullptr, nullptr, shaderFlags, nullptr, &effect, &errors);
+    auto result = ::D3DXCreateEffect(m_device.get(), data::model_view_hlsl, data::model_view_hlsl_size, nullptr, nullptr, shaderFlags, nullptr, &effect, &errors);
     m_effect.reset(effect);
 
     if (FAILED(result)) {

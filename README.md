@@ -2,8 +2,8 @@ Gw2Browser.1
 ============
 
 Opens a Guild Wars 2 .dat file and allows the user to browse and extract its 
-files. Currently supports viewing power-of-two textures and binary files. The 
-decompression algorithm for non-power-of-two textures is yet to be figured out.
+files. Currently it supports viewing power-of-two textures, models, and binary 
+files.
 
 When a .dat file is opened, it will first index the file. This makes it *a lot*
 faster to re-open the same .dat. Unfortunately, every time the .dat changes it
@@ -13,6 +13,25 @@ Keep in mind that if you keep tree items expanded while the indexer is running,
 or while an index is being read, the process is *a lot* slower.
 
 The latest Win32 binary can always be found at http://skold.cc/gw2browser/
+
+Known issues
+------------
+
+* **Model rendering is currently experimental.** Viewing one may crash the 
+browser, or it may not. It might also use the wrong texture, or it might not.
+It entirely depends on what model you view, as some models don't have any 
+references to textures (mostly equipment models). Some models also use the 
+second UV channel for rendering while the shader in the browser only uses the
+first. Loading them is also unoptimized as hell!
+
+* **Non-power-of-two dimensions on non-DDS textures are unsupported at the 
+moment.** Decompressing one produces garbage blocks, so viewing them is 
+disabled until the reason has been determined.
+
+* **Garbage code architecture!** Hey, what can I say. I'm a game developer, not
+application architecture designer. Plus I'm learning wxWidgets as I go along. I
+am working on refactoring chunks of it however, most notably reducing the god
+objects and moving privates out of the header files.
 
 Authors
 -------
@@ -36,13 +55,13 @@ If `<input dat>` is given, the program will open the file as soon as it starts.
 Libraries and restrictions
 --------------------------
 
-The application will not compile with any compiler aside from MSVC unless said
-compiler gets some non-standard defines added to 'stdafx.h'. The application 
-*may* compile and run in Linux or MacOS X if that is done however. RTTI needs
-to be enabled in order to compile (if you can dynamic_cast, you're covered).
+The application is written specifically for MSVC10+, as it links with DirectX9
+and gw2DatTools. It features some C++11 features available in said compiler,
+since gw2DatTools won't compile without those C++11 features anyway.
 
 ### Required libraries
 
+* [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
 * [gw2DatTools](https://github.com/ahom/gw2DatTools/)
 * [wxWidgets](http://wxwidgets.org/)
 
