@@ -122,16 +122,17 @@ const MaterialData& Model::materialData(uint p_index) const
     return m_data->materialData[p_index];
 }
 
-MaterialData& Model::addMaterialData()
+MaterialData* Model::addMaterialData(uint p_amount)
 {
     this->unShare();
 
-    MaterialData newData;
-    newData.diffuseMap = 0;
-    newData.normalMap      = 0;
-    m_data->materialData.push_back(newData);
+    MaterialData emptyData;
+    ::memset(&emptyData, 0, sizeof(emptyData));
 
-    return m_data->materialData[m_data->materialData.size() - 1];
+    uint oldSize = m_data->materialData.size();
+    m_data->materialData.resize(oldSize + p_amount, emptyData);
+
+    return &(m_data->materialData[oldSize]);
 }
 
 void Model::unShare()   
@@ -276,7 +277,7 @@ Model ModelReader::getModel() const
 void ModelReader::readGeometry(Model& p_model, PackFile& p_packFile) const
 {
     uint size;
-    const byte* data = p_packFile.findChunk(FCC_GEOM, size);
+    auto data = p_packFile.findChunk(FCC_GEOM, size);
 
     // Bail if no data
     if (!data) {
@@ -286,13 +287,18 @@ void ModelReader::readGeometry(Model& p_model, PackFile& p_packFile) const
     // Read some interesting data
     auto header                      = reinterpret_cast<const ANetPfChunkHeader*>(data);
     uint32 meshCount                 = *reinterpret_cast<const uint32*>(&data[sizeof(*header)]);
+
+    // Bail if no meshes to read
+    if (!meshCount) {
+        return;
+    }
+
     uint32 meshInfoOffsetTableOffset = *reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4]);
     auto meshInfoOffsetTable         = reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4 + meshInfoOffsetTableOffset]);
 
-    // Create storage for submeshes now, so we can parallelize the below loop
+    // Create storage for submeshes now, so we can parallelize the loop
     Mesh* meshes = p_model.addMeshes(meshCount);
 
-    // Read all submeshes
 #pragma omp parallel for shared(meshes)
     for (int i = 0; i < static_cast<int>(meshCount); i++) {
         auto pos = reinterpret_cast<const byte*>(&meshInfoOffsetTable[i]);
@@ -509,8 +515,28 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
     uint32 materialInfoOffset = *reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4]);
     auto materialInfoArray    = reinterpret_cast<const ANetModelMaterialArray*>(&data[sizeof(*header) + 4 + materialInfoOffset]);
 
-    // Loop through each material info
+    // Count materials
+    uint materialCount = 0;
     for (uint i = 0; i < numMaterialInfo; i++) {
+        materialCount = wxMax(materialCount, materialInfoArray[i].materialCount);
+    }
+
+    // Bail if no materials
+    if (!materialCount) {
+        return;
+    }
+
+    // Prepare parallel loop
+    std::vector<omp_lock_t> locks(materialCount);
+    for (auto iter = std::begin(locks); iter != std::end(locks); iter++) {
+        omp_init_lock(&(*iter));
+    }
+
+    MaterialData* materialData = p_model.addMaterialData(materialCount);
+
+    // Loop through each material info
+#pragma omp parallel for shared(locks, materialData)
+    for (int i = 0; i < static_cast<int>(numMaterialInfo); i++) {
         // Bail if no offset or count
         if (!materialInfoArray[i].materialCount || !materialInfoArray[i].materialsOffset) { continue; }
 
@@ -519,21 +545,31 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
         auto offsetTable = reinterpret_cast<const int32*>(pos);
 
         // Loop through each material in these material infos
-        for (uint j = 0; j < materialInfoArray->materialCount; j++) {
-            auto& data = (p_model.numMaterialData() <= j ? p_model.addMaterialData() : p_model.materialData(j));
+        for (uint j = 0; j < materialInfoArray[i].materialCount; j++) {
+            auto& data = materialData[j];
 
-            // Bail if offset is nullptr
+            // Bail if offset is NULL
             if (offsetTable[j] == 0) { continue; }
 
+            // Only one thread must access this material at a time
+            omp_set_lock(&locks[j]);
+
             // Bail if this material index already has data
-            if (data.diffuseMap && data.normalMap) { continue; }
+            if (data.diffuseMap && data.normalMap) { 
+                omp_unset_lock(&locks[j]);
+                continue; 
+            }
 
             // Read material info
             pos = offsetTable[j] + reinterpret_cast<const byte*>(&offsetTable[j]);
             auto materialInfo = reinterpret_cast<const ANetModelMaterialInfo*>(pos);
 
             // We are *only* interested in textures
-            if (materialInfo->textureCount == 0) { continue; }
+            if (materialInfo->textureCount == 0) { 
+                omp_unset_lock(&locks[j]);
+                continue; 
+            }
+
             pos = materialInfo->texturesOffset + reinterpret_cast<const byte*>(&materialInfo->texturesOffset);
             auto textures = reinterpret_cast<const ANetModelTextureReference*>(pos);
 
@@ -552,7 +588,15 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
                     data.normalMap = DatFile::fileIdFromFileReference(*fileReference);
                 }
             }
+
+            // Let other threads access this material now that we're done
+            omp_unset_lock(&locks[j]);
         }
+    }
+
+    // Destroy locks
+    for (auto iter = std::begin(locks); iter != std::end(locks); iter++) {
+        omp_destroy_lock(&(*iter));
     }
 }
 

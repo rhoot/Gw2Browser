@@ -29,6 +29,9 @@
 // STL includes
 #include <memory>
 
+// OMP
+#include <omp.h>
+
 // wxWidgets
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP

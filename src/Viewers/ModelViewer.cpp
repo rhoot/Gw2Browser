@@ -113,7 +113,7 @@ void ModelViewer::setReader(FileReader* p_reader)
 
     // Load model
     auto reader = this->modelReader();
-    m_model = reader->getModel();
+    m_model     = reader->getModel();
 
     // Create DX mesh cache
     m_meshCache.SetSize(m_model.numMeshes());

@@ -142,7 +142,7 @@ public:
     uint numMaterialData() const;
     MaterialData& materialData(uint p_index);
     const MaterialData& materialData(uint p_index) const;
-    MaterialData& addMaterialData();
+    MaterialData* addMaterialData(uint p_amount);
 
     // helpers
     Bounds bounds() const;
