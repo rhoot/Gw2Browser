@@ -39,85 +39,85 @@ class PackFile;
 
 struct Vertex
 {
-    XMFLOAT3 mPosition;
-    XMFLOAT3 mNormal;
-    uint32 mColor;
-    XMFLOAT2 mUV[2];
-    byte mHasNormal   : 1;
-    byte mHasColor    : 1;
-    byte mHasUV       : 2;
+    XMFLOAT3 position;
+    XMFLOAT3 normal;
+    uint32 color;
+    XMFLOAT2 uv[2];
+    byte hasNormal   : 1;
+    byte hasColor    : 1;
+    byte hasUV       : 2;
 };
 
 union Triangle
 {
     struct {
-        uint16 mIndex1;
-        uint16 mIndex2;
-        uint16 mIndex3;
+        uint16 index1;
+        uint16 index2;
+        uint16 index3;
     };
-    uint16 mIndices[3];
+    uint16 indices[3];
 };
 
 struct Bounds
 {
-    float mMinX;
-    float mMinY;
-    float mMinZ;
-    float mMaxX;
-    float mMaxY;
-    float mMaxZ;
+    float minX;
+    float minY;
+    float minZ;
+    float maxX;
+    float maxY;
+    float maxZ;
 };
 
 #pragma pack(pop)
 
 struct Mesh
 {
-    Array<Vertex>   mVertices;
-    Array<Triangle> mTriangles;
-    wxString        mMaterialName;
-    int             mMaterialIndex;
-    Bounds          mBounds;
+    Array<Vertex>   vertices;
+    Array<Triangle> triangles;
+    wxString        materialName;
+    int             materialIndex;
+    Bounds          bounds;
 };
 
 struct MaterialData
 {
-    uint32 mDiffuseTexture;
-    uint32 mNormalMap;
+    uint32 diffuseMap;
+    uint32 normalMap;
 };
 
 class ModelData : public wxRefCounter
 {
 public:
-    std::vector<Mesh> mMeshes;
-    std::vector<MaterialData> mMaterialData;
+    std::vector<Mesh> meshes;
+    std::vector<MaterialData> materialData;
 public:
     ModelData();
-    ModelData(const ModelData& pOther);
+    ModelData(const ModelData& p_other);
     virtual ~ModelData();
 };
 
 class Model
 {
-    wxObjectDataPtr<ModelData>  mData;
+    wxObjectDataPtr<ModelData>  m_data;
 public:
     Model();
-    Model(const Model& pOther);
+    Model(const Model& p_other);
     ~Model();
 
-    Model& operator=(const Model& pOther);
+    Model& operator=(const Model& p_other);
 
     // Submeshes
-    uint GetNumMeshes() const;
-    const Mesh& GetMesh(uint pIndex) const;
-    Mesh& AddMesh();
+    uint numMeshes() const;
+    const Mesh& mesh(uint p_index) const;
+    Mesh* addMeshes(uint p_amount);
 
     // Material data
-    uint GetNumMaterialData() const;
-    MaterialData& GetMaterialData(uint pIndex);
-    const MaterialData& GetMaterialData(uint pIndex) const;
-    MaterialData& AddMaterialData();
+    uint numMaterialData() const;
+    MaterialData& materialData(uint p_index);
+    const MaterialData& materialData(uint p_index) const;
+    MaterialData& addMaterialData();
 private:
-    void UnShare();
+    void unShare();
 };
 
 class ModelReader : public FileReader
@@ -126,30 +126,30 @@ public:
     /** Constructor.
      *  \param[in]  pData       Data to be handled by this reader.
      *  \param[in]  pFileType   File type of the given data. */
-    ModelReader(const Array<byte>& pData, ANetFileType pFileType);
+    ModelReader(const Array<byte>& p_data, ANetFileType p_fileType);
     /** Destructor. Clears all data. */
     virtual ~ModelReader();
 
     /** Gets the type of data contained in this file. Not to be confused with
      *  file type.
      *  \return DataType    type of data. */
-    virtual DataType dataType() const        { return DT_Model; }
+    virtual DataType dataType() const override       { return DT_Model; }
     /** Gets an appropriate file extension for the contents of this reader.
      *  \return wxString    File extension. */
-    virtual const wxChar* extension() const  { return wxT(".obj"); }
+    virtual const wxChar* extension() const override { return wxT(".obj"); }
     /** Converts the data associated with this file into OBJ.
      *  \return Array<byte> converted data. */
-    virtual Array<byte> convertData() const;
+    virtual Array<byte> convertData() const override;
     /** Gets the model represented by this data.
      *  \return Model   model. */
-    Model GetModel() const;
+    Model getModel() const;
 
 private:
-    void ReadGeometry(Model& pModel, PackFile& pPackFile) const;
-    void ReadVertexBuffer(Mesh& pMesh, const byte* pData, uint pVertexCount, ANetFlexibleVertexFormat pVertexFormat) const;
-    void ReadIndexBuffer(Mesh& pMesh, const byte* pData, uint pIndexCount) const;
-    uint GetVertexSize(ANetFlexibleVertexFormat pVertexFormat) const;
-    void ReadMaterialData(Model& pModel, PackFile& pPackFile) const;
+    void readGeometry(Model& p_model, PackFile& p_packFile) const;
+    void readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vertexCount, ANetFlexibleVertexFormat p_vertexFormat) const;
+    void readIndexBuffer(Mesh& p_mesh, const byte* p_data, uint p_indexCount) const;
+    uint vertexSize(ANetFlexibleVertexFormat p_vertexFormat) const;
+    void readMaterialData(Model& p_model, PackFile& p_packFile) const;
 }; // class ModelReader
 
 }; // namespace gw2b

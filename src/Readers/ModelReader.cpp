@@ -26,6 +26,7 @@
 #include <wx/txtstrm.h>
 #include <sstream>
 #include <new>
+#include <vector>
 
 #include "ModelReader.h"
 
@@ -49,10 +50,10 @@ ModelData::ModelData()
 {
 }
 
-ModelData::ModelData(const ModelData& pOther)
+ModelData::ModelData(const ModelData& p_other)
 {
-    mMeshes.assign(pOther.mMeshes.begin(), pOther.mMeshes.end());
-    mMaterialData.assign(pOther.mMaterialData.begin(), pOther.mMaterialData.end());
+    meshes.assign(p_other.meshes.begin(), p_other.meshes.end());
+    materialData.assign(p_other.materialData.begin(), p_other.materialData.end());
 }
 
 ModelData::~ModelData()
@@ -64,12 +65,12 @@ ModelData::~ModelData()
 //----------------------------------------------------------------------------
 
 Model::Model()
-    : mData(new ModelData())
+    : m_data(new ModelData())
 {
 }
 
-Model::Model(const Model& pOther)
-    : mData(pOther.mData)
+Model::Model(const Model& p_other)
+    : m_data(p_other.m_data)
 {
 }
 
@@ -77,73 +78,76 @@ Model::~Model()
 {
 }
 
-Model& Model::operator=(const Model& pOther)
+Model& Model::operator=(const Model& p_other)
 {
-    mData = pOther.mData;
+    m_data = p_other.m_data;
     return *this;
 }
 
-uint Model::GetNumMeshes() const
+uint Model::numMeshes() const
 {
-    return mData->mMeshes.size();
+    return m_data->meshes.size();
 }
 
-const Mesh& Model::GetMesh(uint pIndex) const
+const Mesh& Model::mesh(uint p_index) const
 {
-    Assert(pIndex < this->GetNumMeshes());
-    return mData->mMeshes[pIndex];
+    Assert(p_index < this->numMeshes());
+    return m_data->meshes[p_index];
 }
 
-Mesh& Model::AddMesh()
+Mesh* Model::addMeshes(uint p_amount)
 {
-    this->UnShare();
-    mData->mMeshes.push_back(Mesh());
-    return mData->mMeshes[mData->mMeshes.size() - 1];
+    this->unShare();
+
+    uint oldSize = m_data->meshes.size();
+    m_data->meshes.resize(oldSize + p_amount);
+
+    return &(m_data->meshes[oldSize]);
 }
 
-uint Model::GetNumMaterialData() const
+uint Model::numMaterialData() const
 {
-    return mData->mMaterialData.size();
+    return m_data->materialData.size();
 }
 
-MaterialData& Model::GetMaterialData(uint pIndex)
+MaterialData& Model::materialData(uint p_index)
 {
-    Assert(pIndex < this->GetNumMaterialData());
-    return mData->mMaterialData[pIndex];
+    Assert(p_index < this->numMaterialData());
+    return m_data->materialData[p_index];
 }
 
-const MaterialData& Model::GetMaterialData(uint pIndex) const
+const MaterialData& Model::materialData(uint p_index) const
 {
-    Assert(pIndex < this->GetNumMaterialData());
-    return mData->mMaterialData[pIndex];
+    Assert(p_index < this->numMaterialData());
+    return m_data->materialData[p_index];
 }
 
-MaterialData& Model::AddMaterialData()
+MaterialData& Model::addMaterialData()
 {
-    this->UnShare();
+    this->unShare();
 
     MaterialData newData;
-    newData.mDiffuseTexture = 0;
-    newData.mNormalMap      = 0;
-    mData->mMaterialData.push_back(newData);
+    newData.diffuseMap = 0;
+    newData.normalMap      = 0;
+    m_data->materialData.push_back(newData);
 
-    return mData->mMaterialData[mData->mMaterialData.size() - 1];
+    return m_data->materialData[m_data->materialData.size() - 1];
 }
 
-void Model::UnShare()   
+void Model::unShare()   
 {
-    if (mData->GetRefCount() == 1) {
+    if (m_data->GetRefCount() == 1) {
         return;
     }
-    mData = new ModelData(*mData);
+    m_data = new ModelData(*m_data);
 }
 
 //----------------------------------------------------------------------------
 //      ModelReader
 //----------------------------------------------------------------------------
 
-ModelReader::ModelReader(const Array<byte>& pData, ANetFileType pFileType)
-    : FileReader(pData, pFileType)
+ModelReader::ModelReader(const Array<byte>& p_data, ANetFileType p_fileType)
+    : FileReader(p_data, p_fileType)
 {
 }
 
@@ -153,50 +157,51 @@ ModelReader::~ModelReader()
 
 Array<byte> ModelReader::convertData() const
 {
-    Model model = this->GetModel();
+    Model model = this->getModel();
     std::ostringstream stream;
 
     // Note: wxWidgets only does locale-specific number formatting. This does
     // not work well with obj-files.
     stream.imbue(std::locale("C"));
-    stream << "# " << model.GetNumMeshes() << " meshes" << std::endl;
+    stream << "# " << model.numMeshes() << " meshes" << std::endl;
 
-    for (uint i = 0; i < model.GetNumMeshes(); i++){
-        const Mesh& mesh = model.GetMesh(i);
+    uint indexBase = 1;
+    for (uint i = 0; i < model.numMeshes(); i++){
+        const Mesh& mesh = model.mesh(i);
         bool hasUV       = true;
         bool hasNormal   = true;
 
         // Write header
-        stream << std::endl << "# Mesh " << i << ": " << mesh.mVertices.GetSize() << " vertices, " << mesh.mTriangles.GetSize() << " triangles" << std::endl;
+        stream << std::endl << "# Mesh " << i << ": " << mesh.vertices.GetSize() << " vertices, " << mesh.triangles.GetSize() << " triangles" << std::endl;
         stream << "g mesh" << i << std::endl;
-        stream << "usemtl " << mesh.mMaterialName.c_str() << std::endl;
+        stream << "usemtl " << mesh.materialName.c_str() << std::endl;
 
         // Write positions
-        for (uint j = 0; j < mesh.mVertices.GetSize(); j++) {
-            stream << "v " << mesh.mVertices[j].mPosition.x << ' ' << mesh.mVertices[j].mPosition.y << ' ' << mesh.mVertices[j].mPosition.z << std::endl;
+        for (uint j = 0; j < mesh.vertices.GetSize(); j++) {
+            stream << "v " << mesh.vertices[j].position.x << ' ' << mesh.vertices[j].position.y << ' ' << mesh.vertices[j].position.z << std::endl;
         }
 
         // Write UVs
-        for (uint j = 0; j < mesh.mVertices.GetSize(); j++) {
+        for (uint j = 0; j < mesh.vertices.GetSize(); j++) {
             // If the first vertex does not have UV, none of them do
-            if (mesh.mVertices[j].mHasUV == 0) { hasUV = false; break; }
-            stream << "vt " << mesh.mVertices[j].mUV[0].x << ' ' << mesh.mVertices[j].mUV[0].y << std::endl;
+            if (mesh.vertices[j].hasUV == 0) { hasUV = false; break; }
+            stream << "vt " << mesh.vertices[j].uv[0].x << ' ' << mesh.vertices[j].uv[0].y << std::endl;
         }
         
         // Write normals
-        for (uint j = 0; j < mesh.mVertices.GetSize(); j++) {
+        for (uint j = 0; j < mesh.vertices.GetSize(); j++) {
             // If the first vertex does not have a normal, none of them do
-            if (mesh.mVertices[j].mHasNormal == 0) { hasNormal = false; break; }
-            stream << "vn " << mesh.mVertices[j].mNormal.x << ' ' << mesh.mVertices[j].mNormal.y << ' ' << mesh.mVertices[j].mNormal.z << std::endl;
+            if (mesh.vertices[j].hasNormal == 0) { hasNormal = false; break; }
+            stream << "vn " << mesh.vertices[j].normal.x << ' ' << mesh.vertices[j].normal.y << ' ' << mesh.vertices[j].normal.z << std::endl;
         }
 
         // Write faces
-        for (uint j = 0; j < mesh.mTriangles.GetSize(); j++) {
-            const Triangle& triangle = mesh.mTriangles[j];
+        for (uint j = 0; j < mesh.triangles.GetSize(); j++) {
+            const Triangle& triangle = mesh.triangles[j];
             
             stream << 'f';
             for (uint k = 0; k < 3; k++) { 
-                uint index = triangle.mIndices[k] + 1;
+                uint index = triangle.indices[k] + indexBase;
                 stream << ' ' << index;
                 
                 // UV reference
@@ -216,6 +221,7 @@ Array<byte> ModelReader::convertData() const
 
         // newline before next mesh!
         stream << std::endl;
+        indexBase += mesh.vertices.GetSize();
     }
 
     // Close stream
@@ -230,7 +236,7 @@ Array<byte> ModelReader::convertData() const
     return outputData;
 }
 
-Model ModelReader::GetModel() const
+Model ModelReader::getModel() const
 {
     Model newModel;
 
@@ -241,16 +247,16 @@ Model ModelReader::GetModel() const
 
     // Populate the model
     PackFile packFile(m_data);
-    this->ReadGeometry(newModel, packFile);
-    this->ReadMaterialData(newModel, packFile);
+    this->readGeometry(newModel, packFile);
+    this->readMaterialData(newModel, packFile);
 
     return newModel;
 }
 
-void ModelReader::ReadGeometry(Model& pModel, PackFile& pPackFile) const
+void ModelReader::readGeometry(Model& p_model, PackFile& p_packFile) const
 {
     uint size;
-    const byte* data = pPackFile.findChunk(FCC_GEOM, size);
+    const byte* data = p_packFile.findChunk(FCC_GEOM, size);
 
     // Bail if no data
     if (!data) {
@@ -258,219 +264,223 @@ void ModelReader::ReadGeometry(Model& pModel, PackFile& pPackFile) const
     }
 
     // Read some interesting data
-    const ANetPfChunkHeader* header   = reinterpret_cast<const ANetPfChunkHeader*>(data);
-    uint32 meshCount                  = *reinterpret_cast<const uint32*>(&data[sizeof(*header)]);
-    uint32 meshInfoOffsetTableOffset  = *reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4]);
-    const uint32* meshInfoOffsetTable = reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4 + meshInfoOffsetTableOffset]);
+    auto header                      = reinterpret_cast<const ANetPfChunkHeader*>(data);
+    uint32 meshCount                 = *reinterpret_cast<const uint32*>(&data[sizeof(*header)]);
+    uint32 meshInfoOffsetTableOffset = *reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4]);
+    auto meshInfoOffsetTable         = reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4 + meshInfoOffsetTableOffset]);
+
+    // Create storage for submeshes now, so we can parallelize the below loop
+    Mesh* meshes = p_model.addMeshes(meshCount);
 
     // Read all submeshes
-    for (uint i = 0; i < meshCount; i++) {
-        const byte* pos = reinterpret_cast<const byte*>(&meshInfoOffsetTable[i]);
+#pragma omp parallel for shared(meshes)
+    for (int i = 0; i < static_cast<int>(meshCount); i++) {
+        auto pos = reinterpret_cast<const byte*>(&meshInfoOffsetTable[i]);
         
         // Fetch mesh info
         pos += meshInfoOffsetTable[i];
-        const ANetModelMeshInfo* meshInfo = reinterpret_cast<const ANetModelMeshInfo*>(pos);
+        auto meshInfo = reinterpret_cast<const ANetModelMeshInfo*>(pos);
 
         // Fetch buffer info
         pos  = reinterpret_cast<const byte*>(&meshInfo->bufferInfoOffset);
         pos += meshInfo->bufferInfoOffset;
-        const ANetModelBufferInfo* bufferInfo = reinterpret_cast<const ANetModelBufferInfo*>(pos);
+        auto bufferInfo = reinterpret_cast<const ANetModelBufferInfo*>(pos);
 
         // Add new mesh
-        Mesh& mesh = pModel.AddMesh();
+        Mesh& mesh = meshes[i];
         // Material data
-        mesh.mMaterialIndex = meshInfo->materialIndex;
+        mesh.materialIndex = meshInfo->materialIndex;
         pos  = reinterpret_cast<const byte*>(&meshInfo->materialNameOffset);
         pos += meshInfo->materialNameOffset;
-        mesh.mMaterialName = wxString::FromUTF8(reinterpret_cast<const char*>(pos));
+        mesh.materialName = wxString::FromUTF8(reinterpret_cast<const char*>(pos));
         // Vertex data
         if (bufferInfo->vertexCount) {
             pos  = reinterpret_cast<const byte*>(&bufferInfo->vertexBufferOffset);
             pos += bufferInfo->vertexBufferOffset;
-            this->ReadVertexBuffer(mesh, pos, bufferInfo->vertexCount, static_cast<ANetFlexibleVertexFormat>(bufferInfo->vertexFormat));
+            this->readVertexBuffer(mesh, pos, bufferInfo->vertexCount, static_cast<ANetFlexibleVertexFormat>(bufferInfo->vertexFormat));
         }
         // Index data
         if (bufferInfo->indexCount) {
             pos  = reinterpret_cast<const byte*>(&bufferInfo->indexBufferOffset);
             pos += bufferInfo->indexBufferOffset;
-            this->ReadIndexBuffer(mesh, pos, bufferInfo->indexCount);
+            this->readIndexBuffer(mesh, pos, bufferInfo->indexCount);
         }
     }
 }
 
-void ModelReader::ReadIndexBuffer(Mesh& pMesh, const byte* pData, uint pIndexCount) const
+void ModelReader::readIndexBuffer(Mesh& p_mesh, const byte* p_data, uint p_indexCount) const
 {
-    pMesh.mTriangles.SetSize(pIndexCount / 3);
-    ::memcpy(pMesh.mTriangles.GetPointer(), pData, pMesh.mTriangles.GetSize() * sizeof(Triangle));
+    p_mesh.triangles.SetSize(p_indexCount / 3);
+    ::memcpy(p_mesh.triangles.GetPointer(), p_data, p_mesh.triangles.GetSize() * sizeof(Triangle));
 
     // Calculate bounds
-    pMesh.mBounds.mMinX = std::numeric_limits<float>::max();
-    pMesh.mBounds.mMinY = std::numeric_limits<float>::max();
-    pMesh.mBounds.mMinZ = std::numeric_limits<float>::max();
-    pMesh.mBounds.mMaxX = std::numeric_limits<float>::min();
-    pMesh.mBounds.mMaxY = std::numeric_limits<float>::min();
-    pMesh.mBounds.mMaxZ = std::numeric_limits<float>::min();
+    p_mesh.bounds.minX = std::numeric_limits<float>::max();
+    p_mesh.bounds.minY = std::numeric_limits<float>::max();
+    p_mesh.bounds.minZ = std::numeric_limits<float>::max();
+    p_mesh.bounds.maxX = std::numeric_limits<float>::min();
+    p_mesh.bounds.maxY = std::numeric_limits<float>::min();
+    p_mesh.bounds.maxZ = std::numeric_limits<float>::min();
 
-    const uint16* indices = reinterpret_cast<const uint16*>(pData);
-    for (uint i = 0; i < pIndexCount; i++) {
-        const Vertex& vertex = pMesh.mVertices[indices[i]];
+    const uint16* indices = reinterpret_cast<const uint16*>(p_data);
+    for (uint i = 0; i < p_indexCount; i++) {
+        auto& vertex = p_mesh.vertices[indices[i]];
         // X axis
-        if (vertex.mPosition.x < pMesh.mBounds.mMinX) { pMesh.mBounds.mMinX = vertex.mPosition.x; }
-        if (vertex.mPosition.x > pMesh.mBounds.mMaxX) { pMesh.mBounds.mMaxX = vertex.mPosition.x; }
+        if (vertex.position.x < p_mesh.bounds.minX) { p_mesh.bounds.minX = vertex.position.x; }
+        if (vertex.position.x > p_mesh.bounds.maxX) { p_mesh.bounds.maxX = vertex.position.x; }
         // Y axis
-        if (vertex.mPosition.y < pMesh.mBounds.mMinY) { pMesh.mBounds.mMinY = vertex.mPosition.y; }
-        if (vertex.mPosition.y > pMesh.mBounds.mMaxY) { pMesh.mBounds.mMaxY = vertex.mPosition.y; }
+        if (vertex.position.y < p_mesh.bounds.minY) { p_mesh.bounds.minY = vertex.position.y; }
+        if (vertex.position.y > p_mesh.bounds.maxY) { p_mesh.bounds.maxY = vertex.position.y; }
         // Z axis
-        if (vertex.mPosition.z < pMesh.mBounds.mMinZ) { pMesh.mBounds.mMinZ = vertex.mPosition.z; }
-        if (vertex.mPosition.z > pMesh.mBounds.mMaxZ) { pMesh.mBounds.mMaxZ = vertex.mPosition.z; }
+        if (vertex.position.z < p_mesh.bounds.minZ) { p_mesh.bounds.minZ = vertex.position.z; }
+        if (vertex.position.z > p_mesh.bounds.maxZ) { p_mesh.bounds.maxZ = vertex.position.z; }
     }
 }
 
-void ModelReader::ReadVertexBuffer(Mesh& pMesh, const byte* pData, uint pVertexCount, ANetFlexibleVertexFormat pVertexFormat) const
+void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vertexCount, ANetFlexibleVertexFormat p_vertexFormat) const
 {
-    pMesh.mVertices.SetSize(pVertexCount);
-    uint vertexSize = this->GetVertexSize(pVertexFormat);
+    p_mesh.vertices.SetSize(p_vertexCount);
+    uint vertexSize = this->vertexSize(p_vertexFormat);
 
 #pragma omp parallel for
-    for (int i = 0; i < static_cast<int>(pVertexCount); i++) {
-        const byte* pos = &pData[i * vertexSize];
+    for (int i = 0; i < static_cast<int>(p_vertexCount); i++) {
+        auto pos = &p_data[i * vertexSize];
 
         // Init vertex
-        Vertex& vertex    = pMesh.mVertices[i];
-        vertex.mHasColor  = 0;
-        vertex.mHasNormal = 0;
-        vertex.mHasUV     = 0;
+        Vertex& vertex    = p_mesh.vertices[i];
+        vertex.hasColor  = 0;
+        vertex.hasNormal = 0;
+        vertex.hasUV     = 0;
 
         // Bit 0: Position
-        if (pVertexFormat & ANFVF_Position) {
-            ::memcpy(&vertex.mPosition, pos, sizeof(vertex.mPosition));
-            pos += sizeof(vertex.mPosition);
+        if (p_vertexFormat & ANFVF_Position) {
+            ::memcpy(&vertex.position, pos, sizeof(vertex.position));
+            pos += sizeof(vertex.position);
         }
         // Bit 1: Weights
-        if (pVertexFormat & ANFVF_Weights) {
+        if (p_vertexFormat & ANFVF_Weights) {
             pos += 4;
         }
         // Bit 2: Group
-        if (pVertexFormat & ANFVF_Group) {
+        if (p_vertexFormat & ANFVF_Group) {
             pos += 4;
         }
         // Bit 3: Normal
-        if (pVertexFormat & ANFVF_Normal) {
-            ::memcpy(&vertex.mNormal, pos, sizeof(vertex.mNormal));
-            vertex.mHasNormal = 1;
-            pos += sizeof(vertex.mNormal);
+        if (p_vertexFormat & ANFVF_Normal) {
+            ::memcpy(&vertex.normal, pos, sizeof(vertex.normal));
+            vertex.hasNormal = 1;
+            pos += sizeof(vertex.normal);
         }
         // Bit 4: Color
-        if (pVertexFormat & ANFVF_Color) {
-            vertex.mColor = *reinterpret_cast<const uint32*>(pos);
-            vertex.mHasColor = 1;
+        if (p_vertexFormat & ANFVF_Color) {
+            vertex.color = *reinterpret_cast<const uint32*>(pos);
+            vertex.hasColor = 1;
             pos += sizeof(uint32);
         }
         // Bit 5: Tangent
-        if (pVertexFormat & ANFVF_Tangent) {
+        if (p_vertexFormat & ANFVF_Tangent) {
             pos += sizeof(XMFLOAT3);
         }
         // Bit 6: Bitangent
-        if (pVertexFormat & ANFVF_Bitangent) {
+        if (p_vertexFormat & ANFVF_Bitangent) {
             pos += sizeof(XMFLOAT3);
         }
         // Bit 7: Tangent frame
-        if (pVertexFormat & ANFVF_TangentFrame) {
+        if (p_vertexFormat & ANFVF_TangentFrame) {
             pos += sizeof(XMFLOAT3);
         }
         // Bit 8-15: 32-bit UV
-        uint uvFlag = (pVertexFormat & ANFVF_UV32Mask) >> 8;
+        uint uvFlag = (p_vertexFormat & ANFVF_UV32Mask) >> 8;
         if (uvFlag) {
             for (uint i = 0; i < 7; i++) {
                 if (((uvFlag >> i) & 1) == 0) { continue; }
-                if (vertex.mHasUV < 2) {
-                    ::memcpy(&vertex.mUV[vertex.mHasUV++], pos, sizeof(vertex.mUV[0]));
+                if (vertex.hasUV < 2) {
+                    ::memcpy(&vertex.uv[vertex.hasUV++], pos, sizeof(vertex.uv[0]));
                 }
-                pos += sizeof(vertex.mUV[0]);
+                pos += sizeof(vertex.uv[0]);
             }
         }
         // Bit 16-23: 16-bit UV
-        uvFlag = (pVertexFormat & ANFVF_UV16Mask) >> 16;
+        uvFlag = (p_vertexFormat & ANFVF_UV16Mask) >> 16;
         if (uvFlag) {
             for (uint i = 0; i < 7; i++) {
                 if (((uvFlag >> i) & 1) == 0) { continue; }
-                if (vertex.mHasUV < 2) {
+                if (vertex.hasUV < 2) {
                     const half* uv = reinterpret_cast<const half*>(pos);
-                    vertex.mUV[vertex.mHasUV].x = uv[0];
-                    vertex.mUV[vertex.mHasUV].y = uv[1];
-                    vertex.mHasUV++;
+                    vertex.uv[vertex.hasUV].x = uv[0];
+                    vertex.uv[vertex.hasUV].y = uv[1];
+                    vertex.hasUV++;
                 }
                 pos += sizeof(half) * 2;
             }
         }
         // Bit 24: Unknown 48-byte value
-        if (pVertexFormat & ANFVF_Unknown1) {
+        if (p_vertexFormat & ANFVF_Unknown1) {
             pos += 48;
         }
         // Bit 25: Unknown 4-byte value
-        if (pVertexFormat & ANFVF_Unknown2) {
+        if (p_vertexFormat & ANFVF_Unknown2) {
             pos += 4;
         }
         // Bit 26: Unknown 4-byte value
-        if (pVertexFormat & ANFVF_Unknown3) {
+        if (p_vertexFormat & ANFVF_Unknown3) {
             pos += 4;
         }
         // Bit 27: Unknown 16-byte value
-        if (pVertexFormat & ANFVF_Unknown4) {
+        if (p_vertexFormat & ANFVF_Unknown4) {
             pos += 16;
         }
         // Bit 28: Compressed position
-        if (pVertexFormat & ANFVF_PositionCompressed) {
-            vertex.mPosition.x = *reinterpret_cast<const half*>(pos + 0 * sizeof(half));
-            vertex.mPosition.y = *reinterpret_cast<const half*>(pos + 1 * sizeof(half));
-            vertex.mPosition.z = *reinterpret_cast<const half*>(pos + 2 * sizeof(half));
+        if (p_vertexFormat & ANFVF_PositionCompressed) {
+            vertex.position.x = *reinterpret_cast<const half*>(pos + 0 * sizeof(half));
+            vertex.position.y = *reinterpret_cast<const half*>(pos + 1 * sizeof(half));
+            vertex.position.z = *reinterpret_cast<const half*>(pos + 2 * sizeof(half));
             pos += 3 * sizeof(half);
         }
         // Bit 29: Unknown 12-byte value
-        if (pVertexFormat & ANFVF_Unknown5) {
+        if (p_vertexFormat & ANFVF_Unknown5) {
             pos += 12;
         }
     }
 }
 
-uint ModelReader::GetVertexSize(ANetFlexibleVertexFormat pVertexFormat) const
+uint ModelReader::vertexSize(ANetFlexibleVertexFormat p_vertexFormat) const
 {
     uint uvCount = 0;
-    uint uvField = (pVertexFormat & ANFVF_UV32Mask) >> 0x08;
+    uint uvField = (p_vertexFormat & ANFVF_UV32Mask) >> 0x08;
     for (uint i = 0; i < 7; i++) {
         if (((uvField >> i) & 1) != 0)
             uvCount++;
     }
 
-    uvField = (pVertexFormat & ANFVF_UV16Mask) >> 0x10;
+    uvField = (p_vertexFormat & ANFVF_UV16Mask) >> 0x10;
     uint uv16Count = 0;
     for (uint i = 0; i < 7; i++) {
         if (((uvField >> i) & 1) != 0)
             uv16Count++;
     }
 
-    return ((pVertexFormat & ANFVF_Position) * 12)
-        + ((pVertexFormat & ANFVF_Weights) * 2)
-        + ((pVertexFormat & ANFVF_Group))
-        + (((pVertexFormat & ANFVF_Normal) >> 3) * 12)
-        + ((pVertexFormat & ANFVF_Color) >> 2)
-        + (((pVertexFormat & ANFVF_Tangent) >> 5) * 12)
-        + (((pVertexFormat & ANFVF_Bitangent) >> 6) * 12)
-        + (((pVertexFormat & ANFVF_TangentFrame) >> 7) * 12)
+    return ((p_vertexFormat & ANFVF_Position) * 12)
+        + ((p_vertexFormat & ANFVF_Weights) * 2)
+        + ((p_vertexFormat & ANFVF_Group))
+        + (((p_vertexFormat & ANFVF_Normal) >> 3) * 12)
+        + ((p_vertexFormat & ANFVF_Color) >> 2)
+        + (((p_vertexFormat & ANFVF_Tangent) >> 5) * 12)
+        + (((p_vertexFormat & ANFVF_Bitangent) >> 6) * 12)
+        + (((p_vertexFormat & ANFVF_TangentFrame) >> 7) * 12)
         + (uvCount * 8)
         + (uv16Count * 4)
-        + (((pVertexFormat & ANFVF_Unknown1) >> 24) * 48)
-        + (((pVertexFormat & ANFVF_Unknown2) >> 25) * 4)
-        + (((pVertexFormat & ANFVF_Unknown3) >> 26) * 4)
-        + (((pVertexFormat & ANFVF_Unknown4) >> 27) * 16)
-        + (((pVertexFormat & ANFVF_PositionCompressed) >> 28) * 6)
-        + (((pVertexFormat & ANFVF_Unknown5) >> 29) * 12);
+        + (((p_vertexFormat & ANFVF_Unknown1) >> 24) * 48)
+        + (((p_vertexFormat & ANFVF_Unknown2) >> 25) * 4)
+        + (((p_vertexFormat & ANFVF_Unknown3) >> 26) * 4)
+        + (((p_vertexFormat & ANFVF_Unknown4) >> 27) * 16)
+        + (((p_vertexFormat & ANFVF_PositionCompressed) >> 28) * 6)
+        + (((p_vertexFormat & ANFVF_Unknown5) >> 29) * 12);
 }
 
-void ModelReader::ReadMaterialData(Model& pModel, PackFile& pPackFile) const
+void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
 {
     uint size;
-    const byte* data = pPackFile.findChunk(FCC_MODL, size);
+    const byte* data = p_packFile.findChunk(FCC_MODL, size);
 
     // Bail if no data
     if (!data) {
@@ -494,13 +504,13 @@ void ModelReader::ReadMaterialData(Model& pModel, PackFile& pPackFile) const
 
         // Loop through each material in these material infos
         for (uint j = 0; j < materialInfoArray->materialCount; j++) {
-            MaterialData& data = (pModel.GetNumMaterialData() <= j ? pModel.AddMaterialData() : pModel.GetMaterialData(j));
+            MaterialData& data = (p_model.numMaterialData() <= j ? p_model.addMaterialData() : p_model.materialData(j));
 
             // Bail if offset is nullptr
             if (offsetTable[j] == 0) { continue; }
 
             // Bail if this material index already has data
-            if (data.mDiffuseTexture && data.mNormalMap) { continue; }
+            if (data.diffuseMap && data.normalMap) { continue; }
 
             // Read material info
             const byte* pos = offsetTable[j] + reinterpret_cast<const byte*>(&offsetTable[j]);
@@ -519,11 +529,11 @@ void ModelReader::ReadMaterialData(Model& pModel, PackFile& pPackFile) const
 
                 // Diffuse?
                 if (textures[t].hash == 0x67531924) {
-                    data.mDiffuseTexture = DatFile::fileIdFromFileReference(*fileReference);
+                    data.diffuseMap = DatFile::fileIdFromFileReference(*fileReference);
                 }
                 // Normal?
                 else if (textures[t].hash == 0x1816C9EE) {
-                    data.mNormalMap = DatFile::fileIdFromFileReference(*fileReference);
+                    data.normalMap = DatFile::fileIdFromFileReference(*fileReference);
                 }
             }
         }

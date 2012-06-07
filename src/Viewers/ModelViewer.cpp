@@ -113,20 +113,20 @@ void ModelViewer::setReader(FileReader* p_reader)
 
     // Load model
     auto reader = this->modelReader();
-    m_model = reader->GetModel();
+    m_model = reader->getModel();
 
     // Create DX mesh cache
-    m_meshCache.SetSize(m_model.GetNumMeshes());
+    m_meshCache.SetSize(m_model.numMeshes());
 
     // Load meshes
-    for (uint i = 0; i < m_model.GetNumMeshes(); i++) {
-        auto& mesh  = m_model.GetMesh(i);
+    for (uint i = 0; i < m_model.numMeshes(); i++) {
+        auto& mesh  = m_model.mesh(i);
         auto& cache = m_meshCache[i];
 
         // Create and populate the buffers
-        uint vertexCount = mesh.mVertices.GetSize();
+        uint vertexCount = mesh.vertices.GetSize();
         uint vertexSize  = sizeof(VertexDefinition);
-        uint indexCount  = mesh.mTriangles.GetSize() * 3;
+        uint indexCount  = mesh.triangles.GetSize() * 3;
         uint indexSize   = sizeof(uint16);
 
         if (!this->createBuffers(cache, vertexCount, vertexSize, indexCount, indexSize)) { continue; }
@@ -138,23 +138,23 @@ void ModelViewer::setReader(FileReader* p_reader)
     }
 
     // Create DX texture cache
-    m_textureCache.SetSize(m_model.GetNumMaterialData());
+    m_textureCache.SetSize(m_model.numMaterialData());
 
     // Load textures
-    for (uint i = 0; i < m_model.GetNumMaterialData(); i++) {
-        auto& material = m_model.GetMaterialData(i);
+    for (uint i = 0; i < m_model.numMaterialData(); i++) {
+        auto& material = m_model.materialData(i);
         auto& cache    = m_textureCache[i];
 
         // Load diffuse texture
-        if (material.mDiffuseTexture) {
-            cache.diffuseMap = this->loadTexture(material.mDiffuseTexture);
+        if (material.diffuseMap) {
+            cache.diffuseMap = this->loadTexture(material.diffuseMap);
         } else {
             cache.diffuseMap = nullptr;
         }
 
         // Load normal map
-        if (material.mNormalMap) {
-            cache.normalMap = this->loadTexture(material.mNormalMap);
+        if (material.normalMap) {
+            cache.normalMap = this->loadTexture(material.normalMap);
         } else {
             cache.normalMap = nullptr;
         }
@@ -197,9 +197,9 @@ bool ModelViewer::createBuffers(MeshCache& p_cache, uint p_vertexCount, uint p_v
 
 bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
 {
-    uint vertexCount = pMesh.mVertices.GetSize();
+    uint vertexCount = pMesh.vertices.GetSize();
     uint vertexSize  = sizeof(VertexDefinition);
-    uint indexCount  = pMesh.mTriangles.GetSize() * 3;
+    uint indexCount  = pMesh.triangles.GetSize() * 3;
     uint indexSize   = sizeof(uint16);
 
     // Lock vertex buffer
@@ -210,11 +210,11 @@ bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
 
     // Populate vertex buffer
     for (uint j = 0; j < vertexCount; j++) {
-        vertices[j].position = pMesh.mVertices[j].mPosition;
+        vertices[j].position = pMesh.vertices[j].position;
 
         // Normal
-        if (pMesh.mVertices[j].mHasNormal) {
-            vertices[j].normal = pMesh.mVertices[j].mNormal;
+        if (pMesh.vertices[j].hasNormal) {
+            vertices[j].normal = pMesh.vertices[j].normal;
         } else {
             vertices[j].normal.x = 0;
             vertices[j].normal.y = 0;
@@ -222,22 +222,22 @@ bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
         }
 
         // Color
-        if (pMesh.mVertices[j].mHasColor) {
-            vertices[j].diffuse = pMesh.mVertices[j].mColor;
+        if (pMesh.vertices[j].hasColor) {
+            vertices[j].diffuse = pMesh.vertices[j].color;
         } else {
             ::memset(&vertices[j].diffuse, 0xff, sizeof(uint32));
         }
 
         // UV1
-        if (pMesh.mVertices[j].mHasUV > 0) {
-            vertices[j].uv[0] = pMesh.mVertices[j].mUV[0];
+        if (pMesh.vertices[j].hasUV > 0) {
+            vertices[j].uv[0] = pMesh.vertices[j].uv[0];
         } else {
             ::memset(&vertices[j].uv[0], 0, sizeof(XMFLOAT2));
         }
 
         // UV2
-        if (pMesh.mVertices[j].mHasUV > 1) {
-            vertices[j].uv[1] = pMesh.mVertices[j].mUV[1];
+        if (pMesh.vertices[j].hasUV > 1) {
+            vertices[j].uv[1] = pMesh.vertices[j].uv[1];
         } else {
             ::memset(&vertices[j].uv[1], 0, sizeof(XMFLOAT2));
         }
@@ -250,7 +250,7 @@ bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
         return false;
     }
     // Copy index buffer
-    ::memcpy(indices, pMesh.mTriangles.GetPointer(), indexCount * indexSize);
+    ::memcpy(indices, pMesh.triangles.GetPointer(), indexCount * indexSize);
     Assert(SUCCEEDED(p_cache.indexBuffer->Unlock()));
 
     return true;
@@ -295,15 +295,20 @@ void ModelViewer::render()
     uint triangleCount = 0;
 
     this->beginFrame(0x353535);
-    for (uint i = 0; i < m_model.GetNumMeshes(); i++) {
+    for (uint i = 0; i < m_model.numMeshes(); i++) {
         this->drawMesh(i);
-        vertexCount   += m_model.GetMesh(i).mVertices.GetSize();
-        triangleCount += m_model.GetMesh(i).mTriangles.GetSize();
+        vertexCount   += m_model.mesh(i).vertices.GetSize();
+        triangleCount += m_model.mesh(i).triangles.GetSize();
     }
 
-    this->drawText(0, 0,    wxString::Format(wxT("Meshes: %d"), m_model.GetNumMeshes()));
+    this->drawText(0, 0,    wxString::Format(wxT("Meshes: %d"), m_model.numMeshes()));
     this->drawText(0, 0x18, wxString::Format(wxT("Vertices: %d"), vertexCount));
     this->drawText(0, 0x30, wxString::Format(wxT("Triangles: %d"), triangleCount));
+
+    wxSize clientSize = this->GetClientSize();
+    this->drawText(0, clientSize.y - 0x48, wxT("Focus: F button"));
+    this->drawText(0, clientSize.y - 0x30, wxT("Panning: Middle mouse button"));
+    this->drawText(0, clientSize.y - 0x18, wxT("Rotating: Left mouse button"));
     
     this->endFrame();
 }
@@ -323,9 +328,9 @@ void ModelViewer::drawMesh(uint p_meshIndex)
     }
 
     // Count vertices / primitives
-    uint vertexCount    = m_model.GetMesh(p_meshIndex).mVertices.GetSize();
-    uint primitiveCount = m_model.GetMesh(p_meshIndex).mTriangles.GetSize();
-    int  materialIndex  = m_model.GetMesh(p_meshIndex).mMaterialIndex;
+    uint vertexCount    = m_model.mesh(p_meshIndex).vertices.GetSize();
+    uint primitiveCount = m_model.mesh(p_meshIndex).triangles.GetSize();
+    int  materialIndex  = m_model.mesh(p_meshIndex).materialIndex;
     
     // Set buffers
     if (FAILED(m_device->SetFVF(VertexDefinition::s_fvf))) { return; }
@@ -373,7 +378,7 @@ void ModelViewer::updateMatrices()
     // Projection matrix
     wxSize clientSize = this->GetClientSize();
     float aspectRatio = (static_cast<float>(clientSize.x) / static_cast<float>(clientSize.y));
-    auto projMatrix   = ::XMMatrixPerspectiveFovLH((5.0f / 12.0f) * XM_PI, aspectRatio, 0.1f, 2000);
+    auto projMatrix   = ::XMMatrixPerspectiveFovLH((5.0f / 12.0f) * XM_PI, aspectRatio, 0.3f, 10000);
 
     // WorldViewProjection matrix
     XMFLOAT4X4 worldViewProjMatrix;
@@ -421,36 +426,36 @@ IDirect3DTexture9* ModelViewer::loadTexture(uint p_fileId)
 void ModelViewer::focus()
 {
     float fov      = (5.0f / 12.0f) * XM_PI;
-    uint meshCount = m_model.GetNumMeshes();
+    uint meshCount = m_model.numMeshes();
     
     if (!meshCount) { return; }
 
     // Calculate complete bounds
     Bounds bounds;
     for (uint i = 0; i < meshCount; i++) {
-        auto& meshBounds = m_model.GetMesh(i).mBounds;
+        auto& meshBounds = m_model.mesh(i).bounds;
 
         if (i > 0) {
-            bounds.mMinX = wxMin(bounds.mMinX, meshBounds.mMinX);
-            bounds.mMinY = wxMin(bounds.mMinY, meshBounds.mMinY);
-            bounds.mMinZ = wxMin(bounds.mMinZ, meshBounds.mMinZ);
-            bounds.mMaxX = wxMax(bounds.mMaxX, meshBounds.mMaxX);
-            bounds.mMaxY = wxMax(bounds.mMaxY, meshBounds.mMaxY);
-            bounds.mMaxZ = wxMax(bounds.mMaxZ, meshBounds.mMaxZ);
+            bounds.minX = wxMin(bounds.minX, meshBounds.minX);
+            bounds.minY = wxMin(bounds.minY, meshBounds.minY);
+            bounds.minZ = wxMin(bounds.minZ, meshBounds.minZ);
+            bounds.maxX = wxMax(bounds.maxX, meshBounds.maxX);
+            bounds.maxY = wxMax(bounds.maxY, meshBounds.maxY);
+            bounds.maxZ = wxMax(bounds.maxZ, meshBounds.maxZ);
         } else {
             bounds = meshBounds;
         }
     }
 
-    float height = bounds.mMaxZ - bounds.mMinZ;
+    float height = bounds.maxZ - bounds.minZ;
     if (height <= 0) { return; }
 
-    float distance = bounds.mMinY - ((height * 0.5f) / ::tanf(fov * 0.5f));
+    float distance = bounds.minY - ((height * 0.5f) / ::tanf(fov * 0.5f));
     if (distance < 0) { distance *= -1; }
 
     // Calculate new pivot point
-    XMFLOAT3 min(bounds.mMinX, bounds.mMinY, bounds.mMinZ);
-    XMFLOAT3 max(bounds.mMaxX, bounds.mMaxY, bounds.mMaxZ);
+    XMFLOAT3 min(bounds.minX, bounds.minY, bounds.minZ);
+    XMFLOAT3 max(bounds.maxX, bounds.maxY, bounds.maxZ);
     auto minVector    = ::XMLoadFloat3(&min);
     auto maxVector    = ::XMLoadFloat3(&max);
     auto centerVector = ::XMVectorScale(::XMVectorAdd(minVector, maxVector), 0.5f);
