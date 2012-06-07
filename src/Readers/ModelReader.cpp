@@ -142,6 +142,28 @@ void Model::unShare()
     m_data = new ModelData(*m_data);
 }
 
+Bounds Model::bounds() const
+{
+    // If this model contains meshes, return proper bounds
+    if (m_data->meshes.size()) {
+        Bounds retval;
+        for (uint i = 0; i < m_data->meshes.size(); i++) {
+            if (i == 0) {
+                retval = m_data->meshes[i].bounds;
+            } else {
+                retval += m_data->meshes[i].bounds;
+            }
+        }
+        return retval;
+    }
+
+    // If not, return empty bounds
+    Bounds retval;
+    ::memset(&retval, 0, sizeof(retval));
+    return retval;
+}
+
+
 //----------------------------------------------------------------------------
 //      ModelReader
 //----------------------------------------------------------------------------
@@ -168,8 +190,6 @@ Array<byte> ModelReader::convertData() const
     uint indexBase = 1;
     for (uint i = 0; i < model.numMeshes(); i++){
         const Mesh& mesh = model.mesh(i);
-        bool hasUV       = true;
-        bool hasNormal   = true;
 
         // Write header
         stream << std::endl << "# Mesh " << i << ": " << mesh.vertices.GetSize() << " vertices, " << mesh.triangles.GetSize() << " triangles" << std::endl;
@@ -182,17 +202,17 @@ Array<byte> ModelReader::convertData() const
         }
 
         // Write UVs
-        for (uint j = 0; j < mesh.vertices.GetSize(); j++) {
-            // If the first vertex does not have UV, none of them do
-            if (mesh.vertices[j].hasUV == 0) { hasUV = false; break; }
-            stream << "vt " << mesh.vertices[j].uv[0].x << ' ' << mesh.vertices[j].uv[0].y << std::endl;
+        if (mesh.hasUV) {
+            for (uint j = 0; j < mesh.vertices.GetSize(); j++) {
+                stream << "vt " << mesh.vertices[j].uv[0].x << ' ' << mesh.vertices[j].uv[0].y << std::endl;
+            }
         }
         
         // Write normals
-        for (uint j = 0; j < mesh.vertices.GetSize(); j++) {
-            // If the first vertex does not have a normal, none of them do
-            if (mesh.vertices[j].hasNormal == 0) { hasNormal = false; break; }
-            stream << "vn " << mesh.vertices[j].normal.x << ' ' << mesh.vertices[j].normal.y << ' ' << mesh.vertices[j].normal.z << std::endl;
+        if (mesh.hasNormal) {
+            for (uint j = 0; j < mesh.vertices.GetSize(); j++) {
+                stream << "vn " << mesh.vertices[j].normal.x << ' ' << mesh.vertices[j].normal.y << ' ' << mesh.vertices[j].normal.z << std::endl;
+            }
         }
 
         // Write faces
@@ -205,14 +225,14 @@ Array<byte> ModelReader::convertData() const
                 stream << ' ' << index;
                 
                 // UV reference
-                if (hasUV) {
+                if (mesh.hasUV) {
                     stream << '/' << index;
-                } else if (hasNormal) {
+                } else if (mesh.hasNormal) {
                     stream << '/';
                 }
 
                 // Normal reference
-                if (hasNormal) {
+                if (mesh.hasNormal) {
                     stream << '/' << index;
                 }
             }
@@ -314,26 +334,24 @@ void ModelReader::readIndexBuffer(Mesh& p_mesh, const byte* p_data, uint p_index
     ::memcpy(p_mesh.triangles.GetPointer(), p_data, p_mesh.triangles.GetSize() * sizeof(Triangle));
 
     // Calculate bounds
-    p_mesh.bounds.minX = std::numeric_limits<float>::max();
-    p_mesh.bounds.minY = std::numeric_limits<float>::max();
-    p_mesh.bounds.minZ = std::numeric_limits<float>::max();
-    p_mesh.bounds.maxX = std::numeric_limits<float>::min();
-    p_mesh.bounds.maxY = std::numeric_limits<float>::min();
-    p_mesh.bounds.maxZ = std::numeric_limits<float>::min();
+    float floatMin = std::numeric_limits<float>::min();
+    float floatMax = std::numeric_limits<float>::max();
+    p_mesh.bounds.min = XMFLOAT3(floatMax, floatMax, floatMax);
+    p_mesh.bounds.max = XMFLOAT3(floatMin, floatMin, floatMin);
 
-    const uint16* indices = reinterpret_cast<const uint16*>(p_data);
+    XMVECTOR min = ::XMLoadFloat3(&p_mesh.bounds.min);
+    XMVECTOR max = ::XMLoadFloat3(&p_mesh.bounds.max);
+
+    auto indices = reinterpret_cast<const uint16*>(p_data);
     for (uint i = 0; i < p_indexCount; i++) {
         auto& vertex = p_mesh.vertices[indices[i]];
-        // X axis
-        if (vertex.position.x < p_mesh.bounds.minX) { p_mesh.bounds.minX = vertex.position.x; }
-        if (vertex.position.x > p_mesh.bounds.maxX) { p_mesh.bounds.maxX = vertex.position.x; }
-        // Y axis
-        if (vertex.position.y < p_mesh.bounds.minY) { p_mesh.bounds.minY = vertex.position.y; }
-        if (vertex.position.y > p_mesh.bounds.maxY) { p_mesh.bounds.maxY = vertex.position.y; }
-        // Z axis
-        if (vertex.position.z < p_mesh.bounds.minZ) { p_mesh.bounds.minZ = vertex.position.z; }
-        if (vertex.position.z > p_mesh.bounds.maxZ) { p_mesh.bounds.maxZ = vertex.position.z; }
+        XMVECTOR position = ::XMLoadFloat3(&vertex.position);
+        min = ::XMVectorMin(min, position);
+        max = ::XMVectorMax(max, position);
     }
+
+    ::XMStoreFloat3(&p_mesh.bounds.min, min);
+    ::XMStoreFloat3(&p_mesh.bounds.max, max);
 }
 
 void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vertexCount, ANetFlexibleVertexFormat p_vertexFormat) const
@@ -341,15 +359,15 @@ void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vert
     p_mesh.vertices.SetSize(p_vertexCount);
     uint vertexSize = this->vertexSize(p_vertexFormat);
 
+    p_mesh.hasNormal  = ((p_vertexFormat & ANFVF_Normal) ? 1 : 0);
+    p_mesh.hasColor   = ((p_vertexFormat & ANFVF_Color)  ? 1 : 0);
+    p_mesh.hasUV      = wxMin(2, numSetBits(p_vertexFormat & (ANFVF_UV32Mask | ANFVF_UV16Mask)));
+
 #pragma omp parallel for
     for (int i = 0; i < static_cast<int>(p_vertexCount); i++) {
-        auto pos = &p_data[i * vertexSize];
-
-        // Init vertex
-        Vertex& vertex    = p_mesh.vertices[i];
-        vertex.hasColor  = 0;
-        vertex.hasNormal = 0;
-        vertex.hasUV     = 0;
+        auto pos       = &p_data[i * vertexSize];
+        Vertex& vertex = p_mesh.vertices[i];
+        uint uvIndex   = 0;
 
         // Bit 0: Position
         if (p_vertexFormat & ANFVF_Position) {
@@ -367,13 +385,11 @@ void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vert
         // Bit 3: Normal
         if (p_vertexFormat & ANFVF_Normal) {
             ::memcpy(&vertex.normal, pos, sizeof(vertex.normal));
-            vertex.hasNormal = 1;
             pos += sizeof(vertex.normal);
         }
         // Bit 4: Color
         if (p_vertexFormat & ANFVF_Color) {
             vertex.color = *reinterpret_cast<const uint32*>(pos);
-            vertex.hasColor = 1;
             pos += sizeof(uint32);
         }
         // Bit 5: Tangent
@@ -393,8 +409,8 @@ void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vert
         if (uvFlag) {
             for (uint i = 0; i < 7; i++) {
                 if (((uvFlag >> i) & 1) == 0) { continue; }
-                if (vertex.hasUV < 2) {
-                    ::memcpy(&vertex.uv[vertex.hasUV++], pos, sizeof(vertex.uv[0]));
+                if (uvIndex < 2) {
+                    ::memcpy(&vertex.uv[uvIndex++], pos, sizeof(vertex.uv[0]));
                 }
                 pos += sizeof(vertex.uv[0]);
             }
@@ -404,11 +420,11 @@ void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vert
         if (uvFlag) {
             for (uint i = 0; i < 7; i++) {
                 if (((uvFlag >> i) & 1) == 0) { continue; }
-                if (vertex.hasUV < 2) {
-                    const half* uv = reinterpret_cast<const half*>(pos);
-                    vertex.uv[vertex.hasUV].x = uv[0];
-                    vertex.uv[vertex.hasUV].y = uv[1];
-                    vertex.hasUV++;
+                if (uvIndex < 2) {
+                    auto uv = reinterpret_cast<const half*>(pos);
+                    vertex.uv[uvIndex].x = uv[0];
+                    vertex.uv[uvIndex].y = uv[1];
+                    uvIndex++;
                 }
                 pos += sizeof(half) * 2;
             }

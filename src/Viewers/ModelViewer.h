@@ -80,6 +80,8 @@ class ModelViewer : public Viewer, public INeedDatFile
     Array<TextureCache>         m_textureCache;
     Camera                      m_camera;
     wxPoint                     m_lastMousePos;
+    float                       m_minDistance;
+    float                       m_maxDistance;
 public:
     ModelViewer(wxWindow* p_parent, const wxPoint& p_pos = wxDefaultPosition, const wxSize& p_size = wxDefaultSize);
     virtual ~ModelViewer();

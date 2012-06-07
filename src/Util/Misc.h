@@ -123,9 +123,16 @@ template <typename T>
 //============================================================================/
 
 /** Determines the index of the least significant bit that is set.
-    *  \param[in]  pValue  Value to find the lowest set bit of.
+    *  \param[in]  p_value  Value to find the lowest set bit of.
     *  \return uint    Zero-based index for the lowest set bit. */
 uint lowestSetBit(uint32 p_value);
+
+//============================================================================/
+
+/** Determines the amount of set bits.
+ *  \param[in] p_value  Value to count bits in. 
+ *  \return uint    Amount of bits set. */
+uint numSetBits(uint32 p_value);
 
 }; // namespace gw2b
 

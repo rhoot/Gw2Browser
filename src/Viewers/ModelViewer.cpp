@@ -213,7 +213,7 @@ bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
         vertices[j].position = pMesh.vertices[j].position;
 
         // Normal
-        if (pMesh.vertices[j].hasNormal) {
+        if (pMesh.hasNormal) {
             vertices[j].normal = pMesh.vertices[j].normal;
         } else {
             vertices[j].normal.x = 0;
@@ -222,21 +222,21 @@ bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
         }
 
         // Color
-        if (pMesh.vertices[j].hasColor) {
+        if (pMesh.hasColor) {
             vertices[j].diffuse = pMesh.vertices[j].color;
         } else {
             ::memset(&vertices[j].diffuse, 0xff, sizeof(uint32));
         }
 
         // UV1
-        if (pMesh.vertices[j].hasUV > 0) {
+        if (pMesh.hasUV > 0) {
             vertices[j].uv[0] = pMesh.vertices[j].uv[0];
         } else {
             ::memset(&vertices[j].uv[0], 0, sizeof(XMFLOAT2));
         }
 
         // UV2
-        if (pMesh.vertices[j].hasUV > 1) {
+        if (pMesh.hasUV > 1) {
             vertices[j].uv[1] = pMesh.vertices[j].uv[1];
         } else {
             ::memset(&vertices[j].uv[1], 0, sizeof(XMFLOAT2));
@@ -302,13 +302,14 @@ void ModelViewer::render()
     }
 
     this->drawText(0, 0,    wxString::Format(wxT("Meshes: %d"), m_model.numMeshes()));
-    this->drawText(0, 0x18, wxString::Format(wxT("Vertices: %d"), vertexCount));
-    this->drawText(0, 0x30, wxString::Format(wxT("Triangles: %d"), triangleCount));
+    this->drawText(0, 0x14, wxString::Format(wxT("Vertices: %d"), vertexCount));
+    this->drawText(0, 0x28, wxString::Format(wxT("Triangles: %d"), triangleCount));
 
     wxSize clientSize = this->GetClientSize();
-    this->drawText(0, clientSize.y - 0x48, wxT("Focus: F button"));
-    this->drawText(0, clientSize.y - 0x30, wxT("Panning: Middle mouse button"));
-    this->drawText(0, clientSize.y - 0x18, wxT("Rotating: Left mouse button"));
+    this->drawText(0, clientSize.y - 0x50, wxT("Focus: F button"));
+    this->drawText(0, clientSize.y - 0x3c, wxT("Pan: Middle mouse button"));
+    this->drawText(0, clientSize.y - 0x28, wxT("Rotate: Left mouse button"));
+    this->drawText(0, clientSize.y - 0x14, wxT("Zoom: Scroll wheel"));
     
     this->endFrame();
 }
@@ -372,13 +373,23 @@ void ModelViewer::updateMatrices()
 {
     // All models are located at 0,0,0 with no rotation, so no world matrix is needed
 
+    // Calculate minZ/maxZ
+    auto bounds   = m_model.bounds();
+    auto size     = bounds.size();
+    auto distance = m_camera.distance();
+    auto extents  = XMFLOAT3(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f);
+    
+    auto maxSize  = ::sqrt(extents.x * extents.x + extents.y * extents.y + extents.z * extents.z);
+    auto maxZ     = (maxSize + distance) * 1.1f;
+    auto minZ     = maxZ * 0.0001f;
+
     // View matrix
     auto viewMatrix = m_camera.calculateViewMatrix();
 
     // Projection matrix
     wxSize clientSize = this->GetClientSize();
     float aspectRatio = (static_cast<float>(clientSize.x) / static_cast<float>(clientSize.y));
-    auto projMatrix   = ::XMMatrixPerspectiveFovLH((5.0f / 12.0f) * XM_PI, aspectRatio, 0.3f, 10000);
+    auto projMatrix   = ::XMMatrixPerspectiveFovLH((5.0f / 12.0f) * XM_PI, aspectRatio, minZ, maxZ);
 
     // WorldViewProjection matrix
     XMFLOAT4X4 worldViewProjMatrix;
@@ -431,40 +442,15 @@ void ModelViewer::focus()
     if (!meshCount) { return; }
 
     // Calculate complete bounds
-    Bounds bounds;
-    for (uint i = 0; i < meshCount; i++) {
-        auto& meshBounds = m_model.mesh(i).bounds;
-
-        if (i > 0) {
-            bounds.minX = wxMin(bounds.minX, meshBounds.minX);
-            bounds.minY = wxMin(bounds.minY, meshBounds.minY);
-            bounds.minZ = wxMin(bounds.minZ, meshBounds.minZ);
-            bounds.maxX = wxMax(bounds.maxX, meshBounds.maxX);
-            bounds.maxY = wxMax(bounds.maxY, meshBounds.maxY);
-            bounds.maxZ = wxMax(bounds.maxZ, meshBounds.maxZ);
-        } else {
-            bounds = meshBounds;
-        }
-    }
-
-    float height = bounds.maxZ - bounds.minZ;
+    Bounds bounds = m_model.bounds();
+    float height = bounds.max.z - bounds.min.z;
     if (height <= 0) { return; }
 
-    float distance = bounds.minY - ((height * 0.5f) / ::tanf(fov * 0.5f));
+    float distance = bounds.min.y - ((height * 0.5f) / ::tanf(fov * 0.5f));
     if (distance < 0) { distance *= -1; }
 
-    // Calculate new pivot point
-    XMFLOAT3 min(bounds.minX, bounds.minY, bounds.minZ);
-    XMFLOAT3 max(bounds.maxX, bounds.maxY, bounds.maxZ);
-    auto minVector    = ::XMLoadFloat3(&min);
-    auto maxVector    = ::XMLoadFloat3(&max);
-    auto centerVector = ::XMVectorScale(::XMVectorAdd(minVector, maxVector), 0.5f);
-
-    XMFLOAT3 center;
-    ::XMStoreFloat3(&center, centerVector);
-
-    // Update camera and re-render
-    m_camera.setPivot(center);
+    // Update camera and render
+    m_camera.setPivot(bounds.center());
     m_camera.setDistance(distance);
     this->render();
 }
@@ -479,7 +465,7 @@ void ModelViewer::onMotionEvt(wxMouseEvent& p_event)
 
     // Yaw/Pitch
     if (p_event.LeftIsDown()) {
-        float rotateSpeed = (XM_PI / 180.0f);   // 1 degree per pixel
+        float rotateSpeed = 0.5f * (XM_PI / 180.0f);   // 0.5 degrees per pixel
         m_camera.addYaw(rotateSpeed * -(p_event.GetX() - m_lastMousePos.x));
         m_camera.addPitch(rotateSpeed * (p_event.GetY() - m_lastMousePos.y));
         this->render();

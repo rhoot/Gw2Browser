@@ -43,9 +43,6 @@ struct Vertex
     XMFLOAT3 normal;
     uint32 color;
     XMFLOAT2 uv[2];
-    byte hasNormal   : 1;
-    byte hasColor    : 1;
-    byte hasUV       : 2;
 };
 
 union Triangle
@@ -60,12 +57,39 @@ union Triangle
 
 struct Bounds
 {
-    float minX;
-    float minY;
-    float minZ;
-    float maxX;
-    float maxY;
-    float maxZ;
+    XMFLOAT3 min;
+    XMFLOAT3 max;
+
+    Bounds& operator+=(const Bounds& p_other) 
+    {
+        min.x = wxMin(min.x, p_other.min.x);
+        min.y = wxMin(min.y, p_other.min.y);
+        min.z = wxMin(min.z, p_other.min.z);
+        max.x = wxMax(max.x, p_other.max.x);
+        max.y = wxMax(max.y, p_other.max.y);
+        max.z = wxMax(max.z, p_other.max.z);
+        return *this;
+    }
+
+    XMFLOAT3 center() const
+    {
+        XMVECTOR min = ::XMLoadFloat3(&this->min);
+        XMVECTOR max = ::XMLoadFloat3(&this->max);
+        XMVECTOR center = ::XMVectorLerp(min, max, 0.5f);
+        XMFLOAT3 retval;
+        ::XMStoreFloat3(&retval, center);
+        return retval;
+    }
+
+    XMFLOAT3 size() const
+    {
+        XMVECTOR min  = ::XMLoadFloat3(&this->min);
+        XMVECTOR max  = ::XMLoadFloat3(&this->max);
+        XMVECTOR size = ::XMVectorSubtract(max, min);
+        XMFLOAT3 retval;
+        ::XMStoreFloat3(&retval, size);
+        return retval;
+    }
 };
 
 #pragma pack(pop)
@@ -77,6 +101,9 @@ struct Mesh
     wxString        materialName;
     int             materialIndex;
     Bounds          bounds;
+    byte            hasNormal  : 1;
+    byte            hasColor   : 1;
+    byte            hasUV      : 2;
 };
 
 struct MaterialData
@@ -88,7 +115,7 @@ struct MaterialData
 class ModelData : public wxRefCounter
 {
 public:
-    std::vector<Mesh> meshes;
+    std::vector<Mesh>         meshes;
     std::vector<MaterialData> materialData;
 public:
     ModelData();
@@ -116,6 +143,9 @@ public:
     MaterialData& materialData(uint p_index);
     const MaterialData& materialData(uint p_index) const;
     MaterialData& addMaterialData();
+
+    // helpers
+    Bounds bounds() const;
 private:
     void unShare();
 };

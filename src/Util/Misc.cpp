@@ -31,15 +31,26 @@ namespace gw2b
 #pragma warning(push)
 #pragma warning(disable: 4146)  // unary minus operator applied to unsigned type, result still unsigned
 
-    // http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
-    uint lowestSetBit(uint32 p_value)
+// http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
+uint lowestSetBit(uint32 p_value)
+{
+    static const int32 multiplyDeBruijnBitPosition[32] =  {
+        0x00, 0x01, 0x1c, 0x02, 0x1d, 0x0e, 0x18, 0x03, 0x1e, 0x16, 0x14, 0x0f, 0x19, 0x11, 0x04, 0x08, 
+        0x1f, 0x1b, 0x0d, 0x17, 0x15, 0x13, 0x10, 0x07, 0x1a, 0x0c, 0x12, 0x06, 0x0b, 0x05, 0x0a, 0x09,
+    };
+    return multiplyDeBruijnBitPosition[((uint32)((p_value & -p_value) * 0x077CB531U)) >> 27];
+}
+
+// http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan
+uint numSetBits(uint32 p_value)
+{
+    uint count; // c accumulates the total bits set in v
+    for (count = 0; p_value; count++)
     {
-        static const int32 multiplyDeBruijnBitPosition[32] =  {
-            0x00, 0x01, 0x1c, 0x02, 0x1d, 0x0e, 0x18, 0x03, 0x1e, 0x16, 0x14, 0x0f, 0x19, 0x11, 0x04, 0x08, 
-            0x1f, 0x1b, 0x0d, 0x17, 0x15, 0x13, 0x10, 0x07, 0x1a, 0x0c, 0x12, 0x06, 0x0b, 0x05, 0x0a, 0x09,
-        };
-        return multiplyDeBruijnBitPosition[((uint32)((p_value & -p_value) * 0x077CB531U)) >> 27];
+        p_value &= p_value - 1; // clear the least significant bit set
     }
+    return count;
+}
 
 #pragma warning(pop)
 
