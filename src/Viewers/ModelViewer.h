@@ -33,19 +33,6 @@
 namespace gw2b
 {
 
-#pragma pack(push, 1)
-
-struct VertexDefinition
-{
-    XMFLOAT3 position;
-    XMFLOAT3 normal;
-    uint32 diffuse;
-    XMFLOAT2 uv[2];
-    static uint32 s_fvf;
-};
-
-#pragma pack(pop)
-
 struct MeshCache
 {
     IDirect3DIndexBuffer9*  indexBuffer;
@@ -55,7 +42,6 @@ struct MeshCache
 struct TextureCache
 {
     IDirect3DTexture9*  diffuseMap;
-    IDirect3DTexture9*  normalMap;
 };
 
 struct AutoReleaser

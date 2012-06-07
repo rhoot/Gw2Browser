@@ -205,7 +205,7 @@ Array<byte> ModelReader::convertData() const
         // Write UVs
         if (mesh.hasUV) {
             for (uint j = 0; j < mesh.vertices.GetSize(); j++) {
-                stream << "vt " << mesh.vertices[j].uv[0].x << ' ' << mesh.vertices[j].uv[0].y << std::endl;
+                stream << "vt " << mesh.vertices[j].uv.x << ' ' << mesh.vertices[j].uv.y << std::endl;
             }
         }
         
@@ -365,9 +365,8 @@ void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vert
     p_mesh.vertices.SetSize(p_vertexCount);
     uint vertexSize = this->vertexSize(p_vertexFormat);
 
-    p_mesh.hasNormal  = ((p_vertexFormat & ANFVF_Normal) ? 1 : 0);
-    p_mesh.hasColor   = ((p_vertexFormat & ANFVF_Color)  ? 1 : 0);
-    p_mesh.hasUV      = wxMin(2, numSetBits(p_vertexFormat & (ANFVF_UV32Mask | ANFVF_UV16Mask)));
+    p_mesh.hasNormal = (p_vertexFormat & ANFVF_Normal);
+    p_mesh.hasUV     = ((p_vertexFormat & (ANFVF_UV32Mask | ANFVF_UV16Mask)) ? 1 : 0);
 
 #pragma omp parallel for
     for (int i = 0; i < static_cast<int>(p_vertexCount); i++) {
@@ -395,7 +394,6 @@ void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vert
         }
         // Bit 4: Color
         if (p_vertexFormat & ANFVF_Color) {
-            vertex.color = *reinterpret_cast<const uint32*>(pos);
             pos += sizeof(uint32);
         }
         // Bit 5: Tangent
@@ -415,10 +413,10 @@ void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vert
         if (uvFlag) {
             for (uint i = 0; i < 7; i++) {
                 if (((uvFlag >> i) & 1) == 0) { continue; }
-                if (uvIndex < 2) {
-                    ::memcpy(&vertex.uv[uvIndex++], pos, sizeof(vertex.uv[0]));
+                if (uvIndex < 1) {
+                    ::memcpy(&vertex.uv, pos, sizeof(vertex.uv));
                 }
-                pos += sizeof(vertex.uv[0]);
+                pos += sizeof(vertex.uv);
             }
         }
         // Bit 16-23: 16-bit UV
@@ -426,10 +424,10 @@ void ModelReader::readVertexBuffer(Mesh& p_mesh, const byte* p_data, uint p_vert
         if (uvFlag) {
             for (uint i = 0; i < 7; i++) {
                 if (((uvFlag >> i) & 1) == 0) { continue; }
-                if (uvIndex < 2) {
+                if (uvIndex < 1) {
                     auto uv = reinterpret_cast<const half*>(pos);
-                    vertex.uv[uvIndex].x = uv[0];
-                    vertex.uv[uvIndex].y = uv[1];
+                    vertex.uv.x = uv[0];
+                    vertex.uv.y = uv[1];
                     uvIndex++;
                 }
                 pos += sizeof(half) * 2;
@@ -555,7 +553,7 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
             omp_set_lock(&locks[j]);
 
             // Bail if this material index already has data
-            if (data.diffuseMap && data.normalMap) { 
+            if (data.diffuseMap) { 
                 omp_unset_lock(&locks[j]);
                 continue; 
             }
@@ -573,7 +571,7 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
             pos = materialInfo->texturesOffset + reinterpret_cast<const byte*>(&materialInfo->texturesOffset);
             auto textures = reinterpret_cast<const ANetModelTextureReference*>(pos);
 
-            // Out of these, we only care about the diffuse and normal maps
+            // Out of these, we only care about the diffuse maps
             for (uint t = 0; t < materialInfo->textureCount; t++) {
                 // Get file reference
                 pos = textures[t].offsetToFileReference + reinterpret_cast<const byte*>(&textures[t].offsetToFileReference);
@@ -582,10 +580,7 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
                 // Diffuse?
                 if (textures[t].hash == 0x67531924) {
                     data.diffuseMap = DatFile::fileIdFromFileReference(*fileReference);
-                }
-                // Normal?
-                else if (textures[t].hash == 0x1816C9EE) {
-                    data.normalMap = DatFile::fileIdFromFileReference(*fileReference);
+                    break;
                 }
             }
 

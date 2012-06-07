@@ -14,19 +14,15 @@ struct VS_OUTPUT
 {
     float4 Position    : POSITION;    // vertex position
     float2 TextureUV1  : TEXCOORD0;   // vertex texture coords 1
-    float4 Diffuse     : COLOR0;      // vertex diffuse color
 };
 
 VS_OUTPUT RenderSceneVS( float4 vPos       : POSITION,
-                         float3 vNormal    : NORMAL,
-                         float4 vDiffuse   : COLOR0,
-                         float2 vTexCoord0 : TEXCOORD0,
-                         float2 vTexCoord1 : TEXCOORD1)
+                         float4 vNormal    : NORMAL,
+                         float2 vTexCoord0 : TEXCOORD0)
 {
     VS_OUTPUT o  = (VS_OUTPUT)0;
     o.Position   = mul(vPos, g_WorldViewProjMatrix);
     o.TextureUV1 = vTexCoord0;
-    o.Diffuse    = vDiffuse;
     return o;
 }
 
@@ -38,7 +34,7 @@ struct PS_OUTPUT
 PS_OUTPUT RenderScenePS(VS_OUTPUT In)
 {
     PS_OUTPUT o;
-    o.RGBColor.rgb = tex2D(g_DiffuseTexSampler, In.TextureUV1).rgb * In.Diffuse.rgb;
+    o.RGBColor.rgb = tex2D(g_DiffuseTexSampler, In.TextureUV1).rgb;
     o.RGBColor.a   = 1;
     return o;
 };

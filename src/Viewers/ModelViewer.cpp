@@ -32,7 +32,12 @@
 namespace gw2b
 {
 
-uint32 VertexDefinition::s_fvf(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX2);
+namespace
+{
+
+    const uint32 c_vertexFVF = (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
+
+};
 
 ModelViewer::ModelViewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize& p_size)
     : Viewer(p_parent, p_pos, p_size)
@@ -86,7 +91,6 @@ ModelViewer::~ModelViewer()
     }
     for (uint i = 0; i < m_textureCache.GetSize(); i++) {
         if (m_textureCache[i].diffuseMap) { m_textureCache[i].diffuseMap->Release(); }
-        if (m_textureCache[i].normalMap)  { m_textureCache[i].normalMap->Release();  }
     }
 }
 
@@ -98,7 +102,6 @@ void ModelViewer::clear()
     }
     for (uint i = 0; i < m_textureCache.GetSize(); i++) {
         if (m_textureCache[i].diffuseMap) { m_textureCache[i].diffuseMap->Release(); }
-        if (m_textureCache[i].normalMap)  { m_textureCache[i].normalMap->Release();  }
     }
     m_textureCache.Clear();
     m_meshCache.Clear();
@@ -125,7 +128,7 @@ void ModelViewer::setReader(FileReader* p_reader)
 
         // Create and populate the buffers
         uint vertexCount = mesh.vertices.GetSize();
-        uint vertexSize  = sizeof(VertexDefinition);
+        uint vertexSize  = sizeof(Vertex);
         uint indexCount  = mesh.triangles.GetSize() * 3;
         uint indexSize   = sizeof(uint16);
 
@@ -151,13 +154,6 @@ void ModelViewer::setReader(FileReader* p_reader)
         } else {
             cache.diffuseMap = nullptr;
         }
-
-        // Load normal map
-        if (material.normalMap) {
-            cache.normalMap = this->loadTexture(material.normalMap);
-        } else {
-            cache.normalMap = nullptr;
-        }
     }
 
     // Re-focus and re-render
@@ -176,7 +172,7 @@ bool ModelViewer::createBuffers(MeshCache& p_cache, uint p_vertexCount, uint p_v
     }
 
     // Allocate vertex buffer and bail if it fails
-    if (FAILED(m_device->CreateVertexBuffer(p_vertexCount * p_vertexSize, D3DUSAGE_WRITEONLY, VertexDefinition::s_fvf,
+    if (FAILED(m_device->CreateVertexBuffer(p_vertexCount * p_vertexSize, D3DUSAGE_WRITEONLY, c_vertexFVF,
         D3DPOOL_DEFAULT, &p_cache.vertexBuffer, nullptr))) 
     {
         return false;
@@ -195,53 +191,23 @@ bool ModelViewer::createBuffers(MeshCache& p_cache, uint p_vertexCount, uint p_v
     return true;
 }
 
-bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
+bool ModelViewer::populateBuffers(const Mesh& p_mesh, MeshCache& p_cache)
 {
-    uint vertexCount = pMesh.vertices.GetSize();
-    uint vertexSize  = sizeof(VertexDefinition);
-    uint indexCount  = pMesh.triangles.GetSize() * 3;
+    uint vertexCount = p_mesh.vertices.GetSize();
+    uint vertexSize  = sizeof(Vertex);
+    uint indexCount  = p_mesh.triangles.GetSize() * 3;
     uint indexSize   = sizeof(uint16);
 
     // Lock vertex buffer
-    VertexDefinition* vertices;
+    Vertex* vertices;
     if (FAILED(p_cache.vertexBuffer->Lock(0, vertexCount * vertexSize, reinterpret_cast<void**>(&vertices), 0))){
         return false;
     }
 
     // Populate vertex buffer
-    for (uint j = 0; j < vertexCount; j++) {
-        vertices[j].position = pMesh.vertices[j].position;
+    std::copy(&p_mesh.vertices[0], &p_mesh.vertices[0] + vertexCount, &vertices[0]);
 
-        // Normal
-        if (pMesh.hasNormal) {
-            vertices[j].normal = pMesh.vertices[j].normal;
-        } else {
-            vertices[j].normal.x = 0;
-            vertices[j].normal.y = 0;
-            vertices[j].normal.z = 1;
-        }
-
-        // Color
-        if (pMesh.hasColor) {
-            vertices[j].diffuse = pMesh.vertices[j].color;
-        } else {
-            ::memset(&vertices[j].diffuse, 0xff, sizeof(uint32));
-        }
-
-        // UV1
-        if (pMesh.hasUV > 0) {
-            vertices[j].uv[0] = pMesh.vertices[j].uv[0];
-        } else {
-            ::memset(&vertices[j].uv[0], 0, sizeof(XMFLOAT2));
-        }
-
-        // UV2
-        if (pMesh.hasUV > 1) {
-            vertices[j].uv[1] = pMesh.vertices[j].uv[1];
-        } else {
-            ::memset(&vertices[j].uv[1], 0, sizeof(XMFLOAT2));
-        }
-    }
+    // Unlock vertex buffer
     Assert(SUCCEEDED(p_cache.vertexBuffer->Unlock()));
 
     // Lock index buffer
@@ -250,7 +216,7 @@ bool ModelViewer::populateBuffers(const Mesh& pMesh, MeshCache& p_cache)
         return false;
     }
     // Copy index buffer
-    ::memcpy(indices, pMesh.triangles.GetPointer(), indexCount * indexSize);
+    std::copy(&p_mesh.triangles[0].index1, &p_mesh.triangles[0].index1 + indexCount, &indices[0]);
     Assert(SUCCEEDED(p_cache.indexBuffer->Unlock()));
 
     return true;
@@ -334,8 +300,8 @@ void ModelViewer::drawMesh(uint p_meshIndex)
     int  materialIndex  = m_model.mesh(p_meshIndex).materialIndex;
     
     // Set buffers
-    if (FAILED(m_device->SetFVF(VertexDefinition::s_fvf))) { return; }
-    if (FAILED(m_device->SetStreamSource(0, mesh.vertexBuffer, 0, sizeof(VertexDefinition)))) { return; }
+    if (FAILED(m_device->SetFVF(c_vertexFVF))) { return; }
+    if (FAILED(m_device->SetStreamSource(0, mesh.vertexBuffer, 0, sizeof(Vertex)))) { return; }
     if (FAILED(m_device->SetIndices(mesh.indexBuffer))) { return; }
 
     // Begin drawing

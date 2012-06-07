@@ -41,8 +41,7 @@ struct Vertex
 {
     XMFLOAT3 position;
     XMFLOAT3 normal;
-    uint32 color;
-    XMFLOAT2 uv[2];
+    XMFLOAT2 uv;
 };
 
 union Triangle
@@ -102,14 +101,12 @@ struct Mesh
     int             materialIndex;
     Bounds          bounds;
     byte            hasNormal  : 1;
-    byte            hasColor   : 1;
-    byte            hasUV      : 2;
+    byte            hasUV      : 1;
 };
 
 struct MaterialData
 {
     uint32 diffuseMap;
-    uint32 normalMap;
 };
 
 class ModelData : public wxRefCounter
