@@ -107,6 +107,7 @@ struct Mesh
 struct MaterialData
 {
     uint32 diffuseMap;
+    uint32 flags;
 };
 
 class ModelData : public wxRefCounter

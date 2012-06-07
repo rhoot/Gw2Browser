@@ -37,6 +37,16 @@ namespace
 
     const uint32 c_vertexFVF = (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
 
+    bool doesUseAlpha(const wxString& p_shaderName) {
+        if (p_shaderName.StartsWith(wxT("AmatShader"))) {
+            auto ordinal = p_shaderName.Mid(::strlen("AmatShader"));
+            return (ordinal != "15") &&
+                   (ordinal != "4N") &&
+                   (ordinal != "2");
+        }
+        return false;
+    }
+
 };
 
 ModelViewer::ModelViewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize& p_size)
@@ -46,12 +56,12 @@ ModelViewer::ModelViewer(wxWindow* p_parent, const wxPoint& p_pos, const wxSize&
     ::memset(&m_presentParams, 0, sizeof(m_presentParams));
     m_presentParams.PresentationInterval    = D3DPRESENT_INTERVAL_IMMEDIATE;
     m_presentParams.SwapEffect              = D3DSWAPEFFECT_DISCARD;
-    m_presentParams.Windowed                = true;
+    m_presentParams.Windowed                = TRUE;
     m_presentParams.BackBufferCount         = 1;
     m_presentParams.BackBufferWidth         = wxSystemSettings::GetMetric(wxSYS_SCREEN_X);
     m_presentParams.BackBufferHeight        = wxSystemSettings::GetMetric(wxSYS_SCREEN_Y);
     m_presentParams.BackBufferFormat        = D3DFMT_A8R8G8B8;
-    m_presentParams.EnableAutoDepthStencil  = true;
+    m_presentParams.EnableAutoDepthStencil  = TRUE;
     m_presentParams.AutoDepthStencilFormat  = D3DFMT_D16;
 
     // Init Direct3D
@@ -205,7 +215,7 @@ bool ModelViewer::populateBuffers(const Mesh& p_mesh, MeshCache& p_cache)
     }
 
     // Populate vertex buffer
-    std::copy(&p_mesh.vertices[0], &p_mesh.vertices[0] + vertexCount, &vertices[0]);
+    std::copy_n(&p_mesh.vertices[0], vertexCount, &vertices[0]);
 
     // Unlock vertex buffer
     Assert(SUCCEEDED(p_cache.vertexBuffer->Unlock()));
@@ -216,7 +226,7 @@ bool ModelViewer::populateBuffers(const Mesh& p_mesh, MeshCache& p_cache)
         return false;
     }
     // Copy index buffer
-    std::copy(&p_mesh.triangles[0].index1, &p_mesh.triangles[0].index1 + indexCount, &indices[0]);
+    std::copy_n(&p_mesh.triangles[0].index1, indexCount, &indices[0]);
     Assert(SUCCEEDED(p_cache.indexBuffer->Unlock()));
 
     return true;
@@ -254,6 +264,7 @@ void ModelViewer::endFrame()
 
 void ModelViewer::render()
 {
+    // No culling as we don't really care about render performance
     m_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
     this->updateMatrices();
 
@@ -303,6 +314,26 @@ void ModelViewer::drawMesh(uint p_meshIndex)
     if (FAILED(m_device->SetFVF(c_vertexFVF))) { return; }
     if (FAILED(m_device->SetStreamSource(0, mesh.vertexBuffer, 0, sizeof(Vertex)))) { return; }
     if (FAILED(m_device->SetIndices(mesh.indexBuffer))) { return; }
+
+    // Alpha blending, for alpha support
+    if (doesUseAlpha(m_model.mesh(p_meshIndex).materialName)) {
+        m_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+        m_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+        m_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+        m_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+        // Alpha testing, so we can still render behind transparent pixels
+        D3DCAPS9 caps;
+        m_device->GetDeviceCaps(&caps);
+        if (caps.AlphaCmpCaps & D3DPCMPCAPS_GREATEREQUAL) {
+            m_device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+            m_device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+            m_device->SetRenderState(D3DRS_ALPHAREF, 0x7f);
+        }
+    } else {
+        m_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        m_device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+    }
 
     // Begin drawing
     uint numPasses;

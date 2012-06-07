@@ -553,7 +553,7 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
             omp_set_lock(&locks[j]);
 
             // Bail if this material index already has data
-            if (data.diffuseMap) { 
+            if (data.diffuseMap && data.flags) { 
                 omp_unset_lock(&locks[j]);
                 continue; 
             }
@@ -562,7 +562,8 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
             pos = offsetTable[j] + reinterpret_cast<const byte*>(&offsetTable[j]);
             auto materialInfo = reinterpret_cast<const ANetModelMaterialInfo*>(pos);
 
-            // We are *only* interested in textures
+            // We are (almost) *only* interested in textures
+            data.flags = materialInfo->flags;
             if (materialInfo->textureCount == 0) { 
                 omp_unset_lock(&locks[j]);
                 continue; 

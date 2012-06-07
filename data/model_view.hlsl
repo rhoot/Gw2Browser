@@ -5,9 +5,9 @@ texture  g_DiffuseTex;
 sampler  g_DiffuseTexSampler = sampler_state
 {
     Texture   = <g_DiffuseTex>;
-    MipFilter = LINEAR;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
+    MipFilter = ANISOTROPIC;
+    MinFilter = ANISOTROPIC;
+    MagFilter = ANISOTROPIC;
 };
 
 struct VS_OUTPUT
@@ -34,8 +34,12 @@ struct PS_OUTPUT
 PS_OUTPUT RenderScenePS(VS_OUTPUT In)
 {
     PS_OUTPUT o;
-    o.RGBColor.rgb = tex2D(g_DiffuseTexSampler, In.TextureUV1).rgb;
-    o.RGBColor.a   = 1;
+
+    float4 tColor  = tex2D(g_DiffuseTexSampler, In.TextureUV1).rgba;
+    float alpha    = min(tColor.a * 2.f, 1.f);
+    o.RGBColor.rgb = tColor.rgb;
+    o.RGBColor.a   = alpha;
+
     return o;
 };
 
