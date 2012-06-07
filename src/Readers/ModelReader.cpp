@@ -480,7 +480,7 @@ uint ModelReader::vertexSize(ANetFlexibleVertexFormat p_vertexFormat) const
 void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
 {
     uint size;
-    const byte* data = p_packFile.findChunk(FCC_MODL, size);
+    auto data = p_packFile.findChunk(FCC_MODL, size);
 
     // Bail if no data
     if (!data) {
@@ -488,10 +488,10 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
     }
 
     // Read some necessary data
-    const ANetPfChunkHeader* header                 = reinterpret_cast<const ANetPfChunkHeader*>(data);
-    uint32 numMaterialInfo                          = *reinterpret_cast<const uint32*>(&data[sizeof(*header)]);
-    uint32 materialInfoOffset                       = *reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4]);
-    const ANetModelMaterialArray* materialInfoArray = reinterpret_cast<const ANetModelMaterialArray*>(&data[sizeof(*header) + 4 + materialInfoOffset]);
+    auto header                = reinterpret_cast<const ANetPfChunkHeader*>(data);
+    uint32 numMaterialInfo    = *reinterpret_cast<const uint32*>(&data[sizeof(*header)]);
+    uint32 materialInfoOffset = *reinterpret_cast<const uint32*>(&data[sizeof(*header) + 4]);
+    auto materialInfoArray    = reinterpret_cast<const ANetModelMaterialArray*>(&data[sizeof(*header) + 4 + materialInfoOffset]);
 
     // Loop through each material info
     for (uint i = 0; i < numMaterialInfo; i++) {
@@ -499,12 +499,12 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
         if (!materialInfoArray[i].materialCount || !materialInfoArray[i].materialsOffset) { continue; }
 
         // Read the offset table for this set of materials
-        const byte* pos = materialInfoArray[i].materialsOffset + reinterpret_cast<const byte*>(&materialInfoArray[i].materialsOffset);
-        const int32* offsetTable = reinterpret_cast<const int32*>(pos);
+        auto pos = materialInfoArray[i].materialsOffset + reinterpret_cast<const byte*>(&materialInfoArray[i].materialsOffset);
+        auto offsetTable = reinterpret_cast<const int32*>(pos);
 
         // Loop through each material in these material infos
         for (uint j = 0; j < materialInfoArray->materialCount; j++) {
-            MaterialData& data = (p_model.numMaterialData() <= j ? p_model.addMaterialData() : p_model.materialData(j));
+            auto& data = (p_model.numMaterialData() <= j ? p_model.addMaterialData() : p_model.materialData(j));
 
             // Bail if offset is nullptr
             if (offsetTable[j] == 0) { continue; }
@@ -513,19 +513,19 @@ void ModelReader::readMaterialData(Model& p_model, PackFile& p_packFile) const
             if (data.diffuseMap && data.normalMap) { continue; }
 
             // Read material info
-            const byte* pos = offsetTable[j] + reinterpret_cast<const byte*>(&offsetTable[j]);
-            const ANetModelMaterialInfo* materialInfo = reinterpret_cast<const ANetModelMaterialInfo*>(pos);
+            pos = offsetTable[j] + reinterpret_cast<const byte*>(&offsetTable[j]);
+            auto materialInfo = reinterpret_cast<const ANetModelMaterialInfo*>(pos);
 
             // We are *only* interested in textures
             if (materialInfo->textureCount == 0) { continue; }
             pos = materialInfo->texturesOffset + reinterpret_cast<const byte*>(&materialInfo->texturesOffset);
-            const ANetModelTextureReference* textures = reinterpret_cast<const ANetModelTextureReference*>(pos);
+            auto textures = reinterpret_cast<const ANetModelTextureReference*>(pos);
 
             // Out of these, we only care about the diffuse and normal maps
             for (uint t = 0; t < materialInfo->textureCount; t++) {
                 // Get file reference
                 pos = textures[t].offsetToFileReference + reinterpret_cast<const byte*>(&textures[t].offsetToFileReference);
-                const ANetFileReference* fileReference = reinterpret_cast<const ANetFileReference*>(pos);
+                auto fileReference = reinterpret_cast<const ANetFileReference*>(pos);
 
                 // Diffuse?
                 if (textures[t].hash == 0x67531924) {

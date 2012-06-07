@@ -57,7 +57,7 @@ const byte* PackFile::findChunk(uint p_chunkType, uint& po_size) const
         return nullptr;
     }
 
-    auto end = &m_data[m_data.GetSize() - 1];
+    auto end = 1 + &m_data[m_data.GetSize() - 1];
     auto pos = &m_data[sizeof(ANetPfHeader)];
 
     while (pos < end) {

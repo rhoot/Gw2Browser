@@ -162,7 +162,7 @@ void ModelViewer::setReader(FileReader* p_reader)
 
     // Re-focus and re-render
     this->focus();
-    this->Refresh(false);
+    this->render();
 }
 
 bool ModelViewer::createBuffers(MeshCache& p_cache, uint p_vertexCount, uint p_vertexSize, uint p_indexCount, uint p_indexSize)
@@ -466,7 +466,7 @@ void ModelViewer::focus()
     // Update camera and re-render
     m_camera.setPivot(center);
     m_camera.setDistance(distance);
-    this->Refresh(false);
+    this->render();
 }
 
 void ModelViewer::onMotionEvt(wxMouseEvent& p_event)
@@ -482,7 +482,7 @@ void ModelViewer::onMotionEvt(wxMouseEvent& p_event)
         float rotateSpeed = (XM_PI / 180.0f);   // 1 degree per pixel
         m_camera.addYaw(rotateSpeed * -(p_event.GetX() - m_lastMousePos.x));
         m_camera.addPitch(rotateSpeed * (p_event.GetY() - m_lastMousePos.y));
-        this->Refresh(false);
+        this->render();
     }
 
     // Pan
@@ -490,7 +490,7 @@ void ModelViewer::onMotionEvt(wxMouseEvent& p_event)
         float xPan = -(p_event.GetX() - m_lastMousePos.x);
         float yPan = -(p_event.GetY() - m_lastMousePos.y);
         m_camera.pan(xPan, yPan);
-        this->Refresh(false);
+        this->render();
     }
 
     m_lastMousePos = p_event.GetPosition();
@@ -500,7 +500,7 @@ void ModelViewer::onMouseWheelEvt(wxMouseEvent& p_event)
 {
     float zoomSteps = static_cast<float>(p_event.GetWheelRotation()) / static_cast<float>(p_event.GetWheelDelta());
     m_camera.multiplyDistance(-zoomSteps);
-    this->Refresh(false);
+    this->render();
 }
 
 void ModelViewer::onKeyDownEvt(wxKeyEvent& p_event)
