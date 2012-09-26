@@ -1,3 +1,10 @@
+**NOTE:** This program is no longer under development (and hasn't been for quite
+a while), due to limited time and lack of interest. Reversing is what kept me 
+interested and all the file formats have already been reversed 
+([gw2formats](https://github.com/rhoot/gw2formats) contains most of them, albeit
+slightly outdated). Feel free to do what you want with the project, but due to
+what I've seen on the internet; please remember the GPL license.
+
 Gw2Browser.1
 ============
 
