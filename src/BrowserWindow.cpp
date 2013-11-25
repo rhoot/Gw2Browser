@@ -173,10 +173,14 @@ void BrowserWindow::viewEntry(const DatIndexEntry& p_entry)
 
 wxFileName BrowserWindow::findDatIndex()
 {
-    auto configPath    = wxStandardPaths().GetUserDataDir();
+	wxString path;
+
+	wxStandardPathsBase& stdp = wxStandardPaths::Get();
+	auto configPath = stdp.GetDataDir();
+
     auto datPathCrc    = ::compute_crc(INITIAL_CRC, m_datPath.char_str(), m_datPath.Length());
     auto indexFileName = wxString::Format(wxT("%x.idx"), (uint)datPathCrc);
-    
+
     return wxFileName(configPath, indexFileName);
 }
 

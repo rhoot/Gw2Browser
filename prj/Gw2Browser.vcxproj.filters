@@ -180,6 +180,9 @@
     <ClInclude Include="..\src\Viewers\ModelViewer\Camera.h">
       <Filter>Header Files\Viewers\ModelViewer</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\stdafx.cpp">
@@ -284,5 +287,13 @@
     <None Include="..\data\model_view.hlsl">
       <Filter>Data Files</Filter>
     </None>
+    <None Include="..\src\GWDatBrowser.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\GWDatBrowser.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

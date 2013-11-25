@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "Gw2Browser.h"
 
-#include <vld.h>
+//#include <vld.h>
 
 #include "BrowserWindow.h"
 
