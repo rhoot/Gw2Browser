@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Gw2Browser", "Gw2Browser.vcxproj", "{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}"
 EndProject
 Global

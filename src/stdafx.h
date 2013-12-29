@@ -41,7 +41,7 @@
 // gw2CoreTools
 #include <gw2DatTools/compression/inflateDatFileBuffer.h>
 
-// DirectX9
+// D3D9, DirectX SDK June 2010
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <xnamath.h>

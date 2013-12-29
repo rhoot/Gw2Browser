@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -114,27 +114,27 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -156,8 +156,8 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
-    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\lib\x86;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include </IncludePath>
+    <LibraryPath>..\..\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath)</IncludePath>
@@ -170,8 +170,8 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
-    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_lib\mswu;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\lib\x86;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\..\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_x64_lib\mswu;$(IncludePath)</IncludePath>
@@ -188,6 +188,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -206,6 +207,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -226,6 +228,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -246,6 +249,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

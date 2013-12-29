@@ -242,9 +242,6 @@
     <ClCompile Include="..\src\Readers\ImageReader.cpp">
       <Filter>Source Files\Readers</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Imported\AtexAsm.cpp">
-      <Filter>Source Files\Imported</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Viewers\ImageViewer.cpp">
       <Filter>Source Files\Viewers</Filter>
     </ClCompile>
@@ -277,6 +274,9 @@
     </ClCompile>
     <ClCompile Include="..\src\Task.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Imported\AtexAsm.cpp">
+      <Filter>Source Files\Imported</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

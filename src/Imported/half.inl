@@ -45,33 +45,33 @@
 #define HALF_NRM_MIN	6.10351562e-05f	// Smallest positive normalized HalfFloat
 #define HALF_MAX	65504.0f	// Largest positive HalfFloat
 #define HALF_EPSILON	0.00097656f	// Smallest positive e for which
-					// HalfFloat (1.0 + e) != HalfFloat (1.0)
+// HalfFloat (1.0 + e) != HalfFloat (1.0)
 
 #define HALF_MANT_DIG	11		// Number of digits in mantissa
-					// (significand + hidden leading 1)
+// (significand + hidden leading 1)
 
 #define HALF_DIG	2		// Number of base 10 digits that
-					// can be represented without change
+// can be represented without change
 
 #define HALF_RADIX	2		// Base of the exponent
 
 #define HALF_MIN_EXP	-13		// Minimum negative integer such that
-					// HALF_RADIX raised to the power of
-					// one less than that integer is a
-					// normalized HalfFloat
+// HALF_RADIX raised to the power of
+// one less than that integer is a
+// normalized HalfFloat
 
 #define HALF_MAX_EXP	16		// Maximum positive integer such that
-					// HALF_RADIX raised to the power of
-					// one less than that integer is a
-					// normalized HalfFloat
+// HALF_RADIX raised to the power of
+// one less than that integer is a
+// normalized HalfFloat
 
 #define HALF_MIN_10_EXP	-4		// Minimum positive integer such
-					// that 10 raised to that power is
-					// a normalized HalfFloat
+// that 10 raised to that power is
+// a normalized HalfFloat
 
 #define HALF_MAX_10_EXP	4		// Maximum positive integer such
-					// that 10 raised to that power is
-					// a normalized HalfFloat
+// that 10 raised to that power is
+// a normalized HalfFloat
 
 //---------------------------------------------------------------------------
 //
@@ -186,23 +186,18 @@
 
 
 
-inline HalfFloat::HalfFloat()
-{
+inline HalfFloat::HalfFloat( ) {
 }
 
 
-inline HalfFloat::HalfFloat( float f )
-{
-	if (f == 0)
-	{
+inline HalfFloat::HalfFloat( float f ) {
+	if ( f == 0 ) {
 		//
 		// Common special case - zero.
 		// For speed, we don't preserve the zero's sign.
 		//
 		_h = 0;
-	}
-	else
-	{
+	} else {
 		//
 		// We extract the combined sign and exponent, e, from our
 		// floating-point number, f.  Then we convert e to the sign
@@ -222,41 +217,36 @@ inline HalfFloat::HalfFloat( float f )
 
 		x.f = f;
 
-		register int32_t e = (x.i >> 23) & 0x000001ff;
+		register int32_t e = ( x.i >> 23 ) & 0x000001ff;
 
 		e = _eLut[e];
 
-		if (e)
-		{
+		if ( e ) {
 			//
 			// Simple case - round the significand and
 			// combine it with the sign and exponent.
 			//
-			_h = e + (((x.i & 0x007fffff) + 0x00001000) >> 13);
-		}
-		else
-		{
+			_h = e + ( ( ( x.i & 0x007fffff ) + 0x00001000 ) >> 13 );
+		} else {
 			//
 			// Difficult case - call a function.
 			//
-			_h = convert (x.i);
+			_h = convert( x.i );
 		}
 	}
 }
 
 
-HalfFloat::operator float () const
-{
-	return toFloat();
+HalfFloat::operator float( ) const {
+	return toFloat( );
 }
 
 
-HalfFloat HalfFloat::round( unsigned int n ) const
-{
+HalfFloat HalfFloat::round( unsigned int n ) const {
 	//
 	// Parameter check.
 	//
-	if( n >= 10 )
+	if ( n >= 10 )
 		return *this;
 
 	//
@@ -273,14 +263,13 @@ HalfFloat HalfFloat::round( unsigned int n ) const
 	// up causes the significand to overflow.
 	//
 	e >>= 9 - n;
-	e  += e & 1;
+	e += e & 1;
 	e <<= 9 - n;
 
 	//
 	// Check for exponent overflow.
 	//
-	if (e >= 0x7c00)
-	{
+	if ( e >= 0x7c00 ) {
 		//
 		// Overflow occurred -- truncate instead of rounding.
 		//
@@ -299,174 +288,150 @@ HalfFloat HalfFloat::round( unsigned int n ) const
 }
 
 
-HalfFloat HalfFloat::operator - () const
-{
+HalfFloat HalfFloat::operator - ( ) const {
 	HalfFloat h;
 	h._h = _h ^ 0x8000;
 	return h;
 }
 
 
-HalfFloat& HalfFloat::operator = ( HalfFloat h )
-{
+HalfFloat& HalfFloat::operator = ( HalfFloat h ) {
 	_h = h._h;
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator = ( float f )
-{
+HalfFloat& HalfFloat::operator = ( float f ) {
 	*this = HalfFloat( f );
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator += ( HalfFloat h )
-{
+HalfFloat& HalfFloat::operator += ( HalfFloat h ) {
 	*this = HalfFloat( float( *this ) + float( h ) );
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator += ( float f )
-{
+HalfFloat& HalfFloat::operator += ( float f ) {
 	*this = HalfFloat( float( *this ) + f );
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator -= ( HalfFloat h )
-{
+HalfFloat& HalfFloat::operator -= ( HalfFloat h ) {
 	*this = HalfFloat( float( *this ) - float( h ) );
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator -= ( float f )
-{
+HalfFloat& HalfFloat::operator -= ( float f ) {
 	*this = HalfFloat( float( *this ) - f );
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator *= ( HalfFloat h )
-{
+HalfFloat& HalfFloat::operator *= ( HalfFloat h ) {
 	*this = HalfFloat( float( *this ) * float( h ) );
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator *= ( float f )
-{
+HalfFloat& HalfFloat::operator *= ( float f ) {
 	*this = HalfFloat( float( *this ) * f );
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator /= ( HalfFloat h )
-{
+HalfFloat& HalfFloat::operator /= ( HalfFloat h ) {
 	*this = HalfFloat( float( *this ) / float( h ) );
 	return *this;
 }
 
 
-HalfFloat& HalfFloat::operator /= ( float f )
-{
-	*this = HalfFloat( float( *this) / f );
+HalfFloat& HalfFloat::operator /= ( float f ) {
+	*this = HalfFloat( float( *this ) / f );
 	return *this;
 }
 
 
-bool HalfFloat::isFinite() const
-{
-	uint16_t e = (_h >> 10) & 0x001f;
+bool HalfFloat::isFinite( ) const {
+	uint16_t e = ( _h >> 10 ) & 0x001f;
 	return e < 31;
 }
 
 
-bool HalfFloat::isNormalized() const
-{
-	uint16_t e = (_h >> 10) & 0x001f;
+bool HalfFloat::isNormalized( ) const {
+	uint16_t e = ( _h >> 10 ) & 0x001f;
 	return e > 0 && e < 31;
 }
 
 
-bool HalfFloat::isDenormalized() const
-{
-	uint16_t e = (_h >> 10) & 0x001f;
-	uint16_t m =  _h & 0x3ff;
+bool HalfFloat::isDenormalized( ) const {
+	uint16_t e = ( _h >> 10 ) & 0x001f;
+	uint16_t m = _h & 0x3ff;
 	return e == 0 && m != 0;
 }
 
 
-bool HalfFloat::isZero() const
-{
-	return (_h & 0x7fff) == 0;
+bool HalfFloat::isZero( ) const {
+	return ( _h & 0x7fff ) == 0;
 }
 
 
-bool HalfFloat::isNaN() const
-{
-	uint16_t e = (_h >> 10) & 0x001f;
-	uint16_t m =  _h & 0x3ff;
+bool HalfFloat::isNaN( ) const {
+	uint16_t e = ( _h >> 10 ) & 0x001f;
+	uint16_t m = _h & 0x3ff;
 	return e == 31 && m != 0;
 }
 
 
-bool HalfFloat::isInfinity() const
-{
-	uint16_t e = (_h >> 10) & 0x001f;
-	uint16_t m =  _h & 0x3ff;
+bool HalfFloat::isInfinity( ) const {
+	uint16_t e = ( _h >> 10 ) & 0x001f;
+	uint16_t m = _h & 0x3ff;
 	return e == 31 && m == 0;
 }
 
 
-bool HalfFloat::isNegative() const
-{
-	return (_h & 0x8000) != 0;
+bool HalfFloat::isNegative( ) const {
+	return ( _h & 0x8000 ) != 0;
 }
 
 
-HalfFloat HalfFloat::posInf()
-{
+HalfFloat HalfFloat::posInf( ) {
 	HalfFloat h;
 	h._h = 0x7c00;
 	return h;
 }
 
 
-HalfFloat HalfFloat::negInf ()
-{
+HalfFloat HalfFloat::negInf( ) {
 	HalfFloat h;
 	h._h = 0xfc00;
 	return h;
 }
 
 
-HalfFloat HalfFloat::qNaN()
-{
+HalfFloat HalfFloat::qNaN( ) {
 	HalfFloat h;
 	h._h = 0x7fff;
 	return h;
 }
 
 
-HalfFloat HalfFloat::sNaN()
-{
+HalfFloat HalfFloat::sNaN( ) {
 	HalfFloat h;
 	h._h = 0x7dff;
 	return h;
 }
 
 
-uint16_t HalfFloat::bits() const
-{
+uint16_t HalfFloat::bits( ) const {
 	return _h;
 }
 
 
-void HalfFloat::setBits( uint16_t bits )
-{
+void HalfFloat::setBits( uint16_t bits ) {
 	_h = bits;
 }
 
