@@ -1,8 +1,7 @@
 bin
 build
-prj/_ReSharper.*
-prj/ipch
-prj/*.sdf
-prj/*.suo
-prj/*.user
-prj/*.opensdf
+ipch
+*.sdf
+*.suo
+*.user
+*.opensdf
