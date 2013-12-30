@@ -156,12 +156,12 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
-    <IncludePath>..\..\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include </IncludePath>
-    <LibraryPath>..\..\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x64;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\lib\x64;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
@@ -170,12 +170,12 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
-    <IncludePath>..\..\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
-    <LibraryPath>..\..\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\include\;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_x64_lib\mswu;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x64;C:\Users\Khral Steelforge\Desktop\DEV\GW2DatTools\lib\x64;C:\Users\Khral Steelforge\Desktop\DEV\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>

@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gw2DatTools", "gw2DatTools.vcxproj", "{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simpleExtractor", "..\examples\prj\simpleExtractor.vcxproj", "{9142457D-C99C-4346-9197-044B46FF5527}"
+	ProjectSection(ProjectDependencies) = postProject
+		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D} = {81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Debug|Win32.Build.0 = Debug|Win32
+		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Release|Win32.ActiveCfg = Release|Win32
+		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Release|Win32.Build.0 = Release|Win32
+		{9142457D-C99C-4346-9197-044B46FF5527}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9142457D-C99C-4346-9197-044B46FF5527}.Debug|Win32.Build.0 = Debug|Win32
+		{9142457D-C99C-4346-9197-044B46FF5527}.Release|Win32.ActiveCfg = Release|Win32
+		{9142457D-C99C-4346-9197-044B46FF5527}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
