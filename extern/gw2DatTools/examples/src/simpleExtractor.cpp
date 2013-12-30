@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 {
     const uint32_t aBufferSize = 1024 * 1024 * 30; // We make the assumption that no file is bigger than 30 M
 
-    auto pANDatInterface = gw2dt::interface::createANDatInterface("D:\\GuildWars2\\Gw2.dat");
+    auto pANDatInterface = gw2dt::interface::createANDatInterface("Y:\\Games\\Guild Wars 2\\Gw2.dat");
 
     auto aFileRecordVect = pANDatInterface->getFileRecordVect();
     

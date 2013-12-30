@@ -13,10 +13,10 @@ int main(int argc, char* argv[])
 	std::cout << "Start" << std::endl;
     const uint32_t aBufferSize = 1024 * 1024 * 30; // We make the assumption that no file is bigger than 30 Mo
     
-    auto pANDatInterface = gw2dt::interface::createANDatInterface("D:\\GuildWars2\\Gw2.dat");
+    auto pANDatInterface = gw2dt::interface::createANDatInterface("Y:\\Games\\Guild Wars 2\\Gw2.dat");
 
 	std::cout << "Getting FileRecord Id" << std::endl;
-    auto aFileRecord = pANDatInterface->getFileRecordForFileId(293296);
+    auto aFileRecord = pANDatInterface->getFileRecordForFileId(184887);
     
     uint8_t* pOriBuffer = new uint8_t[aBufferSize];
     uint8_t* pInfBuffer = new uint8_t[aBufferSize];
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	pANDatInterface->getBuffer(aFileRecord, aOriSize, pOriBuffer);
 	
 	std::ostringstream aStringstream;
-	aStringstream << "D:\\output-dec-";
+	aStringstream << "Y:\\GW2Out\\";
 	aStringstream << aFileRecord.fileId;
 	
 	std::ofstream aStream(aStringstream.str(), std::ios::binary);
