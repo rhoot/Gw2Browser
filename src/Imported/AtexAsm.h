@@ -17,7 +17,6 @@ struct SImageDescriptor {
 	int c;
 };
 
-int DecompressAtex( int a, int b, int imageformat, int d, int e, int f, int g );
-bool AtexDecompress( const unsigned int *input, unsigned int unknown, unsigned int imageformat, SImageDescriptor ImageDescriptor, unsigned int *output );
+bool AtexDecompress( const unsigned int *InputBuffer, unsigned int BufferSize, unsigned int ImageFormat, SImageDescriptor ImageDescriptor, unsigned int *OutBuffer );
 
 #endif // IMPORTED_ATEXASM_H_INCLUDED
