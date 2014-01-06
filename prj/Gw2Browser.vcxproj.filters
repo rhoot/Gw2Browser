@@ -141,9 +141,6 @@
     <ClInclude Include="..\src\Readers\ImageReader.h">
       <Filter>Header Files\Readers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Imported\AtexAsm.h">
-      <Filter>Header Files\Imported</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Util\Ensure.h">
       <Filter>Header Files\Util</Filter>
     </ClInclude>
@@ -182,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="..\src\resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Imported\AtexAsm.h">
+      <Filter>Header Files\Imported</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -274,9 +274,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Task.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Imported\AtexAsm.cpp">
-      <Filter>Source Files\Imported</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

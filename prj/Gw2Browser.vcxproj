@@ -68,7 +68,6 @@
     <ClCompile Include="..\src\DatFile.cpp" />
     <ClCompile Include="..\src\DatIndex.cpp" />
     <ClCompile Include="..\src\Gw2Browser.cpp" />
-    <ClCompile Include="..\src\Imported\AtexAsm.cpp" />
     <ClCompile Include="..\src\Imported\crc.cpp" />
     <ClCompile Include="..\src\Imported\half.cpp" />
     <ClCompile Include="..\src\PackFile.cpp" />

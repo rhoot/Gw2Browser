@@ -278,7 +278,7 @@ namespace gw2b {
 		descriptor.c = 0;
 
 		// Init some fields
-		auto data = reinterpret_cast<const uint*>( m_data.GetPointer( ) );
+		//auto data = reinterpret_cast<const uint*>( m_data.GetPointer( ) );
 		po_colors = nullptr;
 		po_alphas = nullptr;
 
@@ -286,46 +286,43 @@ namespace gw2b {
 		auto output = allocate<BGRA>( atex->width * atex->height );
 		descriptor.image = reinterpret_cast<unsigned char*>( output );
 
+		// Fix me
+		uint32_t aOutBufferSize = 1024 * 1024 * 30; // We make the assumption that no file is bigger than 30 Mb
+
 		// Uncompress
 		switch ( atex->formatInteger ) {
 		case FCC_DXT1:
-			if ( ::AtexDecompress( data, m_data.GetSize( ), 0xf, descriptor, reinterpret_cast<uint*>( output ) ) ) {
-				this->processDXT1( output, atex->width, atex->height, po_colors, po_alphas );
-			}
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			this->processDXT1( output, atex->width, atex->height, po_colors, po_alphas );
 			break;
 		case FCC_DXT2:
 		case FCC_DXT3:
 		case FCC_DXTN:
-			if ( ::AtexDecompress( data, m_data.GetSize( ), 0x11, descriptor, reinterpret_cast<uint*>( output ) ) ) {
-				this->processDXT3( output, atex->width, atex->height, po_colors, po_alphas );
-			}
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			this->processDXT3( output, atex->width, atex->height, po_colors, po_alphas );
 			break;
 		case FCC_DXT4:
 		case FCC_DXT5:
-			if ( ::AtexDecompress( data, m_data.GetSize( ), 0x13, descriptor, reinterpret_cast<uint*>( output ) ) ) {
-				this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
-			}
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
 			break;
 		case FCC_DXTA:
-			if ( ::AtexDecompress( data, m_data.GetSize( ), 0x14, descriptor, reinterpret_cast<uint*>( output ) ) ) {
-				this->processDXTA( reinterpret_cast<uint64*>( output ), atex->width, atex->height, po_colors );
-			}
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			this->processDXTA( reinterpret_cast<uint64*>( output ), atex->width, atex->height, po_colors );
 			break;
 		case FCC_DXTL:
-			if ( ::AtexDecompress( data, m_data.GetSize( ), 0x12, descriptor, reinterpret_cast<uint*>( output ) ) ) {
-				this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
 
-				for ( uint i = 0; i < ( static_cast<uint>( atex->width ) * static_cast<uint>( atex->height ) ); i++ ) {
-					po_colors[i].r = ( po_colors[i].r * po_alphas[i] ) / 0xff;
-					po_colors[i].g = ( po_colors[i].g * po_alphas[i] ) / 0xff;
-					po_colors[i].b = ( po_colors[i].b * po_alphas[i] ) / 0xff;
-				}
+			for ( uint i = 0; i < ( static_cast<uint>( atex->width ) * static_cast<uint>( atex->height ) ); i++ ) {
+				po_colors[i].r = ( po_colors[i].r * po_alphas[i] ) / 0xff;
+				po_colors[i].g = ( po_colors[i].g * po_alphas[i] ) / 0xff;
+				po_colors[i].b = ( po_colors[i].b * po_alphas[i] ) / 0xff;
 			}
 			break;
 		case FCC_3DCX:
-			if ( ::AtexDecompress( data, m_data.GetSize( ), 0x13, descriptor, reinterpret_cast<uint*>( output ) ) ) {
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
 				this->process3DCX( reinterpret_cast<RGBA*>( output ), atex->width, atex->height, po_colors, po_alphas );
-			}
 			break;
 		default:
 			freePointer( output );
