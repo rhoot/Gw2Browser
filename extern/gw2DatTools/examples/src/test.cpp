@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	pANDatInterface->getBuffer(aFileRecord, aOriSize, pOriBuffer);
 	
 	std::ostringstream aStringstream;
-	aStringstream << "Y:\\GW2Out\\";
+	aStringstream << "Y:\\";
 	aStringstream << aFileRecord.fileId;
 	
 	std::ofstream aStream(aStringstream.str(), std::ios::binary);
