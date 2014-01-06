@@ -5,6 +5,7 @@
 
 /*
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 
 This file is part of Gw2Browser.
 
