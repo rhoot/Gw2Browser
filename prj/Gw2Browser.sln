@@ -4,11 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Gw2Browser", "Gw2Browser.vcxproj", "{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D} = {81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gw2DatTools", "..\extern\GW2DatTools\prj\gw2DatTools.vcxproj", "{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,14 +21,6 @@ Global
 		{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}.Release|Win32.Build.0 = Release|Win32
 		{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}.Release|x64.ActiveCfg = Release|x64
 		{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}.Release|x64.Build.0 = Release|x64
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Debug|Win32.Build.0 = Debug|Win32
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Debug|x64.ActiveCfg = Debug|x64
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Debug|x64.Build.0 = Debug|x64
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Release|Win32.ActiveCfg = Release|Win32
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Release|Win32.Build.0 = Release|Win32
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Release|x64.ActiveCfg = Release|x64
-		{81D81E5A-8FEC-4F92-B661-69D6B4C9DC8D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
