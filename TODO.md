@@ -1,5 +1,10 @@
-Gw2Browser.1 TODO list
-======================
+TODO list
+=========
+
+* Port the renderer from D3D9 to OpenGL, run natively on MacOSX or Linux!
+
+* Use [gw2formats](https://github.com/rhoot/gw2formats) to read the files
+instead.
 
 * Some restructuring. Decouple views from their data, for instance. Clean up 
 headers, etc.
