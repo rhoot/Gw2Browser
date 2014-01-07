@@ -96,12 +96,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\model_view.hlsl" />
-    <None Include="..\README.md" />
-    <None Include="..\src\GWDatBrowser.ico" />
     <None Include="..\src\Imported\half.inl" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\src\GWDatBrowser.rc" />
+    <Image Include="..\src\Gw2Browser.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\Gw2Browser.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}</ProjectGuid>
@@ -153,21 +154,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
     <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <LibraryPath>..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <LibraryPath>..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
+    <TargetName>$(ProjectName)d_$(PlatformShortName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
     <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <LibraryPath>..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
@@ -176,8 +179,9 @@
     <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <LibraryPath>..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
+    <TargetName>$(ProjectName)_$(PlatformShortName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
