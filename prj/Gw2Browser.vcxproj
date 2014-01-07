@@ -32,7 +32,6 @@
     <ClInclude Include="..\src\DatIndex.h" />
     <ClInclude Include="..\src\Gw2Browser.h" />
     <ClInclude Include="..\src\Identifiers\BaseIdentifier.h" />
-    <ClInclude Include="..\src\Imported\AtexAsm.h" />
     <ClInclude Include="..\src\Imported\crc.h" />
     <ClInclude Include="..\src\Imported\half.h" />
     <ClInclude Include="..\src\PackFile.h" />

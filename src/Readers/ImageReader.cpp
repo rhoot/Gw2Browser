@@ -4,8 +4,8 @@
 */
 
 /*
-Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
+Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
 
@@ -26,11 +26,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "stdafx.h"
 #include <wx/mstream.h>
 
-#include "Imported/AtexAsm.h"
 #include "ImageReader.h"
 
 #ifdef RGB
-#  undef RGB
+#undef RGB
 #endif
 
 namespace gw2b {
@@ -268,51 +267,39 @@ namespace gw2b {
 			return false;
 		}
 
-		// Create and init
-		::SImageDescriptor descriptor;
-		descriptor.xres = atex->width;
-		descriptor.yres = atex->height;
-		descriptor.Data = m_data.GetPointer( );
-		descriptor.imageformat = 0xf;
-		descriptor.a = m_data.GetSize( );
-		descriptor.b = 6;
-		descriptor.c = 0;
-
 		// Init some fields
-		//auto data = reinterpret_cast<const uint*>( m_data.GetPointer( ) );
+		auto data = reinterpret_cast<const uint8_t*>( m_data.GetPointer( ) );
 		po_colors = nullptr;
 		po_alphas = nullptr;
 
 		// Allocate output
 		auto output = allocate<BGRA>( atex->width * atex->height );
-		descriptor.image = reinterpret_cast<unsigned char*>( output );
-
 		// Fix me
-		uint32_t aOutBufferSize = 1024 * 1024 * 30; // We make the assumption that no file is bigger than 30 Mb
+		uint32_t outputBufferSize = 1024 * 1024 * 30; // We make the assumption that no file is bigger than 30 Mb
 
 		// Uncompress
 		switch ( atex->formatInteger ) {
 		case FCC_DXT1:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
 			this->processDXT1( output, atex->width, atex->height, po_colors, po_alphas );
 			break;
 		case FCC_DXT2:
 		case FCC_DXT3:
 		case FCC_DXTN:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
 			this->processDXT3( output, atex->width, atex->height, po_colors, po_alphas );
 			break;
 		case FCC_DXT4:
 		case FCC_DXT5:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
 			this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
 			break;
 		case FCC_DXTA:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
 			this->processDXTA( reinterpret_cast<uint64*>( output ), atex->width, atex->height, po_colors );
 			break;
 		case FCC_DXTL:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
 			this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
 
 			for ( uint i = 0; i < ( static_cast<uint>( atex->width ) * static_cast<uint>( atex->height ) ); i++ ) {
@@ -322,7 +309,7 @@ namespace gw2b {
 			}
 			break;
 		case FCC_3DCX:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), descriptor.Data, aOutBufferSize, descriptor.image );
+			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
 				this->process3DCX( reinterpret_cast<RGBA*>( output ), atex->width, atex->height, po_colors, po_alphas );
 			break;
 		default:
