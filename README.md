@@ -57,9 +57,6 @@ since gw2DatTools won't compile without those features anyway.
 * [gw2DatTools](https://github.com/kytulendu/gw2DatTools)
 * [wxWidgets 3.0.0](http://wxwidgets.org/)
 
-Keep in mind gw2DatTools is still under development and some modifications may
-be necessary to compile.
-
 ### Optional libraries
 
 * [Visual Leak Detector](http://vld.codeplex.com/)
