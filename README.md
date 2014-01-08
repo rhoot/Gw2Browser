@@ -16,7 +16,10 @@ The latest binary can always be found [Here](https://drive.google.com/folderview
 
 For people who can't run Gw2Browser, download and Install
 [Visual C++ Redistributable Packages for Visual Studio 2013](http://www.microsoft.com/en-us/download/details.aspx?id=40784)
-choose vcredist_x64.exe for 64bit and vcredist_x86.exe for 32bit executable
+choose vcredist_x64.exe for 64bit and vcredist_x86.exe for 32bit executable.
+
+And if it still didn't run, download and install
+[DirectX End-User Runtimes (June 2010)](http://www.microsoft.com/en-us/download/details.aspx?id=8109)
 
 Usage
 -----
@@ -57,14 +60,11 @@ since gw2DatTools won't compile without those features anyway.
 * [gw2DatTools](https://github.com/kytulendu/gw2DatTools)
 * [wxWidgets 3.0.0](http://wxwidgets.org/)
 
-Keep in mind gw2DatTools is still under development and some modifications may
-be necessary to compile.
-
 ### Optional libraries
 
 * [Visual Leak Detector](http://vld.codeplex.com/)
 
-If you do not want to use Visual Leak Detector, remove the include for vld.h
+If you want to use Visual Leak Detector, remove the "//" at #include <vld.h>
 in Gw2Browser.cpp.
 
 Authors
