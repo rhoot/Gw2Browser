@@ -167,7 +167,6 @@ namespace gw2b {
 	//============================================================================/
 
 	wxFileName BrowserWindow::findDatIndex( ) {
-		wxString path;
 
 		wxStandardPathsBase& stdp = wxStandardPaths::Get( );
 		auto configPath = stdp.GetDataDir( );
