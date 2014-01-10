@@ -72,9 +72,13 @@ Authors
 
 * [Khral Steelforge](https://github.com/kytulendu)
 
-special thanks to:
+thanks to:
 
 * [Rhoot](https://github.com/rhoot) : Original Gw2Browser
 * [Loumie](https://github.com/ahom) : gw2DatTools
 * David Dantowitz : Simple CRC
 * [Xtridence](http://forum.xentax.com/viewtopic.php?p=72880#p72880) : modified GWUnpacker to work with Gw2.dat
+
+special thanks to:
+
+* ArenaNet and the team that make Guild Wars 2!

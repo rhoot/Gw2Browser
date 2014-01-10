@@ -29,7 +29,7 @@
 // STL includes
 #include <memory>
 
-// OMP
+// OpenMP
 #include <omp.h>
 
 // wxWidgets
@@ -53,11 +53,6 @@
 // Handy defines
 #define ArraySize(x)                (sizeof(x) / sizeof(*x))
 #define Assert                      wxASSERT
-
-// Compiler specific
-#define NakedCall                   __declspec(naked)
-#define InlineAsm                   __asm
-#define ZeroSizeArray               1
 
 namespace gw2b
 {

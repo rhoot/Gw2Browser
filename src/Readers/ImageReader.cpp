@@ -374,38 +374,35 @@ namespace gw2b {
 	}
 
 	void ImageReader::processDXTColor( BGR* p_colors, uint8* p_alphas, const DXTColor& p_blockColor, bool p_isDXT1 ) const {
-		static XMFLOAT4 unpackedColorScale( 255.f / 31.f, 255.f / 63.f, 255.f / 31.f, 1.f );
-
-		XMU565 color1Src( p_blockColor.color1 );
-		XMU565 color2Src( p_blockColor.color2 );
-		XMVECTOR colors[4];
-
-		XMVECTOR colorScale = ::XMLoadFloat4( &unpackedColorScale );
-
-		colors[0] = ::XMVectorSetW( ::XMLoadU565( &color1Src ), 255.0f );
-		colors[0] = ::XMVectorSwizzle( colors[0], 2, 1, 0, 3 );
-		colors[0] = ::XMVectorMultiply( colors[0], colorScale );
-		colors[1] = ::XMVectorSetW( ::XMLoadU565( &color2Src ), 255.0f );
-		colors[1] = ::XMVectorSwizzle( colors[1], 2, 1, 0, 3 );
-		colors[1] = ::XMVectorMultiply( colors[1], colorScale );
-
+		// Color 0
+		p_colors[0].r = ( p_blockColor.red1 << 3 ) | ( p_blockColor.red1 >> 2 );
+		p_colors[0].g = ( p_blockColor.green1 << 2 ) | ( p_blockColor.green1 >> 4 );
+		p_colors[0].b = ( p_blockColor.blue1 << 3 ) | ( p_blockColor.blue1 >> 2 );
+		// Color 1
+		p_colors[1].r = ( p_blockColor.red2 << 3 ) | ( p_blockColor.red2 >> 2 );
+		p_colors[1].g = ( p_blockColor.green2 << 2 ) | ( p_blockColor.green2 >> 4 );
+		p_colors[1].b = ( p_blockColor.blue2 << 3 ) | ( p_blockColor.blue2 >> 2 );
+		// Colors 2 and 3
 		if ( !p_isDXT1 || p_blockColor.color1 > p_blockColor.color2 ) {
-			colors[2] = ::XMVectorLerp( colors[0], colors[1], ( 1.0f / 3.0f ) );
-			colors[2] = ::XMVectorSetW( colors[2], 255.0f );
-			colors[3] = ::XMVectorLerp( colors[0], colors[1], ( 2.0f / 3.0f ) );
-			colors[3] = ::XMVectorSetW( colors[3], 255.0f );
-		} else {
-			colors[2] = ::XMVectorLerp( colors[0], colors[1], 0.5f );
-			colors[2] = ::XMVectorSetW( colors[2], 255.0f );
-			colors[3] = ::XMVectorSet( 0.0f, 0.0f, 0.0f, 0.0f );
-		}
-
-		for ( uint i = 0; i < ArraySize( colors ); i++ ) {
-			XMUBYTE4 color;
-			::XMStoreUByte4( &color, colors[i] );
-			::memcpy( &p_colors[i], &color, sizeof( p_colors[i] ) );
+			p_colors[2].r = ( p_colors[0].r * 2 + p_colors[1].r ) / 3;
+			p_colors[2].g = ( p_colors[0].g * 2 + p_colors[1].g ) / 3;
+			p_colors[2].b = ( p_colors[0].b * 2 + p_colors[1].b ) / 3;
+			p_colors[3].r = ( p_colors[0].r + p_colors[1].r * 2 ) / 3;
+			p_colors[3].g = ( p_colors[0].g + p_colors[1].g * 2 ) / 3;
+			p_colors[3].b = ( p_colors[0].b + p_colors[1].b * 2 ) / 3;
+			// Alpha is only being set for DXT1
 			if ( p_alphas ) {
-				p_alphas[i] = color.w;
+				::memset( p_alphas, 0xff, 4 );
+			}
+		} else {
+			p_colors[2].r = ( p_colors[0].r + p_colors[1].r ) >> 1;
+			p_colors[2].g = ( p_colors[0].g + p_colors[1].g ) >> 1;
+			p_colors[2].b = ( p_colors[0].b + p_colors[1].b ) >> 1;
+			::memset( &p_colors[3], 0, sizeof( p_colors[3] ) );
+			// Alpha is only being set for DXT1
+			if ( p_alphas ) {
+				::memset( p_alphas, 0xff, 3 );
+				p_alphas[3] = 0x0;
 			}
 		}
 	}
