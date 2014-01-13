@@ -274,8 +274,7 @@ namespace gw2b {
 
 		// Allocate output
 		auto output = allocate<BGRA>( atex->width * atex->height );
-		// Fix me
-		uint32_t outputBufferSize = 1024 * 1024 * 30; // We make the assumption that no file is bigger than 30 Mb
+		uint32_t outputBufferSize = ( atex->width * atex->height );
 
 		// Uncompress
 		switch ( atex->formatInteger ) {
