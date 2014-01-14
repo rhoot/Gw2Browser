@@ -1,0 +1,3 @@
+[submodule "gw2DatTools"]
+	path = extern/gw2DatTools
+	url = git://github.com/kytulendu/gw2DatTools.git

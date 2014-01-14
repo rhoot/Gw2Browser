@@ -45,7 +45,7 @@ moment.** Decompressing one produces garbage blocks, so viewing them is
 disabled until the reason has been determined.
 
 * **Garbage code architecture!** todo : reducing the god objects and moving
-privates out of the header files.
+privates out of the header files, etc.
 
 Libraries and restrictions
 --------------------------

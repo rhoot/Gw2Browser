@@ -4,9 +4,6 @@ TODO list
 * Port the renderer from D3D9 to OpenGL, run natively on MacOSX or Linux!
 (I will try, with my beginner level skill!)
 
-* Use [gw2formats](https://github.com/rhoot/gw2formats) to read the files
-instead since all of the file format is documented there.
-
 * Some restructuring. Decouple views from their data, for instance. Clean up 
 headers, etc.
 
@@ -14,7 +11,8 @@ headers, etc.
 the index. This is needed for bank files, EULA, and to a certain degree also
 for sound files.
 
-* Support for sound files. (Technically, support for all files!)
+* Support for sound files. (Technically, support for all files!), see [gw2formats](https://github.com/kytulendu/gw2formats)
+need to do 64bit port of gw2formats
 
 * Support for model LODs, collision mesh rendering, and more.
 
