@@ -4,6 +4,8 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
+Copyright (C) 2013 Till034 <https://github.com/Till034>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -133,6 +135,7 @@ namespace gw2b {
 
 	/** Tree control containing categories and entries of a DatIndex. */
 	class CategoryTree : public wxTreeCtrl, public IDatIndexListener {
+		wxDECLARE_DYNAMIC_CLASS( CategoryTree );
 		typedef std::set<ICategoryTreeListener*>    ListenerSet;
 	private:
 		std::shared_ptr<DatIndex>   m_index;
@@ -143,6 +146,8 @@ namespace gw2b {
 		*  \param[in]  p_location   Optional location of the control.
 		*  \param[in]  p_size       Optional size of the control. */
 		CategoryTree( wxWindow* p_parent, const wxPoint& p_location = wxDefaultPosition, const wxSize& p_size = wxDefaultSize );
+		/** Constructor */
+		CategoryTree();
 		/** Destructor. */
 		virtual ~CategoryTree( );
 
@@ -185,6 +190,11 @@ namespace gw2b {
 		/** Called by the .dat index when it is destroyed.
 		*  \param[in]  p_index  Reference to the index being destroyed. */
 		virtual void onIndexDestruction( DatIndex& p_index ) override;
+	protected:
+		/** Compare 2 items and return -1, 0 or +1 if the first item is less than,
+		equal to or greater than the second one.
+		*  \param[in]  item1, item2 Items to compare. */
+		virtual int OnCompareItems( const wxTreeItemId& p_item1, const wxTreeItemId& p_item2 );
 	private:
 		void addCategoryEntriesToArray( Array<const DatIndexEntry*>& p_array, uint& p_index, const DatIndexCategory& p_category ) const;
 

@@ -4,6 +4,8 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
+Copyright (C) 2013 Till034 <https://github.com/Till034>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -53,7 +55,12 @@ namespace gw2b {
 	//      CategoryTree
 	//----------------------------------------------------------------------------
 
-	CategoryTree::CategoryTree( wxWindow* p_parent, const wxPoint& p_location, const wxSize& p_size )
+	wxIMPLEMENT_DYNAMIC_CLASS( CategoryTree, wxTreeCtrl );
+
+	CategoryTree::CategoryTree() {
+	}
+
+	CategoryTree::CategoryTree( wxWindow* p_parent, const wxPoint& p_location, const wxSize& p_size)
 		: wxTreeCtrl( p_parent, wxID_ANY, p_location, p_size, wxTR_HIDE_ROOT | wxTR_TWIST_BUTTONS | wxTR_DEFAULT_STYLE | wxTR_MULTIPLE ) {
 		// Initialize tree
 		auto images = new CategoryTreeImageList( );
@@ -79,6 +86,26 @@ namespace gw2b {
 		for ( auto it = m_listeners.begin( ); it != m_listeners.end( ); it++ ) {
 			( *it )->onTreeDestruction( *this );
 		}
+	}
+
+	//============================================================================/
+
+	int CategoryTree::OnCompareItems( const wxTreeItemId& p_item1, const wxTreeItemId& p_item2 ) {
+		int Result = 0;
+		auto itemData1 = static_cast<const CategoryTreeItem*>( this->GetItemData( p_item1 ) );
+		auto itemData2 = static_cast<const CategoryTreeItem*>( this->GetItemData( p_item2 ) );
+
+		if ( itemData1->dataType() == CategoryTreeItem::DT_Entry && itemData2->dataType() == CategoryTreeItem::DT_Entry ) {
+			auto itemEntry1 = static_cast<const DatIndexEntry*>( itemData1->data() );
+			auto itemEntry2 = static_cast<const DatIndexEntry*>( itemData2->data() );
+
+			if ( itemEntry1->baseId() > itemEntry2->baseId() ) {
+				Result = 1;
+			} else if ( itemEntry1->baseId() < itemEntry2->baseId() ) {
+				Result = -1;
+			}
+		}
+		return Result;
 	}
 
 	//============================================================================/
