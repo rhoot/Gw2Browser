@@ -4,6 +4,7 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -41,7 +42,8 @@ namespace gw2b {
 		this->SetBackgroundStyle( wxBG_STYLE_CUSTOM );
 		this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
 		this->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOWTEXT ) );
-		this->SetFont( wxSystemSettings::GetFont( wxSYS_ANSI_FIXED_FONT ) );
+		wxFont hexFont( 10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL );
+		this->SetFont( hexFont );
 
 		this->Connect( wxEVT_PAINT, wxPaintEventHandler( HexControl::onPaintEvt ) );
 	}
@@ -177,10 +179,13 @@ namespace gw2b {
 	}
 
 	char HexControl::filterTextChar( byte pChar ) {
-		if ( pChar != 173 && ( ( pChar > 31 && pChar < 127 ) || pChar > 159 ) )
+		//if ( pChar != 173 && ( ( pChar > 31 && pChar < 127 ) || pChar > 159 ) ) {
+		// Display only printable ASCII character
+		if ( pChar > 31 && pChar < 127 ) {
 			return pChar;
-		else
+		} else {
 			return '.';
+		}
 	}
 
 	void HexControl::setData( const byte* pData, uint p_size ) {
