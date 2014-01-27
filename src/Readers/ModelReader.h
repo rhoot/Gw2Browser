@@ -38,9 +38,9 @@ namespace gw2b {
 #pragma pack(push, 1)
 
 	struct Vertex {
-		XMFLOAT3 position;
-		XMFLOAT3 normal;
-		XMFLOAT2 uv;
+		glm::vec3 position;
+		glm::vec3 normal;
+		glm::vec2 uv;
 	};
 
 	union Triangle {
@@ -53,36 +53,37 @@ namespace gw2b {
 	};
 
 	struct Bounds {
-		XMFLOAT3 min;
-		XMFLOAT3 max;
+		glm::vec3 min;
+		glm::vec3 max;
 
 		Bounds& operator+=( const Bounds& p_other ) {
-			min.x = wxMin( min.x, p_other.min.x );
-			min.y = wxMin( min.y, p_other.min.y );
-			min.z = wxMin( min.z, p_other.min.z );
-			max.x = wxMax( max.x, p_other.max.x );
-			max.y = wxMax( max.y, p_other.max.y );
-			max.z = wxMax( max.z, p_other.max.z );
+			min = glm::min( min, p_other.min );
+			max = glm::max( max, p_other.max );
 			return *this;
 		}
+		/*
+		glm::vec3 center() const {
+			glm::vec3 min = this->min;
+			glm::vec3 max = this->max;
 
-		XMFLOAT3 center( ) const {
-			XMVECTOR min = ::XMLoadFloat3( &this->min );
-			XMVECTOR max = ::XMLoadFloat3( &this->max );
-			XMVECTOR center = ::XMVectorLerp( min, max, 0.5f );
-			XMFLOAT3 retval;
-			::XMStoreFloat3( &retval, center );
+			//glm::vec3 center = ::XMVectorLerp( min, max, 0.5f );
+			glm::vec3 center = glm::lerp( min, max, 0.5f );
+			//XMVectorLerp
+			//Result.x = min.x + 0.5f * ( max.x - min.x );
+			//Result.y = min.y + 0.5f * ( max.y - min.y );
+			//Result.z = min.z + 0.5f * ( max.z - min.z );
+
+			glm::vec3 retval = center;
 			return retval;
 		}
 
-		XMFLOAT3 size( ) const {
-			XMVECTOR min = ::XMLoadFloat3( &this->min );
-			XMVECTOR max = ::XMLoadFloat3( &this->max );
-			XMVECTOR size = ::XMVectorSubtract( max, min );
-			XMFLOAT3 retval;
-			::XMStoreFloat3( &retval, size );
+		glm::vec3 size() const {
+			glm::vec3 min = this->min;
+			glm::vec3 max = this->max;
+			glm::vec3 size = ( max - min );
+			glm::vec3 retval = size;
 			return retval;
-		}
+		}*/
 	};
 
 #pragma pack(pop)

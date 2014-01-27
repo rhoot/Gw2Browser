@@ -319,22 +319,22 @@ namespace gw2b {
 		// Calculate bounds
 		float floatMin = std::numeric_limits<float>::min( );
 		float floatMax = std::numeric_limits<float>::max( );
-		p_mesh.bounds.min = XMFLOAT3( floatMax, floatMax, floatMax );
-		p_mesh.bounds.max = XMFLOAT3( floatMin, floatMin, floatMin );
+		p_mesh.bounds.min = glm::vec3( floatMax, floatMax, floatMax );
+		p_mesh.bounds.max = glm::vec3( floatMin, floatMin, floatMin );
 
-		XMVECTOR min = ::XMLoadFloat3( &p_mesh.bounds.min );
-		XMVECTOR max = ::XMLoadFloat3( &p_mesh.bounds.max );
+		glm::vec3 min = p_mesh.bounds.min;
+		glm::vec3 max = p_mesh.bounds.max;
 
 		auto indices = reinterpret_cast<const uint16*>( p_data );
 		for ( uint i = 0; i < p_indexCount; i++ ) {
 			auto& vertex = p_mesh.vertices[indices[i]];
-			XMVECTOR position = ::XMLoadFloat3( &vertex.position );
-			min = ::XMVectorMin( min, position );
-			max = ::XMVectorMax( max, position );
+			glm::vec3 position = vertex.position;
+			min = glm::min( min, position );
+			max = glm::max( max, position );
 		}
 
-		::XMStoreFloat3( &p_mesh.bounds.min, min );
-		::XMStoreFloat3( &p_mesh.bounds.max, max );
+		p_mesh.bounds.min = min;
+		p_mesh.bounds.max = max;
 	}
 
 	void ModelReader::readVertexBuffer( Mesh& p_mesh, const byte* p_data, uint p_vertexCount, ANetFlexibleVertexFormat p_vertexFormat ) const {
@@ -374,15 +374,15 @@ namespace gw2b {
 			}
 			// Bit 5: Tangent
 			if ( p_vertexFormat & ANFVF_Tangent ) {
-				pos += sizeof( XMFLOAT3 );
+				pos += sizeof( glm::vec3 );
 			}
 			// Bit 6: Bitangent
 			if ( p_vertexFormat & ANFVF_Bitangent ) {
-				pos += sizeof( XMFLOAT3 );
+				pos += sizeof( glm::vec3 );
 			}
 			// Bit 7: Tangent frame
 			if ( p_vertexFormat & ANFVF_TangentFrame ) {
-				pos += sizeof( XMFLOAT3 );
+				pos += sizeof( glm::vec3 );
 			}
 			// Bit 8-15: 32-bit UV
 			uint uvFlag = ( p_vertexFormat & ANFVF_UV32Mask ) >> 8;

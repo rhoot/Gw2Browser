@@ -42,10 +42,13 @@
 #include <gw2DatTools/compression/inflateDatFileBuffer.h>
 #include <gw2DatTools/compression/inflateTextureFileBuffer.h>
 
+// OpenGL Mathematics
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+
 // D3D9, DirectX SDK June 2010
 #include <d3d9.h>
 #include <d3dx9.h>
-#include <xnamath.h>
 
 // 16-bit floats
 #include "Imported/half.h"

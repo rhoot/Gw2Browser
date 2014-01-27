@@ -90,8 +90,12 @@
     <ClCompile Include="..\src\Viewers\BinaryViewer\HexControl.cpp" />
     <ClCompile Include="..\src\Viewers\ImageViewer.cpp" />
     <ClCompile Include="..\src\Viewers\ImageViewer\ImageControl.cpp" />
-    <ClCompile Include="..\src\Viewers\ModelViewer.cpp" />
-    <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp" />
+    <ClCompile Include="..\src\Viewers\ModelViewer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\model_view.hlsl" />
@@ -155,12 +159,12 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
-    <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <IncludePath>..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <LibraryPath>..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <IncludePath>..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <LibraryPath>..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
@@ -171,11 +175,11 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
-    <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <IncludePath>..\extern\glm;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <LibraryPath>..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <IncludePath>..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <LibraryPath>..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
