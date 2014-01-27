@@ -61,18 +61,11 @@ namespace gw2b {
 			max = glm::max( max, p_other.max );
 			return *this;
 		}
-		/*
+
 		glm::vec3 center() const {
 			glm::vec3 min = this->min;
 			glm::vec3 max = this->max;
-
-			//glm::vec3 center = ::XMVectorLerp( min, max, 0.5f );
 			glm::vec3 center = glm::lerp( min, max, 0.5f );
-			//XMVectorLerp
-			//Result.x = min.x + 0.5f * ( max.x - min.x );
-			//Result.y = min.y + 0.5f * ( max.y - min.y );
-			//Result.z = min.z + 0.5f * ( max.z - min.z );
-
 			glm::vec3 retval = center;
 			return retval;
 		}
@@ -83,7 +76,7 @@ namespace gw2b {
 			glm::vec3 size = ( max - min );
 			glm::vec3 retval = size;
 			return retval;
-		}*/
+		}
 	};
 
 #pragma pack(pop)
