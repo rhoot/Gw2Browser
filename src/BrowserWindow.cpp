@@ -4,6 +4,7 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -52,13 +53,15 @@ namespace gw2b {
 		, m_splitter( nullptr )
 		, m_catTree( nullptr )
 		, m_previewPanel( nullptr ) {
+		// Set window icon
+		SetIcon( wxICON( GW2BROWSER_ICON ) );
 		auto menuBar = new wxMenuBar( );
 		// File menu
 		auto fileMenu = new wxMenu( );
 		wxAcceleratorEntry accel( wxACCEL_CTRL, 'O' );
 		fileMenu->Append( wxID_OPEN, wxT( "&Open" ), wxT( "Open a file for browsing" ) )->SetAccel( &accel );
 		fileMenu->AppendSeparator( );
-		fileMenu->Append( wxID_EXIT, wxT( "E&xit" ) );
+		fileMenu->Append( wxID_EXIT, wxT( "E&xit\tAlt+F4" ) );
 		// Help menu
 		auto helpMenu = new wxMenu( );
 		helpMenu->Append( wxID_ABOUT, wxT( "&About Gw2Browser" ) );
