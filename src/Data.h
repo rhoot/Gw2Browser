@@ -5,6 +5,7 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -44,8 +45,8 @@ namespace gw2b {
 		wxBitmap loadJPG( const byte* p_data, uint p_size );
 
 		// File: data/about_box.jpg
-		extern const uint about_box_jpg_size;
-		extern const byte about_box_jpg[];
+		extern const uint about_box_png_size;
+		extern const byte about_box_png[];
 		// File: data/checkers.png
 		extern const uint checkers_png_size;
 		extern const byte checkers_png[];
@@ -67,6 +68,9 @@ namespace gw2b {
 		// File: data/open_folder.png
 		extern const uint open_folder_png_size;
 		extern const byte open_folder_png[];
+		// File: data/sound.png
+		extern const uint sound_png_size;
+		extern const byte sound_png[];
 		// File: data/text.png
 		extern const uint text_png_size;
 		extern const byte text_png[];

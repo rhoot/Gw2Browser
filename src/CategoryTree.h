@@ -93,6 +93,7 @@ namespace gw2b {
 			IT_Dll = 4,        /**< DLL file icon. */
 			IT_Image = 5,        /**< Image file icon. */
 			IT_Text = 6,        /**< Text file icon. */
+			IT_Sound = 7,        /**< Sound file icon. */
 		};
 	public:
 		/** Constructor. Loads the images needed by this image list. */

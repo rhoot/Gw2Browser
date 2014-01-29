@@ -39,7 +39,7 @@ namespace gw2b {
 		this->SetClientSize( 400, 384 );
 
 		// Create bitmap at top
-		auto bitmap = data::loadJPG( data::about_box_jpg, data::about_box_jpg_size );
+		auto bitmap = data::loadPNG( data::about_box_png, data::about_box_png_size );
 		auto bitmapBox = new wxStaticBitmap( this, wxID_ANY, bitmap, wxPoint( 0, 0 ), wxSize( 400, 384 ) );
 	}
 
