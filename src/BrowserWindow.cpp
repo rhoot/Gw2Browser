@@ -54,7 +54,7 @@ namespace gw2b {
 		, m_catTree( nullptr )
 		, m_previewPanel( nullptr ) {
 		// Set window icon
-		SetIcon( wxICON( GW2BROWSER_ICON ) );
+		SetIcon( wxICON( aaaaGW2BROWSER_ICON ) );
 		auto menuBar = new wxMenuBar( );
 		// File menu
 		auto fileMenu = new wxMenu( );
