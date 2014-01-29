@@ -177,88 +177,83 @@ namespace gw2b {
 			}
 		}
 
-		switch ( p_fileType ) {
-
 		// Sounds
-		case ANFT_MP3:
-		case ANFT_OGG:
-		case ANFT_Sound:
+		else if ( p_fileType == ANFT_MP3 || p_fileType == ANFT_OGG || p_fileType == ANFT_Sound ) {
 			MakeCategory( wxT( "Sounds" ) );
-			break;
+		}
 
 		// Binaries
-		case ANFT_Binary:
-		case ANFT_EXE:
-		case ANFT_DLL:
+		else if ( p_fileType == ANFT_Binary || p_fileType == ANFT_EXE || p_fileType == ANFT_DLL ) {
 			MakeCategory( wxT( "Binaries" ) );
-			break;
+		}
 
 		// Strings
-		case ANFT_StringFile:
+		else if ( p_fileType == ANFT_StringFile ) {
 			MakeCategory( wxT( "Strings" ) );
-			break;
+		}
 
 		// Manifests
-		case ANFT_Manifest:
+		else if ( p_fileType == ANFT_Manifest ) {
 			MakeCategory( wxT( "Manifests" ) );
-			break;
+		}
 
 		// Bank files
-		case ANFT_Bank:
+		else if ( p_fileType == ANFT_Bank ) {
 			MakeCategory( wxT( "Bank files" ) );
-			break;
+		}
 
 		// Model files
-		case ANFT_Model:
+		else if ( p_fileType == ANFT_Model ) {
 			MakeCategory( wxT( "Models" ) );
-			break;
+		}
 
 		// Dependency table
-		case ANFT_DependencyTable:
+		else if ( p_fileType == ANFT_DependencyTable ) {
 			MakeCategory( wxT( "Dependency tables" ) );
-			break;
+		}
 
 		// EULA
-		case ANFT_EULA:
+		else if ( p_fileType == ANFT_EULA ) {
 			MakeCategory( wxT( "EULA" ) );
-			break;
+		}
 
 		// Cinematic
-		case ANFT_Cinematic:
+		else if ( p_fileType == ANFT_Cinematic ) {
 			MakeCategory( wxT( "Cinematics" ) );
-			break;
+		}
 
 		// Havok
-		case ANFT_HavokCloth:
+		else if ( p_fileType == ANFT_HavokCloth ) {
 			MakeCategory( wxT( "Havok cloth" ) );
-			break;
+		}
 
 		// Maps
-		case ANFT_Map:
+		else if ( p_fileType == ANFT_Map ) {
 			MakeCategory( wxT( "Maps" ) );
-			break;
+		}
 
 		// Materials
-		case ANFT_Material:
+		else if ( p_fileType == ANFT_Material ) {
 			MakeCategory( wxT( "Materials" ) );
-			break;
+		}
 
 		// Random PF files
-		case ANFT_PF:
+		else if ( p_fileType == ANFT_PF ) {
 			MakeCategory( wxT( "Misc" ) );
+
 			if ( p_size >= 12 ) {
 				MakeSubCategory( wxString( reinterpret_cast<const char*>( p_data + 8 ), 4 ) );
 			}
-			break;
+		}
 
 		// ABFF
-		case ANFT_ABFF :
+		else if ( p_fileType == ANFT_ABFF ) {
 			MakeCategory( wxT( "Misc" ) );
 			MakeSubCategory( wxT( "ABFF" ) );
-			break;
+		}
 
 		// unknown stuff
-		default:
+		else {
 			MakeCategory( wxT( "Unknown" ) );
 			MakeSubCategory( wxString::Format( wxT( "%x" ), *reinterpret_cast<const uint32*>( p_data ) ) );
 		}
