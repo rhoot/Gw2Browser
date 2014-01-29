@@ -76,10 +76,11 @@ thanks to:
 
 * [Rhoot](https://github.com/rhoot) : Original Gw2Browser
 * [Loumie](https://github.com/ahom) : gw2DatTools
-* [Till034] (https://github.com/Till034) : OnCompareItems function overload
+* [Till034](https://github.com/Till034) : OnCompareItems function overload
 * David Dantowitz : Simple CRC
 * [Xtridence](http://forum.xentax.com/viewtopic.php?p=72880#p72880) : modified GWUnpacker to work with Gw2.dat
+* [Open Icon Library](http://openiconlibrary.sourceforge.net/) : Icons used in this software
 
 special thanks to:
 
-* ArenaNet and the team that make Guild Wars 2!
+* ArenaNet/NCSoft and the team that make Guild Wars 2!
