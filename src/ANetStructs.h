@@ -4,6 +4,7 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -44,24 +45,37 @@ namespace gw2b {
 		ANFT_ATEU,                  /**< ATEU texture, used for UI. */
 		ANFT_ATET,                  /**< ATET texture, unknown use. */
 		ANFT_DDS,                   /**< DDS texture, not an ANet specific format. */
+		ANFT_JPEG,					/**< JPEG Image, not an ANet specific format. */
 		ANFT_TextureEnd,            /**< Values in between this and ANFT_TextureStart are texture types. */
 
 		// Sound
+		ANFT_SoundStart,			/**< Values in between this and ANFT_SoundEnd are sound types. */
 		ANFT_Sound,                 /**< Sound file of unknown type. */
 		ANFT_MP3,                   /**< MP3 file, probably with a custom header. */
 		ANFT_OGG,                   /**< OGG file, probably with a custom header. */
+		ANFT_SoundEnd,				/**< Values in between this and ANFT_SoundStart are sound types. */
 
 		// PF
 		ANFT_PF,                    /**< PF file of unknown type. */
 		ANFT_Manifest,              /**< Manifest file. */
-		ANFT_Bank,                  /**< Bank file, contains other files. */
+		ANFT_TextPackManifest,		/**< TextPack Manifest file. */
+		ANFT_TextPackVoices,		/**< TextPack Voices file. */
+		ANFT_Bank,                  /**< Soundbank file, contains other files. */
+		ANFT_BankIndex,				/**< Soundbank files index */
 		ANFT_Model,                 /**< Model file. */
 		ANFT_DependencyTable,       /**< Dependency table. */
 		ANFT_EULA,                  /**< EULA file. */
 		ANFT_HavokCloth,            /**< Cloth physics properties. */
 		ANFT_Map,                   /**< Map file. */
+		ANFT_MapShadow,				/**< Map shadow file. */
+		ANFT_PagedImageTable,		/**< Paged Image Table file. */
 		ANFT_Material,              /**< Compiled DirectX 9 shader. */
+		ANFT_Composite,				/**< Composite data. */
 		ANFT_Cinematic,             /**< Cinematic data. */
+		ANFT_Animation,				/**< Animation data. */
+		ANFT_EmoteAnimation,		/**< Emote animation data. */
+		ANFT_PortalManifest,		/**< Portal Manifest file. */
+		ANFT_AudioScript,			/**< Audio script file. */
 
 		// Binary
 		ANFT_Binary,                /**< Binary file of unknown type. */

@@ -5,6 +5,7 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -48,6 +49,112 @@ namespace gw2b {
 		return m_data;
 	}
 
+	const wxChar* FileReader::extension() const {
+		switch ( this->m_fileType ) {
+		// Texture
+		case ANFT_ATEX:
+			return wxT( ".atex" );
+			break;
+		case ANFT_ATTX:
+			return wxT( ".attx" );
+			break;
+		case ANFT_ATEC:
+			return wxT( ".atec" );
+			break;
+		case ANFT_ATEP:
+			return wxT( ".atep" );
+			break;
+		case ANFT_ATEU:
+			return wxT( ".ateu" );
+			break;
+		case ANFT_ATET:
+			return wxT( ".atet" );
+			break;
+		case ANFT_DDS:
+			return wxT( ".dds" );
+			break;
+		case ANFT_JPEG:
+			return wxT( ".jpg" );
+			break;
+
+		// String files
+		case ANFT_StringFile:
+			return wxT( ".strs" );
+			break;
+		case ANFT_EULA:
+			return wxT( ".eula" );
+			break;
+
+		// Maps stuff
+		case ANFT_Map:
+			return wxT( ".mapc" );
+			break;
+		case ANFT_MapShadow:
+			return wxT( ".mpsd" );
+			break;
+		case ANFT_PagedImageTable:
+			return wxT( ".pimg" );
+			break;
+
+		case ANFT_Material:
+			return wxT( ".amat" );
+			break;
+		case ANFT_Composite:
+			return wxT( ".cmpc" );
+			break;
+		case ANFT_HavokCloth:
+			return wxT( ".hvkc" );
+			break;
+		case ANFT_Animation:
+			return wxT( ".anic" );
+			break;
+		case ANFT_EmoteAnimation:
+			return wxT( ".emoc" );
+			break;
+
+		case ANFT_Cinematic:
+			return wxT( ".cinp" );
+			break;
+
+		case ANFT_PortalManifest:
+			return wxT( ".prlt" );
+			break;
+
+		case ANFT_TextPackManifest:
+			return wxT( ".txtm" );
+			break;
+		case ANFT_TextPackVoices:
+			return wxT( ".txtv" );
+			break;
+
+		// Sound
+		case ANFT_Sound:
+			return wxT( ".asnd" );
+			break;
+
+		// Audio script
+		case ANFT_AudioScript:
+			return wxT( ".amsp" );
+			break;
+
+		// Binary
+		case ANFT_DLL:
+			return wxT( ".dll" );
+			break;
+		case ANFT_EXE:
+			return wxT( ".exe" );
+			break;
+
+		default:
+			return wxT( ".raw" );
+			break;
+		}
+	}
+
+	FileReader* FileReader::readerForFileType( const Array<byte>& p_data, ANetFileType p_fileType ) {
+		return new FileReader( p_data, p_fileType );
+	}
+
 	FileReader* FileReader::readerForData( const Array<byte>& p_data, ANetFileType p_fileType ) {
 		switch ( p_fileType ) {
 		case ANFT_ATEX:
@@ -57,9 +164,8 @@ namespace gw2b {
 		case ANFT_ATEU:
 		case ANFT_ATET:
 		case ANFT_DDS:
-			if ( ImageReader::isValidHeader( p_data.GetPointer( ), p_data.GetSize( ) ) ) {
-				return new ImageReader( p_data, p_fileType );
-			}
+		case ANFT_JPEG:
+			return new ImageReader( p_data, p_fileType );
 			break;
 		case ANFT_Model:
 			return new ModelReader( p_data, p_fileType );

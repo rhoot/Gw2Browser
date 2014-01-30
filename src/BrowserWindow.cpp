@@ -356,11 +356,21 @@ namespace gw2b {
 					return;
 				}
 
+				// Identify files extensions
+				auto fileType = ANFT_Unknown;
+				m_datFile.identifyFileType( entryData.GetPointer(), entryData.GetSize(), fileType );
+				auto reader = FileReader::readerForFileType( entryData, fileType );
+
+				auto ext = wxEmptyString;
+				if ( reader ) {
+					ext = reader->extension();
+				}
+
 				// Ask for location
 				wxFileDialog dialog( this,
-					wxString::Format( wxT( "Extract %s..." ), entry->name( ) ),
+					wxString::Format( wxT( "Extract %s%s..." ), entry->name(), ext ),
 					wxEmptyString,
-					entry->name( ),
+					entry->name() + ext,
 					wxFileSelectorDefaultWildcardStr,
 					wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
 

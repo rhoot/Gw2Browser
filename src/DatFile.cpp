@@ -4,6 +4,7 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -38,20 +39,31 @@ namespace gw2b {
 		FCC_ATEU = 0x55455441,
 		FCC_ATET = 0x54455441,
 		FCC_DDS = 0x20534444,
+		FCC_JPEG = 0xe1ffd8ff,
 		FCC_strs = 0x73727473,
 		FCC_asnd = 0x646e7361,
-		FCC_CINP = 0x504e4943,
 
 		// PF FourCC
 		FCC_ARMF = 0x464d5241,
 		FCC_ASND = 0x444e5341,
 		FCC_ABNK = 0x4b4e4241,
+		FCC_ABIX = 0x58494241,
+		FCC_AMSP = 0x50534d41,
+		FCC_CINP = 0x504e4943,
 		FCC_MODL = 0x4c444f4d,
 		FCC_DEPS = 0x53504544,
 		FCC_EULA = 0x616c7565,
 		FCC_hvkC = 0x436b7668,
 		FCC_mapc = 0x6370616d,
+		FCC_mpsd = 0x6473706d,
+		FCC_PIMG = 0x474d4950,
 		FCC_AMAT = 0x54414d41,
+		FCC_anic = 0x63696e61,
+		FCC_emoc = 0x636f6d65,
+		FCC_prlt = 0x746c7270,
+		FCC_cmpc = 0x63706d63,
+		FCC_txtm = 0x6d747874,
+		FCC_txtv = 0x76747874,
 
 		// Sound id's
 		FCC_OggS = 0x5367674f,
@@ -406,14 +418,14 @@ namespace gw2b {
 		case FCC_DDS:
 			po_fileType = ANFT_DDS;
 			break;
+		case FCC_JPEG:
+			po_fileType = ANFT_JPEG;
+			break;
 		case FCC_strs:
 			po_fileType = ANFT_StringFile;
 			break;
 		case FCC_asnd:
 			po_fileType = ANFT_Sound;
-			break;
-		case FCC_CINP:
-			po_fileType = ANFT_Cinematic;
 			break;
 		}
 
@@ -449,11 +461,26 @@ namespace gw2b {
 			case FCC_ARMF:
 				po_fileType = ANFT_Manifest;
 				break;
+			case FCC_prlt:
+				po_fileType = ANFT_PortalManifest;
+				break;
+			case FCC_txtm:
+				po_fileType = ANFT_TextPackManifest;
+				break;
+			case FCC_txtv:
+				po_fileType = ANFT_TextPackVoices;
+				break;
 			case FCC_ASND:
 				po_fileType = ANFT_Sound;
 				break;
 			case FCC_ABNK:
 				po_fileType = ANFT_Bank;
+				break;
+			case FCC_ABIX:
+				po_fileType = ANFT_BankIndex;
+				break;
+			case FCC_AMSP:
+				po_fileType = ANFT_AudioScript;
 				break;
 			case FCC_MODL:
 				po_fileType = ANFT_Model;
@@ -470,8 +497,26 @@ namespace gw2b {
 			case FCC_mapc:
 				po_fileType = ANFT_Map;
 				break;
+			case FCC_mpsd:
+				po_fileType = ANFT_MapShadow;
+				break;
+			case FCC_PIMG:
+				po_fileType = ANFT_PagedImageTable;
+				break;
 			case FCC_AMAT:
 				po_fileType = ANFT_Material;
+				break;
+			case FCC_cmpc:
+				po_fileType = ANFT_Composite;
+				break;
+			case FCC_anic:
+				po_fileType = ANFT_Animation;
+				break;
+			case FCC_emoc:
+				po_fileType = ANFT_EmoteAnimation;
+				break;
+			case FCC_CINP:
+				po_fileType = ANFT_Cinematic;
 				break;
 			}
 		}

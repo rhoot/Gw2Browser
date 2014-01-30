@@ -44,6 +44,7 @@ namespace gw2b {
 		FCC_3DCX = 0x58434433,
 		FCC_DXT = 0x00545844,
 		FCC_DDS = 0x20534444,
+		FCC_JPEG = 0xe1ffd8ff,
 
 		FCC_DXT1 = 0x31545844,
 		FCC_DXT2 = 0x32545844,
@@ -71,26 +72,34 @@ namespace gw2b {
 
 		// Read the correct type of data
 		auto fourcc = *reinterpret_cast<const uint32*>( m_data.GetPointer( ) );
-		if ( fourcc != FCC_DDS ) {
-			if ( !this->readATEX( size, colors, alphas ) ) {
-				return wxImage( );
+		if ( fourcc != FCC_JPEG ) {
+			if ( fourcc != FCC_DDS ) {
+				if ( !this->readATEX( size, colors, alphas ) ) {
+					return wxImage();
+				}
+			} else {
+				if ( !this->readDDS( size, colors, alphas ) ) {
+					return wxImage();
+				}
 			}
+
+			// Create image and fill it with color data
+			wxImage image( size.x, size.y );
+			image.SetData( reinterpret_cast<unsigned char*>( colors ) );
+
+			// Set alpha if the format has any
+			if ( alphas ) {
+				image.SetAlpha( alphas );
+			}
+
+			return image;
 		} else {
-			if ( !this->readDDS( size, colors, alphas ) ) {
-				return wxImage( );
-			}
+			wxImage image;
+			wxMemoryInputStream stream( m_data.GetPointer(), m_data.GetSize() );
+			image.LoadFile( stream, wxBITMAP_TYPE_JPEG );
+
+			return image;
 		}
-
-		// Create image and fill it with color data
-		wxImage image( size.x, size.y );
-		image.SetData( reinterpret_cast<unsigned char*>( colors ) );
-
-		// Set alpha if the format has any
-		if ( alphas ) {
-			image.SetAlpha( alphas );
-		}
-
-		return image;
 	}
 
 	Array<byte> ImageReader::convertData( ) const {
@@ -120,6 +129,7 @@ namespace gw2b {
 	}
 
 	bool ImageReader::readDDS( wxSize& po_size, BGR*& po_colors, uint8*& po_alphas ) const {
+		Assert( isValidHeader( m_data.GetPointer(), m_data.GetSize() ) );
 		// Get header
 		if ( m_data.GetSize( ) < sizeof( DDSHeader ) ) {
 			return false;

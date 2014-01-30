@@ -4,6 +4,7 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -94,15 +95,18 @@ namespace gw2b {
 
 		// Should we convert the files first?
 		FileReader* reader = nullptr;
-		if ( m_mode == EM_Converted ) {
-			auto fileType = ANFT_Unknown;
-			m_datFile.identifyFileType( contents.GetPointer( ), contents.GetSize( ), fileType );
-			reader = FileReader::readerForData( contents, fileType );
+		auto fileType = ANFT_Unknown;
+		m_datFile.identifyFileType( contents.GetPointer(), contents.GetSize(), fileType );
 
-			if ( reader ) {
-				contents = reader->convertData( );
-				filename.SetExt( wxString( reader->extension( ) ).AfterFirst( wxT( '.' ) ) );
-			}
+		if ( m_mode == EM_Converted ) {
+			reader = FileReader::readerForData( contents, fileType );
+		} else {
+			reader = FileReader::readerForFileType( contents, fileType );
+		}
+
+		if ( reader ) {
+			contents = reader->convertData();
+			filename.SetExt( wxString( reader->extension() ).AfterFirst( wxT( '.' ) ) );
 		}
 
 		// Open file for writing

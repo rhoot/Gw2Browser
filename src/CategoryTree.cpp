@@ -400,6 +400,7 @@ namespace gw2b {
 		case ANFT_ATEU:
 		case ANFT_ATET:
 		case ANFT_DDS:
+		case ANFT_JPEG:
 			return CategoryTreeImageList::IT_Image;
 		case ANFT_EXE:
 			return CategoryTreeImageList::IT_Executable;

@@ -40,13 +40,6 @@ namespace gw2b {
 
 		//============================================================================/
 
-		wxBitmap loadJPG( const byte* p_data, uint p_size ) {
-			wxMemoryInputStream stream( p_data, p_size );
-			return wxBitmap( stream, wxBITMAP_TYPE_JPEG );
-		}
-
-		//============================================================================/
-
 		// PRO-TIP: Use Ctrl+F for the filename!
 
 		// File: data/checkers.png

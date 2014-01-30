@@ -4,6 +4,7 @@
 */
 
 /*
+Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -164,13 +165,16 @@ namespace gw2b {
 			case ANFT_DDS:
 				MakeSubCategory( wxT( "DDS" ) );
 				break;
+			case ANFT_JPEG:
+				MakeSubCategory( wxT( "JPEG" ) );
+				break;
 			}
 
-			if ( p_fileType != ANFT_DDS && p_size >= 12 ) {
+			if ( p_fileType != ANFT_JPEG && p_fileType != ANFT_DDS && p_size >= 12 ) {
 				uint16 width = *reinterpret_cast<const uint16*>( p_data + 0x8 );
 				uint16 height = *reinterpret_cast<const uint16*>( p_data + 0xa );
 				MakeSubCategory( wxString::Format( wxT( "%dx%d" ), width, height ) );
-			} else if ( p_size >= 20 ) {
+			} else if ( p_fileType != ANFT_JPEG && p_size >= 20 ) {
 				uint32 width = *reinterpret_cast<const uint32*>( p_data + 0x10 );
 				uint32 height = *reinterpret_cast<const uint32*>( p_data + 0x0c );
 				MakeSubCategory( wxString::Format( wxT( "%dx%d" ), width, height ) );
@@ -178,8 +182,20 @@ namespace gw2b {
 		}
 
 		// Sounds
-		else if ( p_fileType == ANFT_MP3 || p_fileType == ANFT_OGG || p_fileType == ANFT_Sound ) {
+		else if ( p_fileType > ANFT_SoundStart && p_fileType < ANFT_SoundEnd ) {
 			MakeCategory( wxT( "Sounds" ) );
+
+			switch ( p_fileType ) {
+			case ANFT_MP3:
+				MakeSubCategory( wxT( "MP3" ) );
+				break;
+			case ANFT_OGG:
+				MakeSubCategory( wxT( "OGG" ) );
+				break;
+			case ANFT_Sound:
+				MakeSubCategory( wxT( "Sounds" ) );
+				break;
+			}
 		}
 
 		// Binaries
@@ -197,9 +213,34 @@ namespace gw2b {
 			MakeCategory( wxT( "Manifests" ) );
 		}
 
-		// Bank files
+		// Portal Manifest
+		else if ( p_fileType == ANFT_PortalManifest ) {
+			MakeCategory( wxT( "Portal Manifests" ) );
+		}
+
+		// TextPack Manifest
+		else if ( p_fileType == ANFT_TextPackManifest ) {
+			MakeCategory( wxT( "TextPack Manifests" ) );
+		}
+
+		// TextPack Voices
+		else if ( p_fileType == ANFT_TextPackVoices ) {
+			MakeCategory( wxT( "TextPack Voices" ) );
+		}
+
+		// Soundbank
 		else if ( p_fileType == ANFT_Bank ) {
-			MakeCategory( wxT( "Bank files" ) );
+			MakeCategory( wxT( "Soundbank" ) );
+		}
+
+		// Soundbank index
+		else if ( p_fileType == ANFT_BankIndex ) {
+			MakeCategory( wxT( "Soundbank index" ) );
+		}
+
+		// Audio Script
+		else if ( p_fileType == ANFT_AudioScript ) {
+			MakeCategory( wxT( "Audio Scripts" ) );
 		}
 
 		// Model files
@@ -232,9 +273,33 @@ namespace gw2b {
 			MakeCategory( wxT( "Maps" ) );
 		}
 
+		// Map shadows
+		else if ( p_fileType == ANFT_MapShadow ) {
+			MakeCategory( wxT( "Maps shadow" ) );
+		}
+
+		// Mini Maps
+		else if ( p_fileType == ANFT_PagedImageTable ) {
+			MakeCategory( wxT( "Paged Image Table" ) );
+		}
+
 		// Materials
 		else if ( p_fileType == ANFT_Material ) {
 			MakeCategory( wxT( "Materials" ) );
+		}
+
+		// Composite data
+		else if ( p_fileType == ANFT_Composite ) {
+			MakeCategory( wxT( "Composite data" ) );
+		}
+		// Animations
+		else if ( p_fileType == ANFT_Animation ) {
+			MakeCategory( wxT( "Animations" ) );
+		}
+
+		// Emote animations
+		else if ( p_fileType == ANFT_EmoteAnimation ) {
+			MakeCategory( wxT( "Emote animations" ) );
 		}
 
 		// Random PF files
