@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Viewers/BinaryViewer.h"
 #include "Viewers/ImageViewer.h"
-//#include "Viewers/ModelViewer.h"
+#include "Viewers/ModelViewer.h"
 
 namespace gw2b {
 
@@ -94,8 +94,8 @@ namespace gw2b {
 			newViewer = new ImageViewer( this );
 			break;
 		case FileReader::DT_Model:
-			//newViewer = new ModelViewer( this );
-			//break;
+			newViewer = new ModelViewer( this );
+			break;
 		case FileReader::DT_Binary:
 		default:
 			newViewer = new BinaryViewer( this );

@@ -27,6 +27,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef VIEWERS_MODELVIEWER_CAMERA_H_INCLUDED
 #define VIEWERS_MODELVIEWER_CAMERA_H_INCLUDED
 
+#include <d3d9.h>
+#include <d3dx9.h>
+#include <xnamath.h>
+
 namespace gw2b {
 
 	class Camera {

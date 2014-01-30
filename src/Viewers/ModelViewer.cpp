@@ -457,7 +457,7 @@ namespace gw2b {
 		}
 
 		// Update camera and render
-		m_camera.setPivot( bounds.center( ) );
+		//m_camera.setPivot( bounds.center( ) );
 		m_camera.setDistance( distance );
 		this->render( );
 	}
