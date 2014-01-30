@@ -59,6 +59,8 @@ since gw2DatTools won't compile without those features anyway.
 * [DirectX SDK June 2010](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
 * [gw2DatTools](https://github.com/kytulendu/gw2DatTools)
 * [wxWidgets 3.0.0](http://wxwidgets.org/)
+* [OpenGL Extension Wrangler Library](http://glew.sourceforge.net/)
+* [OpenGL Mathematics](http://glm.g-truc.net/)
 
 ### Optional libraries
 
@@ -79,6 +81,7 @@ thanks to:
 * [Till034](https://github.com/Till034) : OnCompareItems function overload
 * David Dantowitz : Simple CRC
 * [Xtridence](http://forum.xentax.com/viewtopic.php?p=72880#p72880) : modified GWUnpacker to work with Gw2.dat
+* [ral](https://sites.google.com/site/jumptovictory/) : Information of files in Gw2.dat
 * [Open Icon Library](http://openiconlibrary.sourceforge.net/) : Icons used in this software
 
 special thanks to:
