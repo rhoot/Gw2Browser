@@ -46,7 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace gw2b {
 
 	BrowserWindow::BrowserWindow( const wxString& p_title )
-		: wxFrame( nullptr, wxID_ANY, p_title, wxDefaultPosition, wxSize( 800, 512 ) )
+		: wxFrame( nullptr, wxID_ANY, p_title, wxDefaultPosition, wxSize( 820, 512 ) )
 		, m_index( std::make_shared<DatIndex>( ) )
 		, m_progress( nullptr )
 		, m_currentTask( nullptr )

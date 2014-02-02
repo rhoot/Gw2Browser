@@ -37,11 +37,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace gw2b {
 
-	enum FourCC {
-		FCC_GEOM = 0x4d4f4547,
-		FCC_MODL = 0x4c444f4d,
-	};
-
 	//----------------------------------------------------------------------------
 	//      ModelData
 	//----------------------------------------------------------------------------

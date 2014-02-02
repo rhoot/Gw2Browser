@@ -34,28 +34,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace gw2b {
 
-	enum FourCC {
-		FCC_ATEX = 0x58455441,
-		FCC_ATTX = 0x58545441,
-		FCC_ATEP = 0x50455441,
-		FCC_ATEU = 0x55455441,
-		FCC_ATEC = 0x43455441,
-		FCC_ATET = 0x54455441,
-		FCC_3DCX = 0x58434433,
-		FCC_DXT = 0x00545844,
-		FCC_DDS = 0x20534444,
-		FCC_JPEG = 0xe1ffd8ff,
-
-		FCC_DXT1 = 0x31545844,
-		FCC_DXT2 = 0x32545844,
-		FCC_DXT3 = 0x33545844,
-		FCC_DXT4 = 0x34545844,
-		FCC_DXT5 = 0x35545844,
-		FCC_DXTN = 0x4e545844,
-		FCC_DXTL = 0x4c545844,
-		FCC_DXTA = 0x41545844,
-	};
-
 	ImageReader::ImageReader( const Array<byte>& p_data, ANetFileType p_fileType )
 		: FileReader( p_data, p_fileType ) {
 	}
@@ -66,13 +44,14 @@ namespace gw2b {
 	wxImage ImageReader::getImage( ) const {
 		Assert( m_data.GetSize( ) >= 4 );
 
-		wxSize size;
-		BGR* colors = nullptr;
-		uint8* alphas = nullptr;
-
 		// Read the correct type of data
 		auto fourcc = *reinterpret_cast<const uint32*>( m_data.GetPointer( ) );
 		if ( fourcc != FCC_JPEG ) {
+
+			wxSize size;
+			BGR* colors = nullptr;
+			uint8* alphas = nullptr;
+
 			if ( fourcc != FCC_DDS ) {
 				if ( !this->readATEX( size, colors, alphas ) ) {
 					return wxImage();

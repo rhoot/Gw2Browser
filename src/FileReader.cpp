@@ -37,15 +37,15 @@ namespace gw2b {
 		, m_fileType( p_fileType ) {
 	}
 
-	FileReader::~FileReader( ) {
+	FileReader::~FileReader() {
 	}
 
-	void FileReader::clean( ) {
-		m_data.Clear( );
+	void FileReader::clean() {
+		m_data.Clear();
 		m_fileType = ANFT_Unknown;
 	}
 
-	Array<byte> FileReader::convertData( ) const {
+	Array<byte> FileReader::convertData() const {
 		return m_data;
 	}
 

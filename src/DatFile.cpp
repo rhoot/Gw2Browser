@@ -29,50 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace gw2b {
 
-	enum FourCC {
-		// Offset 0
-		FCC_abff = 0x66666261,
-		FCC_ATEX = 0x58455441,
-		FCC_ATTX = 0x58545441,
-		FCC_ATEC = 0x43455441,
-		FCC_ATEP = 0x50455441,
-		FCC_ATEU = 0x55455441,
-		FCC_ATET = 0x54455441,
-		FCC_DDS = 0x20534444,
-		FCC_JPEG = 0xe1ffd8ff,
-		FCC_strs = 0x73727473,
-		FCC_asnd = 0x646e7361,
-
-		// PF FourCC
-		FCC_ARMF = 0x464d5241,
-		FCC_ASND = 0x444e5341,
-		FCC_ABNK = 0x4b4e4241,
-		FCC_ABIX = 0x58494241,
-		FCC_AMSP = 0x50534d41,
-		FCC_CINP = 0x504e4943,
-		FCC_MODL = 0x4c444f4d,
-		FCC_DEPS = 0x53504544,
-		FCC_EULA = 0x616c7565,
-		FCC_hvkC = 0x436b7668,
-		FCC_mapc = 0x6370616d,
-		FCC_mpsd = 0x6473706d,
-		FCC_PIMG = 0x474d4950,
-		FCC_AMAT = 0x54414d41,
-		FCC_anic = 0x63696e61,
-		FCC_emoc = 0x636f6d65,
-		FCC_prlt = 0x746c7270,
-		FCC_cmpc = 0x63706d63,
-		FCC_txtm = 0x6d747874,
-		FCC_txtv = 0x76747874,
-
-		// Sound id's
-		FCC_OggS = 0x5367674f,
-
-		// Not quite FourCC
-		FCC_MZ = 0x5a4d,
-		FCC_PF = 0x4650,
-	};
-
 	DatFile::DatFile( )
 		: m_lastReadEntry( -1 ) {
 		::memset( &m_datHead, 0, sizeof( m_datHead ) );

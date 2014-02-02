@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Util/Array.h"
 #include "ANetStructs.h"
+#include "fcc.h"
 
 namespace gw2b {
 
