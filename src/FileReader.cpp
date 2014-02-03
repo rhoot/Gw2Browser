@@ -165,7 +165,9 @@ namespace gw2b {
 		case ANFT_ATET:
 		case ANFT_DDS:
 		case ANFT_JPEG:
-			return new ImageReader( p_data, p_fileType );
+			if ( ImageReader::isValidHeader( p_data.GetPointer(), p_data.GetSize() ) ) {
+				return new ImageReader( p_data, p_fileType );
+			}
 			break;
 		case ANFT_Model:
 			return new ModelReader( p_data, p_fileType );

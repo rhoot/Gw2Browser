@@ -263,42 +263,48 @@ namespace gw2b {
 
 		// Allocate output
 		auto output = allocate<BGRA>( atex->width * atex->height );
-		uint32_t outputBufferSize = ( atex->width * atex->height );
+		uint32_t outputBufferSize;
 
 		// Uncompress
 		switch ( atex->formatInteger ) {
 		case FCC_DXT1:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
-			this->processDXT1( output, atex->width, atex->height, po_colors, po_alphas );
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) ) ) {
+				this->processDXT1( output, atex->width, atex->height, po_colors, po_alphas );
+			}
 			break;
 		case FCC_DXT2:
 		case FCC_DXT3:
 		case FCC_DXTN:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
-			this->processDXT3( output, atex->width, atex->height, po_colors, po_alphas );
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
+				this->processDXT3( output, atex->width, atex->height, po_colors, po_alphas );
+			}
 			break;
 		case FCC_DXT4:
 		case FCC_DXT5:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
-			this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
+				this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
+			}
 			break;
 		case FCC_DXTA:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
-			this->processDXTA( reinterpret_cast<uint64*>( output ), atex->width, atex->height, po_colors );
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
+				this->processDXTA( reinterpret_cast< uint64* >( output ), atex->width, atex->height, po_colors );
+			}
 			break;
 		case FCC_DXTL:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
-			this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) ) ) {
+				this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
 
-			for ( uint i = 0; i < ( static_cast<uint>( atex->width ) * static_cast<uint>( atex->height ) ); i++ ) {
-				po_colors[i].r = ( po_colors[i].r * po_alphas[i] ) / 0xff;
-				po_colors[i].g = ( po_colors[i].g * po_alphas[i] ) / 0xff;
-				po_colors[i].b = ( po_colors[i].b * po_alphas[i] ) / 0xff;
+				for ( uint i = 0; i < ( static_cast<uint>( atex->width ) * static_cast<uint>( atex->height ) ); i++ ) {
+					po_colors[i].r = ( po_colors[i].r * po_alphas[i] ) / 0xff;
+					po_colors[i].g = ( po_colors[i].g * po_alphas[i] ) / 0xff;
+					po_colors[i].b = ( po_colors[i].b * po_alphas[i] ) / 0xff;
+				}
 			}
 			break;
 		case FCC_3DCX:
-			gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) );
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
 				this->process3DCX( reinterpret_cast<RGBA*>( output ), atex->width, atex->height, po_colors, po_alphas );
+			}
 			break;
 		default:
 			freePointer( output );
@@ -321,6 +327,10 @@ namespace gw2b {
 		}
 		auto fourcc = *reinterpret_cast<const uint32*>( p_data );
 
+		if ( fourcc == FCC_JPEG ) {
+			return true;
+		}
+
 		// Is this a DDS file?
 		if ( fourcc == FCC_DDS ) {
 			if ( p_size < sizeof( DDSHeader ) ) {
@@ -341,9 +351,9 @@ namespace gw2b {
 		auto compression = atex->formatInteger;
 
 		// The compression algorithm for non-power-of-two textures is unknown
-		if ( !isPowerOfTwo( atex->width ) || !isPowerOfTwo( atex->height ) ) {
-			return false;
-		}
+		//if ( !isPowerOfTwo( atex->width ) || !isPowerOfTwo( atex->height ) ) {
+		//	return false;
+		//}
 
 		if ( ( fourcc == FCC_ATEX ) || ( fourcc == FCC_ATTX ) || ( fourcc == FCC_ATEP ) ||
 			( fourcc == FCC_ATEU ) || ( fourcc == FCC_ATEC ) || ( fourcc == FCC_ATET ) ) {
