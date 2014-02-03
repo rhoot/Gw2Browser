@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BinaryViewer.h"
 
-#include "BinaryViewer/HexControl.h"
+#include "HexControl.h"
 #include "FileReader.h"
 
 namespace gw2b {

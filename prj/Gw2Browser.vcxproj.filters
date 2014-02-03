@@ -123,9 +123,6 @@
     <ClInclude Include="..\src\Tasks\WriteIndexTask.h">
       <Filter>Header Files\Tasks</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Viewers\BinaryViewer.h">
-      <Filter>Header Files\Viewers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Viewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -143,9 +140,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Util\Ensure.h">
       <Filter>Header Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Viewers\ImageViewer.h">
-      <Filter>Header Files\Viewers</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Viewers\ImageViewer\ImageControl.h">
       <Filter>Header Files\Viewers\ImageViewer</Filter>
@@ -171,9 +165,6 @@
     <ClInclude Include="..\src\Imported\half.h">
       <Filter>Header Files\Imported</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Viewers\ModelViewer.h">
-      <Filter>Header Files\Viewers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Viewers\ModelViewer\Camera.h">
       <Filter>Header Files\Viewers\ModelViewer</Filter>
     </ClInclude>
@@ -182,6 +173,15 @@
     </ClInclude>
     <ClInclude Include="..\src\fcc.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\BinaryViewer\BinaryViewer.h">
+      <Filter>Header Files\Viewers\BinaryViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ImageViewer\ImageViewer.h">
+      <Filter>Header Files\Viewers\ImageViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer\ModelViewer.h">
+      <Filter>Header Files\Viewers\ModelViewer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -227,9 +227,6 @@
     <ClCompile Include="..\src\Viewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Viewers\BinaryViewer.cpp">
-      <Filter>Source Files\Viewers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\PreviewPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -241,9 +238,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Readers\ImageReader.cpp">
       <Filter>Source Files\Readers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Viewers\ImageViewer.cpp">
-      <Filter>Source Files\Viewers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Viewers\ImageViewer\ImageControl.cpp">
       <Filter>Source Files\Viewers\ImageViewer</Filter>
@@ -266,14 +260,20 @@
     <ClCompile Include="..\src\Imported\half.cpp">
       <Filter>Source Files\Imported</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Viewers\ModelViewer.cpp">
-      <Filter>Source Files\Viewers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp">
       <Filter>Source Files\Viewers\ModelViewer</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Task.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\BinaryViewer\BinaryViewer.cpp">
+      <Filter>Source Files\Viewers\BinaryViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ImageViewer\ImageViewer.cpp">
+      <Filter>Source Files\Viewers\ImageViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer\ModelViewer.cpp">
+      <Filter>Source Files\Viewers\ModelViewer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

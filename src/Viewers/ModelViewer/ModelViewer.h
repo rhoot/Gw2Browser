@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef VIEWERS_MODELVIEWER_H_INCLUDED
 #define VIEWERS_MODELVIEWER_H_INCLUDED
 
-#include "ModelViewer/Camera.h"
+#include "Camera.h"
 #include "Readers/ModelReader.h"
 #include "Viewer.h"
 

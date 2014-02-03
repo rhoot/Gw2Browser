@@ -23,9 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "stdafx.h"
+
 #include "ImageViewer.h"
 
-#include "Viewers/ImageViewer/ImageControl.h"
+#include "ImageControl.h"
 #include "Readers/ImageReader.h"
 #include "Data.h"
 
