@@ -125,8 +125,6 @@ namespace gw2b {
 			} else {
 				return 0x140;   // Seems true for most of them
 			}
-		case ANFT_ABFF:
-			return 0x64;
 		case ANFT_Sound:
 			return 0x160;
 		default:
@@ -309,12 +307,6 @@ namespace gw2b {
 			if ( p_size >= 12 ) {
 				MakeSubCategory( wxString( reinterpret_cast<const char*>( p_data + 8 ), 4 ) );
 			}
-		}
-
-		// ABFF
-		else if ( p_fileType == ANFT_ABFF ) {
-			MakeCategory( wxT( "Misc" ) );
-			MakeSubCategory( wxT( "ABFF" ) );
 		}
 
 		// unknown stuff

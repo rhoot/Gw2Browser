@@ -339,19 +339,6 @@ namespace gw2b {
 		auto fourcc = *reinterpret_cast<const uint32*>( p_data );
 		po_fileType = ANFT_Unknown;
 
-		// abff files need offsetting
-		if ( fourcc == FCC_abff ) {
-			po_fileType = ANFT_ABFF;
-
-			if ( p_size >= 0x44 ) {
-				p_data += 0x40;
-				p_size -= 0x40;
-				fourcc = *reinterpret_cast<const uint32*>( p_data );
-			} else {
-				return IR_NotEnoughData;
-			}
-		}
-
 		switch ( fourcc ) {
 		case FCC_ATEX:
 			po_fileType = ANFT_ATEX;

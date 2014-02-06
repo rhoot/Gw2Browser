@@ -34,7 +34,6 @@ namespace gw2b {
 	enum FourCC {
 
 		// Offset 0
-		FCC_abff = 0x66666261,
 		FCC_ATEX = 0x58455441,
 		FCC_ATTX = 0x58545441,
 		FCC_ATEC = 0x43455441,
