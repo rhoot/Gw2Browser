@@ -122,6 +122,9 @@ namespace gw2b {
 			return false;
 		}
 
+		po_colors = nullptr;
+		po_alphas = nullptr;
+
 		// Determine the pixel format
 		if ( header->pixelFormat.flags & 0x40 ) {               // 0x40 = DDPF_RGB, uncompressed data
 			if ( !this->processUncompressedDDS( header, reinterpret_cast<RGB*&>( po_colors ), po_alphas ) ) {
@@ -169,6 +172,8 @@ namespace gw2b {
 		if ( m_data.GetSize( ) < ( sizeof( *p_header ) + dataSize ) ) {
 			return false;
 		}
+
+		po_colors = allocate<RGB>( numPixels );
 
 		// Read the data (we've already determined that the data is 8bpp above)
 		auto pixelData = static_cast<const uint8*>( &m_data[sizeof( *p_header )] );
