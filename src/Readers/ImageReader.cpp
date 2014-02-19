@@ -46,7 +46,7 @@ namespace gw2b {
 
 		// Read the correct type of data
 		auto fourcc = *reinterpret_cast<const uint32*>( m_data.GetPointer( ) );
-		if ( fourcc != FCC_JPEG ) {
+		if ( ( fourcc & 0xffffff ) != FCC_JPEG ) {
 
 			wxSize size;
 			BGR* colors = nullptr;
@@ -332,7 +332,7 @@ namespace gw2b {
 		}
 		auto fourcc = *reinterpret_cast<const uint32*>( p_data );
 
-		if ( fourcc == FCC_JPEG ) {
+		if ( ( fourcc & 0xffffff ) == FCC_JPEG ) {
 			return true;
 		}
 
