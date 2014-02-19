@@ -70,6 +70,9 @@
     <Filter Include="Data Files">
       <UniqueIdentifier>{23b9757c-35cd-4b7f-aed7-714e50ee51f1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Old">
+      <UniqueIdentifier>{ef03d2ed-998c-4549-ac86-e693034e58b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\stdafx.h">
@@ -165,9 +168,6 @@
     <ClInclude Include="..\src\Imported\half.h">
       <Filter>Header Files\Imported</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Viewers\ModelViewer\Camera.h">
-      <Filter>Header Files\Viewers\ModelViewer</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -182,6 +182,15 @@
     </ClInclude>
     <ClInclude Include="..\src\Viewers\ModelViewer\ModelViewer.h">
       <Filter>Header Files\Viewers\ModelViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer\Old\Camera.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer\Old\ModelViewer.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\InitOpenGL.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -260,9 +269,6 @@
     <ClCompile Include="..\src\Imported\half.cpp">
       <Filter>Source Files\Imported</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp">
-      <Filter>Source Files\Viewers\ModelViewer</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Task.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -275,13 +281,19 @@
     <ClCompile Include="..\src\Viewers\ModelViewer\ModelViewer.cpp">
       <Filter>Source Files\Viewers\ModelViewer</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer\Old\Camera.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer\Old\ModelViewer.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\InitOpenGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\Imported\half.inl">
       <Filter>Header Files\Imported</Filter>
-    </None>
-    <None Include="..\data\model_view.hlsl">
-      <Filter>Data Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,6 @@
 */
 
 /*
-Copyright (C) 2014 Khral Steelforge <https://github.com/kytulendu>
 Copyright (C) 2012 Rhoot <https://github.com/rhoot>
 
 This file is part of Gw2Browser.
@@ -28,16 +27,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef VIEWERS_MODELVIEWER_H_INCLUDED
 #define VIEWERS_MODELVIEWER_H_INCLUDED
 
+#include "Camera.h"
 #include "Readers/ModelReader.h"
 #include "Viewer.h"
 
 namespace gw2b {
 
-	class ModelViewer : public Viewer, public INeedDatFile {
+	struct MeshCache {
+		IDirect3DIndexBuffer9*  indexBuffer;
+		IDirect3DVertexBuffer9* vertexBuffer;
+	};
 
+	struct TextureCache {
+		IDirect3DTexture9*  diffuseMap;
+	};
+
+	struct AutoReleaser {
+		template <typename T>
+		void operator()( T* p_pointer ) const {
+			p_pointer->Release( );
+		}
+	};
+
+	class ModelViewer : public Viewer, public INeedDatFile {
+		std::unique_ptr<IDirect3D9, AutoReleaser>       m_d3d;
+		std::unique_ptr<IDirect3DDevice9, AutoReleaser> m_device;
+		std::unique_ptr<ID3DXEffect, AutoReleaser>      m_effect;
+		std::unique_ptr<ID3DXFont, AutoReleaser>        m_font;
+
+		D3DPRESENT_PARAMETERS       m_presentParams;
+		Model                       m_model;
+		Array<MeshCache>            m_meshCache;
+		Array<TextureCache>         m_textureCache;
+		Camera                      m_camera;
+		wxPoint                     m_lastMousePos;
+		float                       m_minDistance;
+		float                       m_maxDistance;
 	public:
 		ModelViewer( wxWindow* p_parent, const wxPoint& p_pos = wxDefaultPosition, const wxSize& p_size = wxDefaultSize );
 		virtual ~ModelViewer( );
+
 		virtual void clear( ) override;
 		virtual void setReader( FileReader* p_reader ) override;
 		/** Gets the image reader containing the data displayed by this viewer.
@@ -60,9 +89,14 @@ namespace gw2b {
 		void onMotionEvt( wxMouseEvent& p_event );
 		void onMouseWheelEvt( wxMouseEvent& p_event );
 		void onKeyDownEvt( wxKeyEvent& p_event );
+		void beginFrame( uint32 p_clearColor );
+		void endFrame( );
 		void render( );
-		int* loadTexture( uint p_fileId );
-	}; // class ModelViewer
+		bool createBuffers( MeshCache& p_cache, uint p_vertexCount, uint p_vertexSize, uint p_indexCount, uint p_indexSize );
+		bool populateBuffers( const Mesh& p_mesh, MeshCache& p_cache );
+		void updateMatrices( );
+		IDirect3DTexture9* loadTexture( uint p_fileId );
+	}; // class ImageViewer
 
 }; // namespace gw2b
 

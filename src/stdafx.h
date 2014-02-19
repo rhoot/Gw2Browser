@@ -44,6 +44,11 @@
 
 // OpenGL
 #include <GL/glew.h>
+#if defined(_WIN32)
+#include <GL/wglew.h>
+#elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
+#include <GL/glxew.h>
+#endif
 
 // OpenGL Mathematics
 #include <glm/glm.hpp>

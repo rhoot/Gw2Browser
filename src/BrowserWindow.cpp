@@ -43,6 +43,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "Tasks/ScanDatTask.h"
 #include "Tasks/WriteIndexTask.h"
 
+#include "InitOpenGL.h"
+
 namespace gw2b {
 
 	BrowserWindow::BrowserWindow( const wxString& p_title )
@@ -89,6 +91,9 @@ namespace gw2b {
 		// Initialize splitter
 		m_splitter->Initialize( m_catTree );
 
+		// Initialize OpenGL
+		InitOpenGL( );
+
 		// Hook up events
 		this->Connect( wxID_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BrowserWindow::onOpenEvt ) );
 		this->Connect( wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BrowserWindow::onExitEvt ) );
@@ -100,6 +105,7 @@ namespace gw2b {
 
 	BrowserWindow::~BrowserWindow( ) {
 		deletePointer( m_currentTask );
+		glewDestroyContext( );
 	}
 
 	//============================================================================/

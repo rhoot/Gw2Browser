@@ -31,6 +31,7 @@
     <ClInclude Include="..\src\FileReader.h" />
     <ClInclude Include="..\src\DatFile.h" />
     <ClInclude Include="..\src\DatIndex.h" />
+    <ClInclude Include="..\src\InitOpenGL.h" />
     <ClInclude Include="..\src\Gw2Browser.h" />
     <ClInclude Include="..\src\Identifiers\BaseIdentifier.h" />
     <ClInclude Include="..\src\Imported\crc.h" />
@@ -54,8 +55,19 @@
     <ClInclude Include="..\src\Viewers\BinaryViewer\HexControl.h" />
     <ClInclude Include="..\src\Viewers\ImageViewer\ImageControl.h" />
     <ClInclude Include="..\src\Viewers\ImageViewer\ImageViewer.h" />
-    <ClInclude Include="..\src\Viewers\ModelViewer\Camera.h" />
     <ClInclude Include="..\src\Viewers\ModelViewer\ModelViewer.h" />
+    <ClInclude Include="..\src\Viewers\ModelViewer\Old\Camera.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer\Old\ModelViewer.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\AboutBox.cpp">
@@ -69,6 +81,7 @@
     <ClCompile Include="..\src\FileReader.cpp" />
     <ClCompile Include="..\src\DatFile.cpp" />
     <ClCompile Include="..\src\DatIndex.cpp" />
+    <ClCompile Include="..\src\InitOpenGL.cpp" />
     <ClCompile Include="..\src\Gw2Browser.cpp" />
     <ClCompile Include="..\src\Imported\crc.cpp" />
     <ClCompile Include="..\src\Imported\half.cpp" />
@@ -93,11 +106,21 @@
     <ClCompile Include="..\src\Viewers\BinaryViewer\HexControl.cpp" />
     <ClCompile Include="..\src\Viewers\ImageViewer\ImageControl.cpp" />
     <ClCompile Include="..\src\Viewers\ImageViewer\ImageViewer.cpp" />
-    <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp" />
     <ClCompile Include="..\src\Viewers\ModelViewer\ModelViewer.cpp" />
+    <ClCompile Include="..\src\Viewers\ModelViewer\Old\Camera.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer\Old\ModelViewer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\data\model_view.hlsl" />
     <None Include="..\src\Imported\half.inl" />
   </ItemGroup>
   <ItemGroup>
@@ -158,13 +181,13 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
-    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
-    <LibraryPath>..\extern\glew\lib\x86\;..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath)</IncludePath>
+    <LibraryPath>..\extern\glew\lib\x86\;..\extern\GW2DatTools\lib\x86\;..\..\wxWidgets-3.0.0\lib\vc_lib\;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
-    <LibraryPath>..\extern\glew\lib\x64\;..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
+    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath)</IncludePath>
+    <LibraryPath>..\extern\glew\lib\x64\;..\extern\GW2DatTools\lib\x64\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
@@ -174,11 +197,11 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
-    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
-    <LibraryPath>..\extern\glew\lib\x86\;..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath)</IncludePath>
+    <LibraryPath>..\extern\glew\lib\x86\;..\extern\GW2DatTools\lib\x86\;..\..\wxWidgets-3.0.0\lib\vc_lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath)</IncludePath>
     <LibraryPath>..\extern\glew\lib\x64\;..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
@@ -188,7 +211,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;WIN32;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
@@ -199,7 +222,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3dx9d.lib;dxguid.lib;glew32sd.lib;gw2DatToolsd.lib;wxbase30ud.lib;wxjpegd.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxpngd.lib;wxtiffd.lib;wxzlibd.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32sd.lib;gw2DatToolsd.lib;wxbase30ud.lib;wxjpegd.lib;wxmsw30ud_core.lib;wxpngd.lib;wxtiffd.lib;wxzlibd.lib;opengl32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>
@@ -209,7 +232,7 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN64;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;WIN64;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
@@ -219,7 +242,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3dx9d.lib;dxguid.lib;glew32sd.lib;gw2DatToolsd.lib;wxbase30ud.lib;wxjpegd.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxpngd.lib;wxtiffd.lib;wxzlibd.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32sd.lib;gw2DatToolsd.lib;wxbase30ud.lib;wxjpegd.lib;wxmsw30ud_core.lib;wxpngd.lib;wxtiffd.lib;wxzlibd.lib;opengl32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>
@@ -231,7 +254,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
@@ -241,7 +264,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxguid.lib;glew32s.lib;gw2DatTools.lib;wxbase30u.lib;wxjpeg.lib;wxmsw30u_core.lib;wxmsw30u_gl.lib;wxpng.lib;wxtiff.lib;wxzlib.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32s.lib;gw2DatTools.lib;wxbase30u.lib;wxjpeg.lib;wxmsw30u_core.lib;wxpng.lib;wxtiff.lib;wxzlib.lib;opengl32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
@@ -253,7 +276,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;WIN64;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
@@ -263,7 +286,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxguid.lib;glew32s.lib;gw2DatTools.lib;wxbase30u.lib;wxjpeg.lib;wxmsw30u_core.lib;wxmsw30u_gl.lib;wxpng.lib;wxtiff.lib;wxzlib.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32s.lib;gw2DatTools.lib;wxbase30u.lib;wxjpeg.lib;wxmsw30u_core.lib;wxpng.lib;wxtiff.lib;wxzlib.lib;opengl32.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
