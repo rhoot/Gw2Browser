@@ -45,6 +45,7 @@ namespace gw2b {
 		this->Add( data::loadPNG( data::image_png, data::image_png_size ) );
 		this->Add( data::loadPNG( data::text_png, data::text_png_size ) );
 		this->Add( data::loadPNG( data::sound_png, data::sound_png_size ) );
+		this->Add( data::loadPNG( data::font_png, data::font_png_size ) );
 	}
 
 	//============================================================================/
@@ -413,6 +414,8 @@ namespace gw2b {
 		case ANFT_Bank:
 		case ANFT_Sound:
 			return CategoryTreeImageList::IT_Sound;
+		case ANFT_FontFile:
+			return CategoryTreeImageList::IT_Font;
 		default:
 			return CategoryTreeImageList::IT_UnknownFile;
 		}

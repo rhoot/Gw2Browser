@@ -86,14 +86,15 @@ namespace gw2b {
 	public:
 		/** The various types of icons contained within this image list. */
 		enum IconType {
-			IT_OpenFolder = 0,        /**< Open folder icon. */
-			IT_UnknownFile = 1,        /**< Unknown file icon. */
-			IT_ClosedFolder = 2,        /**< Closed folder icon. */
-			IT_Executable = 3,        /**< Executable file icon. */
-			IT_Dll = 4,        /**< DLL file icon. */
-			IT_Image = 5,        /**< Image file icon. */
-			IT_Text = 6,        /**< Text file icon. */
-			IT_Sound = 7,        /**< Sound file icon. */
+			IT_OpenFolder = 0,		/**< Open folder icon. */
+			IT_UnknownFile = 1,		/**< Unknown file icon. */
+			IT_ClosedFolder = 2,	/**< Closed folder icon. */
+			IT_Executable = 3,		/**< Executable file icon. */
+			IT_Dll = 4,				/**< DLL file icon. */
+			IT_Image = 5,			/**< Image file icon. */
+			IT_Text = 6,			/**< Text file icon. */
+			IT_Sound = 7,			/**< Sound file icon. */
+			IT_Font = 8,			/**< Font file icon. */
 		};
 	public:
 		/** Constructor. Loads the images needed by this image list. */

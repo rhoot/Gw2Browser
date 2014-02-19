@@ -140,6 +140,11 @@ namespace gw2b {
 			return wxT( ".amsp" );
 			break;
 
+		// Font file
+		case ANFT_FontFile:
+			return wxT( ".eot" );	// Embedded OpenType
+			break;
+
 		// Binary
 		case ANFT_DLL:
 			return wxT( ".dll" );

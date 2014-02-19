@@ -483,6 +483,10 @@ namespace gw2b {
 			}
 		}
 
+		if ( fourcc == FCC_TTF ) {
+			po_fileType = ANFT_FontFile;
+		}
+
 		// Identify sounds
 		if ( po_fileType == ANFT_Sound ) {
 			if ( p_size >= 12 ) {
