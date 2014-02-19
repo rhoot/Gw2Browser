@@ -361,15 +361,17 @@ namespace gw2b {
 		case FCC_DDS:
 			po_fileType = ANFT_DDS;
 			break;
-		case FCC_JPEG:
-			po_fileType = ANFT_JPEG;
-			break;
 		case FCC_strs:
 			po_fileType = ANFT_StringFile;
 			break;
 		case FCC_asnd:
 			po_fileType = ANFT_Sound;
 			break;
+		}
+
+		// Identify JPEG files
+		if ( ( fourcc & 0xffffff ) == FCC_JPEG ) {
+			po_fileType = ANFT_JPEG;
 		}
 
 		// Identify binary files
