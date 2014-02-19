@@ -43,9 +43,9 @@ namespace gw2b {
 		FCC_3DCX = 0x58434433,
 		FCC_DXT = 0x00545844,
 		FCC_DDS = 0x20534444,
-		FCC_JPEG = 0xe1ffd8ff,
 		FCC_strs = 0x73727473,
 		FCC_asnd = 0x646e7361,
+		FCC_RIFF = 0x46464952,	// resource interchange file format
 
 		// Texture codec
 		FCC_DXT1 = 0x31545844,
@@ -56,6 +56,9 @@ namespace gw2b {
 		FCC_DXTN = 0x4e545844,
 		FCC_DXTL = 0x4c545844,
 		FCC_DXTA = 0x41545844,
+
+		// RIFF FourCC
+		FCC_WEBP = 0x50424557,
 
 		// PF FourCC
 		FCC_ARMF = 0x464d5241,
@@ -86,6 +89,7 @@ namespace gw2b {
 		// Not quite FourCC
 		FCC_MZ = 0x5a4d,
 		FCC_PF = 0x4650,
+		FCC_JPEG = 0xffd8ff,
 	};
 
 }; // namespace gw2b

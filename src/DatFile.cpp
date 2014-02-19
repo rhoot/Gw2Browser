@@ -390,6 +390,23 @@ namespace gw2b {
 			}
 		}
 
+		// Identify RIFF files
+		if ( fourcc == FCC_RIFF ) {
+			po_fileType = ANFT_RIFF;
+
+			if ( p_size >= 12 ) {
+				fourcc = *reinterpret_cast<const uint32*>( p_data + 8 );
+			} else {
+				return IR_NotEnoughData;
+			}
+
+			switch ( fourcc ) {
+			case FCC_WEBP:
+				po_fileType = ANFT_WEBP;
+				break;
+			}
+		}
+
 		// Identify PF files
 		if ( ( fourcc & 0xffff ) == FCC_PF ) {
 			po_fileType = ANFT_PF;

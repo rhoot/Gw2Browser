@@ -76,6 +76,9 @@ namespace gw2b {
 		case ANFT_JPEG:
 			return wxT( ".jpg" );
 			break;
+		case ANFT_WEBP:
+			return wxT( ".webp" );
+			break;
 
 		// String files
 		case ANFT_StringFile:

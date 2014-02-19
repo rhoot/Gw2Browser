@@ -166,13 +166,16 @@ namespace gw2b {
 			case ANFT_JPEG:
 				MakeSubCategory( wxT( "JPEG" ) );
 				break;
+			case ANFT_WEBP:
+				MakeSubCategory( wxT( "WebP" ) );
+				break;
 			}
 
-			if ( p_fileType != ANFT_JPEG && p_fileType != ANFT_DDS && p_size >= 12 ) {
+			if ( p_fileType != ANFT_WEBP && p_fileType != ANFT_JPEG && p_fileType != ANFT_DDS && p_size >= 12 ) {
 				uint16 width = *reinterpret_cast<const uint16*>( p_data + 0x8 );
 				uint16 height = *reinterpret_cast<const uint16*>( p_data + 0xa );
 				MakeSubCategory( wxString::Format( wxT( "%dx%d" ), width, height ) );
-			} else if ( p_fileType != ANFT_JPEG && p_size >= 20 ) {
+			} else if ( p_fileType != ANFT_WEBP && p_fileType != ANFT_JPEG && p_size >= 20 ) {
 				uint32 width = *reinterpret_cast<const uint32*>( p_data + 0x10 );
 				uint32 height = *reinterpret_cast<const uint32*>( p_data + 0x0c );
 				MakeSubCategory( wxString::Format( wxT( "%dx%d" ), width, height ) );

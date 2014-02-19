@@ -46,6 +46,7 @@ namespace gw2b {
 		ANFT_ATET,                  /**< ATET texture, unknown use. */
 		ANFT_DDS,                   /**< DDS texture, not an ANet specific format. */
 		ANFT_JPEG,					/**< JPEG Image, not an ANet specific format. */
+		ANFT_WEBP,					/**< WebP Image, not an ANet specific format. */
 		ANFT_TextureEnd,            /**< Values in between this and ANFT_TextureStart are texture types. */
 
 		// Sound
@@ -54,6 +55,9 @@ namespace gw2b {
 		ANFT_MP3,                   /**< MP3 file, probably with a custom header. */
 		ANFT_OGG,                   /**< OGG file, probably with a custom header. */
 		ANFT_SoundEnd,				/**< Values in between this and ANFT_SoundStart are sound types. */
+
+		// RIFF
+		ANFT_RIFF,					/**< resource interchange file container. */
 
 		// PF
 		ANFT_PF,                    /**< PF file of unknown type. */
