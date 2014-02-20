@@ -303,6 +303,11 @@ namespace gw2b {
 			MakeCategory( wxT( "Emote animations" ) );
 		}
 
+		// Font files
+		else if ( p_fileType == ANFT_FontFile ) {
+			MakeCategory( wxT( "Font" ) );
+		}
+
 		// Random PF files
 		else if ( p_fileType == ANFT_PF ) {
 			MakeCategory( wxT( "Misc" ) );

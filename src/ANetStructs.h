@@ -87,8 +87,8 @@ namespace gw2b {
 		ANFT_EXE,                   /**< Executable file. */
 
 		// Misc
-		ANFT_ABFF,                  /**< abff file, seem to be a legacy type from GW1. */
 		ANFT_StringFile,            /**< Strings file. */
+		ANFT_FontFile,				/**< Font file. */
 	};
 
 	/** Compression flags that appear in the MFT entries. */

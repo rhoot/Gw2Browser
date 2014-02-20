@@ -59,6 +59,9 @@ namespace gw2b {
 		// File: data/exe.png
 		extern const uint exe_png_size;
 		extern const byte exe_png[];
+		// File: data/font.png
+		extern const uint font_png_size;
+		extern const byte font_png[];
 		// File: data/image.png
 		extern const uint image_png_size;
 		extern const byte image_png[];

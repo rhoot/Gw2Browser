@@ -46,6 +46,7 @@ namespace gw2b {
 		FCC_strs = 0x73727473,
 		FCC_asnd = 0x646e7361,
 		FCC_RIFF = 0x46464952,	// resource interchange file format
+		FCC_TTF = 0x00000100,	// files with this signature seems to be ttf but it is Embedded OpenType fonts with ttf header
 
 		// Texture codec
 		FCC_DXT1 = 0x31545844,
