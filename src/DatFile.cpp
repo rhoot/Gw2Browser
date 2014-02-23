@@ -487,6 +487,14 @@ namespace gw2b {
 			po_fileType = ANFT_FontFile;
 		}
 
+		if ( ( fourcc & 0xffffff ) == FCC_BINK2 ) {
+			po_fileType = ANFT_Bink2Video;
+		}
+
+		if ( ( fourcc & 0xffffff ) == FCC_ID3 ) {
+			po_fileType = ANFT_ID3;
+		}
+
 		// Identify sounds
 		if ( po_fileType == ANFT_Sound ) {
 			if ( p_size >= 12 ) {

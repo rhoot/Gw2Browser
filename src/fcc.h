@@ -91,6 +91,8 @@ namespace gw2b {
 		FCC_MZ = 0x5a4d,
 		FCC_PF = 0x4650,
 		FCC_JPEG = 0xffd8ff,
+		FCC_ID3 = 0x334449,
+		FCC_BINK2 = 0x32424b,
 	};
 
 }; // namespace gw2b

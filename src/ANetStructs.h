@@ -54,6 +54,7 @@ namespace gw2b {
 		ANFT_Sound,                 /**< Sound file of unknown type. */
 		ANFT_MP3,                   /**< MP3 file, probably with a custom header. */
 		ANFT_OGG,                   /**< OGG file, probably with a custom header. */
+		ANFT_ID3,					/**< MP3 file. */
 		ANFT_SoundEnd,				/**< Values in between this and ANFT_SoundStart are sound types. */
 
 		// RIFF
@@ -89,6 +90,7 @@ namespace gw2b {
 		// Misc
 		ANFT_StringFile,            /**< Strings file. */
 		ANFT_FontFile,				/**< Font file. */
+		ANFT_Bink2Video,			/**< Bink2 video file. */
 	};
 
 	/** Compression flags that appear in the MFT entries. */

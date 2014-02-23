@@ -134,6 +134,9 @@ namespace gw2b {
 		case ANFT_Sound:
 			return wxT( ".asnd" );
 			break;
+		case ANFT_ID3:
+			return wxT( ".mp3" );
+			break;
 
 		// Audio script
 		case ANFT_AudioScript:
@@ -143,6 +146,11 @@ namespace gw2b {
 		// Font file
 		case ANFT_FontFile:
 			return wxT( ".eot" );	// Embedded OpenType
+			break;
+
+		// Bink2 Video file
+		case ANFT_Bink2Video:
+			return wxT( ".bk2" );
 			break;
 
 		// Binary
