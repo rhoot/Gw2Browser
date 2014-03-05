@@ -92,6 +92,9 @@ namespace gw2b {
 		// File: data/unknown.png
 		extern const uint unknown_png_size;
 		extern const byte unknown_png[];
+		// File: data/video.png
+		extern const uint video_png_size;
+		extern const byte video_png[];
 
 	}; // namespace data
 

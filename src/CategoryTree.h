@@ -95,6 +95,7 @@ namespace gw2b {
 			IT_Text = 6,			/**< Text file icon. */
 			IT_Sound = 7,			/**< Sound file icon. */
 			IT_Font = 8,			/**< Font file icon. */
+			IT_Video = 9,			/**< Video file icon. */
 		};
 	public:
 		/** Constructor. Loads the images needed by this image list. */

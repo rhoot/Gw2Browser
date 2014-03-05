@@ -196,6 +196,9 @@ namespace gw2b {
 			case ANFT_Sound:
 				MakeSubCategory( wxT( "Sounds" ) );
 				break;
+			case ANFT_ID3:
+				MakeSubCategory( wxT( "ID3 (MP3)" ) );
+				break;
 			}
 		}
 
@@ -308,6 +311,11 @@ namespace gw2b {
 			MakeCategory( wxT( "Font" ) );
 		}
 
+		// Bink2 video files
+		else if ( p_fileType == ANFT_Bink2Video ) {
+			MakeCategory( wxT( "Bink videos" ) );
+		}
+
 		// Random PF files
 		else if ( p_fileType == ANFT_PF ) {
 			MakeCategory( wxT( "Misc" ) );
@@ -319,8 +327,9 @@ namespace gw2b {
 
 		// unknown stuff
 		else {
+			// to do: printable character detection in files for detect text files.
 			MakeCategory( wxT( "Unknown" ) );
-			MakeSubCategory( wxString::Format( wxT( "%x" ), *reinterpret_cast<const uint32*>( p_data ) ) );
+			//MakeSubCategory( wxString::Format( wxT( "%x" ), *reinterpret_cast<const uint32*>( p_data ) ) );
 		}
 
 		return category;
