@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "stdafx.h"
 #include <wx/mstream.h>
+#include <webp/decode.h> // libwebp
 
 #include "ImageReader.h"
 
@@ -46,19 +47,19 @@ namespace gw2b {
 
 		// Read the correct type of data
 		auto fourcc = *reinterpret_cast<const uint32*>( m_data.GetPointer( ) );
-		if ( ( fourcc & 0xffffff ) != FCC_JPEG ) {
+		if ( ( ( fourcc & 0xffffff ) != FCC_JPEG ) && (fourcc != FCC_RIFF) ) {
 
 			wxSize size;
 			BGR* colors = nullptr;
 			uint8* alphas = nullptr;
 
-			if ( fourcc != FCC_DDS ) {
-				if ( !this->readATEX( size, colors, alphas ) ) {
-					return wxImage();
+			if ( fourcc == FCC_DDS ) {
+				if ( !this->readDDS( size, colors, alphas ) ) {
+					return wxImage( );
 				}
 			} else {
-				if ( !this->readDDS( size, colors, alphas ) ) {
-					return wxImage();
+				if ( !this->readATEX( size, colors, alphas ) ) {
+					return wxImage( );
 				}
 			}
 
@@ -72,9 +73,61 @@ namespace gw2b {
 			}
 
 			return image;
-		} else {
+
+		} else if ( fourcc == FCC_RIFF ) {		// we already check if it is WebP or not
+
+			wxSize size;
+			BGR* colors = nullptr;
+			uint8* alphas = nullptr;
+
+			// <to do: seperate this to other function>
+
+			WebPDecoderConfig config;
+			WebPDecBuffer* const output_buffer = &config.output;
+			WebPBitstreamFeatures* const bitstream = &config.input;
+
+			VP8StatusCode status = VP8_STATUS_OK;
+			size_t data_size = m_data.GetSize( );
+			auto data = reinterpret_cast<const uint8_t*>( m_data.GetPointer( ) );
+
+			status = WebPGetFeatures( reinterpret_cast<const uint8_t*>( data ), data_size, bitstream );
+
+			if ( status != VP8_STATUS_OK ) {
+				wxMessageBox( wxString( "This file isn't WebP" ), _( "ERROR" ), wxOK | wxICON_EXCLAMATION );
+				return false;
+			}
+
+			if ( bitstream->has_animation ) {
+				wxMessageBox( wxString( "not support Animation WebP" ), _( "ERROR" ), wxOK | wxICON_EXCLAMATION );
+				return false;
+			}
+
+			// Create image and fill it with color data
 			wxImage image;
-			wxMemoryInputStream stream( m_data.GetPointer(), m_data.GetSize() );
+			int* width = NULL;
+			int* height = NULL;
+			uint8_t* color = NULL;
+
+			if ( output_buffer->colorspace == bitstream->has_alpha ) {
+				auto color = WebPDecodeRGBA( data, data_size, width, height );
+
+				//sepearate rgba to array,
+				//http://forums.wxwidgets.org/viewtopic.php?f=1&t=23210
+				//http://forums.wxwidgets.org/viewtopic.php?f=1&t=22810
+				//
+
+				image = wxImage( bitstream->width, bitstream->height, color, /*alphas,*/  false );
+
+			} else {
+				auto color = WebPDecodeRGB( data, data_size, width, height );
+				image = wxImage( bitstream->width, bitstream->height, color, false );
+			}
+
+			return image;
+
+		} else { // JPEGs
+			wxImage image;
+			wxMemoryInputStream stream( m_data.GetPointer( ), m_data.GetSize( ) );
 			image.LoadFile( stream, wxBITMAP_TYPE_JPEG );
 
 			return image;
@@ -334,6 +387,21 @@ namespace gw2b {
 
 		if ( ( fourcc & 0xffffff ) == FCC_JPEG ) {
 			return true;
+		}
+
+		if ( fourcc == FCC_RIFF ) {
+			// ensure it is WebP
+			if ( p_size >= 12 ) {
+				fourcc = *reinterpret_cast<const uint32*>( p_data + 8 );
+			} else {
+				return false;
+			}
+
+			if ( fourcc == FCC_WEBP ) {
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 		// Is this a DDS file?
