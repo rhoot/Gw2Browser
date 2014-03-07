@@ -1,5 +1,7 @@
 bin
 ipch
+obj
+*.bak
 *.sdf
 *.suo
 *.user
