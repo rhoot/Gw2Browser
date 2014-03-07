@@ -29,22 +29,30 @@
 // STL includes
 #include <memory>
 
-// OMP
+// OpenMP
 #include <omp.h>
 
 // wxWidgets
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
-#  include <wx/wx.h>
+#include <wx/wx.h>
 #endif
 
 // gw2CoreTools
 #include <gw2DatTools/compression/inflateDatFileBuffer.h>
+#include <gw2DatTools/compression/inflateTextureFileBuffer.h>
 
-// DirectX9
-#include <d3d9.h>
-#include <d3dx9.h>
-#include <xnamath.h>
+// OpenGL
+#include <GL/glew.h>
+#if defined(_WIN32)
+#include <GL/wglew.h>
+#elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
+#include <GL/glxew.h>
+#endif
+
+// OpenGL Mathematics
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 // 16-bit floats
 #include "Imported/half.h"
@@ -52,11 +60,6 @@
 // Handy defines
 #define ArraySize(x)                (sizeof(x) / sizeof(*x))
 #define Assert                      wxASSERT
-
-// Compiler specific
-#define NakedCall                   __declspec(naked)
-#define InlineAsm                   __asm
-#define ZeroSizeArray               1
 
 namespace gw2b
 {

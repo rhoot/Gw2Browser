@@ -70,6 +70,9 @@
     <Filter Include="Data Files">
       <UniqueIdentifier>{23b9757c-35cd-4b7f-aed7-714e50ee51f1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Old">
+      <UniqueIdentifier>{ef03d2ed-998c-4549-ac86-e693034e58b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\stdafx.h">
@@ -123,9 +126,6 @@
     <ClInclude Include="..\src\Tasks\WriteIndexTask.h">
       <Filter>Header Files\Tasks</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Viewers\BinaryViewer.h">
-      <Filter>Header Files\Viewers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Viewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -141,14 +141,8 @@
     <ClInclude Include="..\src\Readers\ImageReader.h">
       <Filter>Header Files\Readers</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Imported\AtexAsm.h">
-      <Filter>Header Files\Imported</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Util\Ensure.h">
       <Filter>Header Files\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Viewers\ImageViewer.h">
-      <Filter>Header Files\Viewers</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Viewers\ImageViewer\ImageControl.h">
       <Filter>Header Files\Viewers\ImageViewer</Filter>
@@ -174,11 +168,29 @@
     <ClInclude Include="..\src\Imported\half.h">
       <Filter>Header Files\Imported</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Viewers\ModelViewer.h">
-      <Filter>Header Files\Viewers</Filter>
+    <ClInclude Include="..\src\resource.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Viewers\ModelViewer\Camera.h">
+    <ClInclude Include="..\src\fcc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\BinaryViewer\BinaryViewer.h">
+      <Filter>Header Files\Viewers\BinaryViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ImageViewer\ImageViewer.h">
+      <Filter>Header Files\Viewers\ImageViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer\ModelViewer.h">
       <Filter>Header Files\Viewers\ModelViewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer\Old\Camera.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Viewers\ModelViewer\Old\ModelViewer.h">
+      <Filter>Old</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\InitOpenGL.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -224,9 +236,6 @@
     <ClCompile Include="..\src\Viewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Viewers\BinaryViewer.cpp">
-      <Filter>Source Files\Viewers</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\PreviewPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -238,12 +247,6 @@
     </ClCompile>
     <ClCompile Include="..\src\Readers\ImageReader.cpp">
       <Filter>Source Files\Readers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Imported\AtexAsm.cpp">
-      <Filter>Source Files\Imported</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Viewers\ImageViewer.cpp">
-      <Filter>Source Files\Viewers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Viewers\ImageViewer\ImageControl.cpp">
       <Filter>Source Files\Viewers\ImageViewer</Filter>
@@ -266,23 +269,41 @@
     <ClCompile Include="..\src\Imported\half.cpp">
       <Filter>Source Files\Imported</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Viewers\ModelViewer.cpp">
-      <Filter>Source Files\Viewers</Filter>
+    <ClCompile Include="..\src\Task.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp">
+    <ClCompile Include="..\src\Viewers\BinaryViewer\BinaryViewer.cpp">
+      <Filter>Source Files\Viewers\BinaryViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ImageViewer\ImageViewer.cpp">
+      <Filter>Source Files\Viewers\ImageViewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer\ModelViewer.cpp">
       <Filter>Source Files\Viewers\ModelViewer</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Task.cpp">
+    <ClCompile Include="..\src\Viewers\ModelViewer\Old\Camera.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Viewers\ModelViewer\Old\ModelViewer.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\InitOpenGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\README.md" />
     <None Include="..\src\Imported\half.inl">
       <Filter>Header Files\Imported</Filter>
     </None>
-    <None Include="..\data\model_view.hlsl">
-      <Filter>Data Files</Filter>
-    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\src\Gw2Browser.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\Gw2Browser.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
