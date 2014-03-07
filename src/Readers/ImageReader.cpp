@@ -47,7 +47,7 @@ namespace gw2b {
 
 		// Read the correct type of data
 		auto fourcc = *reinterpret_cast<const uint32*>( m_data.GetPointer( ) );
-		if ( ( ( fourcc & 0xffffff ) != FCC_JPEG ) && (fourcc != FCC_RIFF) ) {
+		if ( ( ( fourcc & 0xffffff ) != FCC_JPEG ) && ( fourcc != FCC_RIFF ) ) {
 
 			wxSize size;
 			BGR* colors = nullptr;
@@ -76,51 +76,58 @@ namespace gw2b {
 
 		} else if ( fourcc == FCC_RIFF ) {		// we already check if it is WebP or not
 
-			wxSize size;
-			BGR* colors = nullptr;
-			uint8* alphas = nullptr;
-
-			// <to do: seperate this to other function>
-
 			WebPDecoderConfig config;
 			WebPDecBuffer* const output_buffer = &config.output;
 			WebPBitstreamFeatures* const bitstream = &config.input;
 
 			VP8StatusCode status = VP8_STATUS_OK;
+
 			size_t data_size = m_data.GetSize( );
 			auto data = reinterpret_cast<const uint8_t*>( m_data.GetPointer( ) );
 
 			status = WebPGetFeatures( reinterpret_cast<const uint8_t*>( data ), data_size, bitstream );
 
 			if ( status != VP8_STATUS_OK ) {
-				wxMessageBox( wxString( "This file isn't WebP" ), _( "ERROR" ), wxOK | wxICON_EXCLAMATION );
+				wxMessageBox( wxString( "This file isn't WebP" ), _( "" ), wxOK | wxICON_INFORMATION );
 				return false;
 			}
 
 			if ( bitstream->has_animation ) {
-				wxMessageBox( wxString( "not support Animation WebP" ), _( "ERROR" ), wxOK | wxICON_EXCLAMATION );
+				wxMessageBox( wxString( "Not support Animation WebP" ), _( "" ), wxOK | wxICON_INFORMATION );
 				return false;
 			}
 
+			output_buffer->colorspace = bitstream->has_alpha ? MODE_RGBA : MODE_RGB;
+
 			// Create image and fill it with color data
 			wxImage image;
-			int* width = NULL;
-			int* height = NULL;
-			uint8_t* color = NULL;
+			int* width = nullptr;
+			int* height = nullptr;
+			uint8_t* colors = nullptr;
+			uint8_t* alphas = nullptr;
 
 			if ( output_buffer->colorspace == bitstream->has_alpha ) {
-				auto color = WebPDecodeRGBA( data, data_size, width, height );
+				auto colors = WebPDecodeRGB( data, data_size, width, height );
+				//auto colors = WebPDecodeRGBA( data, data_size, width, height );
 
-				//sepearate rgba to array,
-				//http://forums.wxwidgets.org/viewtopic.php?f=1&t=23210
-				//http://forums.wxwidgets.org/viewtopic.php?f=1&t=22810
-				//
+				if ( colors == NULL ) {
+					wxMessageBox( wxString( "Invalid WebP format" ), _( "ERROR" ), wxOK | wxICON_EXCLAMATION );
+				} else {
+					image = wxImage( bitstream->width, bitstream->height, colors, alphas, false );
 
-				image = wxImage( bitstream->width, bitstream->height, color, /*alphas,*/  false );
+					// doesn't support alpha chanel yet.
+					//image.SetAlpha( alphas );
+				}
 
 			} else {
-				auto color = WebPDecodeRGB( data, data_size, width, height );
-				image = wxImage( bitstream->width, bitstream->height, color, false );
+				auto colors = WebPDecodeRGB( data, data_size, width, height );
+
+				if ( colors == NULL ) {
+					wxMessageBox( wxString( "Invalid WebP format" ), _( "ERROR" ), wxOK | wxICON_EXCLAMATION );
+				} else {
+					image = wxImage( bitstream->width, bitstream->height, colors, false );
+				}
+
 			}
 
 			return image;
@@ -161,7 +168,7 @@ namespace gw2b {
 	}
 
 	bool ImageReader::readDDS( wxSize& po_size, BGR*& po_colors, uint8*& po_alphas ) const {
-		Assert( isValidHeader( m_data.GetPointer(), m_data.GetSize() ) );
+		Assert( isValidHeader( m_data.GetPointer( ), m_data.GetSize( ) ) );
 		// Get header
 		if ( m_data.GetSize( ) < sizeof( DDSHeader ) ) {
 			return false;
@@ -326,30 +333,30 @@ namespace gw2b {
 		// Uncompress
 		switch ( atex->formatInteger ) {
 		case FCC_DXT1:
-			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) ) ) {
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) ) ) {
 				this->processDXT1( output, atex->width, atex->height, po_colors, po_alphas );
 			}
 			break;
 		case FCC_DXT2:
 		case FCC_DXT3:
 		case FCC_DXTN:
-			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
 				this->processDXT3( output, atex->width, atex->height, po_colors, po_alphas );
 			}
 			break;
 		case FCC_DXT4:
 		case FCC_DXT5:
-			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
 				this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
 			}
 			break;
 		case FCC_DXTA:
-			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
 				this->processDXTA( reinterpret_cast< uint64* >( output ), atex->width, atex->height, po_colors );
 			}
 			break;
 		case FCC_DXTL:
-			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) ) ) {
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast<uint8_t*>( output ) ) ) {
 				this->processDXT5( output, atex->width, atex->height, po_colors, po_alphas );
 
 				for ( uint i = 0; i < ( static_cast<uint>( atex->width ) * static_cast<uint>( atex->height ) ); i++ ) {
@@ -360,7 +367,7 @@ namespace gw2b {
 			}
 			break;
 		case FCC_3DCX:
-			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize(), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
+			if ( gw2dt::compression::inflateTextureFileBuffer( m_data.GetSize( ), data, outputBufferSize, reinterpret_cast< uint8_t* >( output ) ) ) {
 				this->process3DCX( reinterpret_cast<RGBA*>( output ), atex->width, atex->height, po_colors, po_alphas );
 			}
 			break;
