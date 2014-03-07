@@ -1,13 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
@@ -19,12 +27,12 @@
     <ClInclude Include="..\src\DatIndexIO.h" />
     <ClInclude Include="..\src\Documentation\Namespaces.h" />
     <ClInclude Include="..\src\ExtractFilesWindow.h" />
+    <ClInclude Include="..\src\fcc.h" />
     <ClInclude Include="..\src\FileReader.h" />
     <ClInclude Include="..\src\DatFile.h" />
     <ClInclude Include="..\src\DatIndex.h" />
     <ClInclude Include="..\src\Gw2Browser.h" />
     <ClInclude Include="..\src\Identifiers\BaseIdentifier.h" />
-    <ClInclude Include="..\src\Imported\AtexAsm.h" />
     <ClInclude Include="..\src\Imported\crc.h" />
     <ClInclude Include="..\src\Imported\half.h" />
     <ClInclude Include="..\src\PackFile.h" />
@@ -32,6 +40,7 @@
     <ClInclude Include="..\src\ProgressStatusBar.h" />
     <ClInclude Include="..\src\Readers\ImageReader.h" />
     <ClInclude Include="..\src\Readers\ModelReader.h" />
+    <ClInclude Include="..\src\resource.h" />
     <ClInclude Include="..\src\stdafx.h" />
     <ClInclude Include="..\src\Task.h" />
     <ClInclude Include="..\src\Tasks\ReadIndexTask.h" />
@@ -41,15 +50,17 @@
     <ClInclude Include="..\src\Util\Ensure.h" />
     <ClInclude Include="..\src\Util\Misc.h" />
     <ClInclude Include="..\src\Viewer.h" />
-    <ClInclude Include="..\src\Viewers\BinaryViewer.h" />
+    <ClInclude Include="..\src\Viewers\BinaryViewer\BinaryViewer.h" />
     <ClInclude Include="..\src\Viewers\BinaryViewer\HexControl.h" />
-    <ClInclude Include="..\src\Viewers\ImageViewer.h" />
     <ClInclude Include="..\src\Viewers\ImageViewer\ImageControl.h" />
-    <ClInclude Include="..\src\Viewers\ModelViewer.h" />
+    <ClInclude Include="..\src\Viewers\ImageViewer\ImageViewer.h" />
     <ClInclude Include="..\src\Viewers\ModelViewer\Camera.h" />
+    <ClInclude Include="..\src\Viewers\ModelViewer\ModelViewer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\AboutBox.cpp" />
+    <ClCompile Include="..\src\AboutBox.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\src\BrowserWindow.cpp" />
     <ClCompile Include="..\src\CategoryTree.cpp" />
     <ClCompile Include="..\src\Data.cpp" />
@@ -59,7 +70,6 @@
     <ClCompile Include="..\src\DatFile.cpp" />
     <ClCompile Include="..\src\DatIndex.cpp" />
     <ClCompile Include="..\src\Gw2Browser.cpp" />
-    <ClCompile Include="..\src\Imported\AtexAsm.cpp" />
     <ClCompile Include="..\src\Imported\crc.cpp" />
     <ClCompile Include="..\src\Imported\half.cpp" />
     <ClCompile Include="..\src\PackFile.cpp" />
@@ -69,7 +79,9 @@
     <ClCompile Include="..\src\Readers\ModelReader.cpp" />
     <ClCompile Include="..\src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\Task.cpp" />
     <ClCompile Include="..\src\Tasks\ReadIndexTask.cpp" />
@@ -77,17 +89,22 @@
     <ClCompile Include="..\src\Tasks\WriteIndexTask.cpp" />
     <ClCompile Include="..\src\Util\Misc.cpp" />
     <ClCompile Include="..\src\Viewer.cpp" />
-    <ClCompile Include="..\src\Viewers\BinaryViewer.cpp" />
+    <ClCompile Include="..\src\Viewers\BinaryViewer\BinaryViewer.cpp" />
     <ClCompile Include="..\src\Viewers\BinaryViewer\HexControl.cpp" />
-    <ClCompile Include="..\src\Viewers\ImageViewer.cpp" />
     <ClCompile Include="..\src\Viewers\ImageViewer\ImageControl.cpp" />
-    <ClCompile Include="..\src\Viewers\ModelViewer.cpp" />
+    <ClCompile Include="..\src\Viewers\ImageViewer\ImageViewer.cpp" />
     <ClCompile Include="..\src\Viewers\ModelViewer\Camera.cpp" />
+    <ClCompile Include="..\src\Viewers\ModelViewer\ModelViewer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\model_view.hlsl" />
-    <None Include="..\README.md" />
     <None Include="..\src\Imported\half.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\src\Gw2Browser.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\Gw2Browser.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CB536AF9-593F-47E9-B5F9-6DF09ED3BED2}</ProjectGuid>
@@ -99,12 +116,27 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -112,34 +144,82 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
+    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\extern\libwebp\src\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\extern\libwebp\obj\debug-static\x86\lib;..\extern\glew\lib\x86\;..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <TargetName>$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\extern\libwebp\src\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswud;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\extern\libwebp\obj\debug-static\x64\lib;..\extern\glew\lib\x64\;..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
+    <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
+    <TargetName>$(ProjectName)d_$(PlatformShortName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
+    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\extern\libwebp\src\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\extern\libwebp\obj\release-static\x86\lib;..\extern\glew\lib\x86\;..\extern\GW2DatTools\lib\x86;..\..\wxWidgets-3.0.0\lib\vc_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>..\extern\glew\include\;..\extern\glm\;..\extern\GW2DatTools\include\;..\extern\libwebp\src\;..\..\wxWidgets-3.0.0\include\;..\..\wxWidgets-3.0.0\lib\vc_x64_lib\mswu;$(IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <LibraryPath>..\extern\libwebp\obj\release-static\x64\lib;..\extern\glew\lib\x64\;..\extern\GW2DatTools\lib\x64;..\..\wxWidgets-3.0.0\lib\vc_x64_lib;$(LibraryPath);$(DXSDK_DIR)Lib\x64</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
+    <IntDir>$(SolutionDir)..\build\$(ProjectName)\$(Configuration)_$(PlatformShortName)\</IntDir>
+    <TargetName>$(ProjectName)_$(PlatformShortName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <ObjectFileName>$(IntDir)\$(Configuration)_$(PlatformShortName)\%(RelativeDir)\</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>wxbase29ud.lib;wxpngd.lib;gw2DatToolsd.lib;dxguid.lib;d3d9.lib;d3dx9d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3dx9d.lib;dxguid.lib;glew32sd.lib;gw2DatToolsd.lib;libwebpdecoder_debug.lib;wxbase30ud.lib;wxjpegd.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxpngd.lib;wxtiffd.lib;wxzlibd.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PostBuildEvent />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN64;_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <ObjectFileName>$(IntDir)\$(Configuration)_$(PlatformShortName)\%(RelativeDir)\</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d9.lib;d3dx9d.lib;dxguid.lib;glew32sd.lib;gw2DatToolsd.lib;libwebpdecoder_debug.lib;wxbase30ud.lib;wxjpegd.lib;wxmsw30ud_core.lib;wxmsw30ud_gl.lib;wxpngd.lib;wxtiffd.lib;wxzlibd.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>
@@ -153,16 +233,39 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <ObjectFileName>$(IntDir)\$(Configuration)_$(PlatformShortName)\%(RelativeDir)\</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxguid.lib;glew32s.lib;gw2DatTools.lib;libwebpdecoder.lib;wxbase30u.lib;wxjpeg.lib;wxmsw30u_core.lib;wxmsw30u_gl.lib;wxpng.lib;wxtiff.lib;wxzlib.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>wxbase29u.lib;wxpng.lib;gw2DatTools.lib;dxguid.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+    <PostBuildEvent />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <ObjectFileName>$(IntDir)\$(Configuration)_$(PlatformShortName)\%(RelativeDir)\</ObjectFileName>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxguid.lib;glew32s.lib;gw2DatTools.lib;libwebpdecoder.lib;wxbase30u.lib;wxjpeg.lib;wxmsw30u_core.lib;wxmsw30u_gl.lib;wxpng.lib;wxtiff.lib;wxzlib.lib;comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>

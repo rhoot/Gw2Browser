@@ -1,0 +1,17 @@
+Gw2.dat
+ID		File Name
+364677		awesomium.dll
+364678		awesomium_process.exe
+364679		icudt.dll
+553489		bink2w32.dll
+640202		Coherent.dll
+640203		Coherent.exe
+640204		icudt.dll
+640205		libEGL.dll
+640206		libGLESv2.dll
+720545		D3DX9_43.dll
+720546		D3DCompiler_43.dll
+
+Local.dat
+ID		File Name
+4098		Gw2.exe

@@ -1,12 +1,5 @@
-**NOTE:** This program is no longer under development (and hasn't been for quite
-a while), due to limited time and lack of interest. Reversing is what kept me 
-interested and all the file formats have already been reversed 
-([gw2formats](https://github.com/rhoot/gw2formats) contains most of them, albeit
-slightly outdated). Feel free to do what you want with the project, but due to
-what I've seen on the internet; please remember the GPL license.
-
-Gw2Browser.1
-============
+Gw2Browser
+==========
 
 Opens a Guild Wars 2 .dat file and allows the user to browse and extract its 
 files. Currently it supports viewing power-of-two textures, models, and binary 
@@ -19,7 +12,14 @@ will have to be re-indexed (for now).
 Keep in mind that if you keep tree items expanded while the indexer is running,
 or while an index is being read, the process is *a lot* slower.
 
-The latest Win32 binary can always be found at http://skold.cc/gw2browser/
+The latest binary can always be found [Here](https://drive.google.com/folderview?id=0B0EZlcQoXgS1eXQwUEI3blVNRHc&usp=sharing)
+
+For people who can't run Gw2Browser, download and Install
+[Visual C++ Redistributable Packages for Visual Studio 2013](http://www.microsoft.com/en-us/download/details.aspx?id=40784)
+choose vcredist_x64.exe for 64bit and vcredist_x86.exe for 32bit executable.
+
+And if it still didn't run, download and install
+[DirectX End-User Runtimes (June 2010)](http://www.microsoft.com/en-us/download/details.aspx?id=8109)
 
 Usage
 -----
@@ -44,45 +44,46 @@ first. Loading any model is also *far* from optimized!
 moment.** Decompressing one produces garbage blocks, so viewing them is 
 disabled until the reason has been determined.
 
-* **Garbage code architecture!** Hey, what can I say. I'm a game developer, not
-application architecture designer. Plus I'm learning wxWidgets as I go along. I
-am working on refactoring chunks of it however, most notably reducing the god
-objects and moving privates out of the header files.
+* **Garbage code architecture!** todo : reducing the god objects and moving
+privates out of the header files, etc.
 
 Libraries and restrictions
 --------------------------
 
-The application is written specifically for MSVC10+, as it links with DirectX9
-and gw2DatTools. It also uses some C++11 features available in said compiler, 
+The application is written specifically for MSVC10+, as it links with DirectX 9
+and gw2DatTools. It also uses some C++11 features available in said compiler,
 since gw2DatTools won't compile without those features anyway.
 
 ### Required libraries
 
-* [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
-* [gw2DatTools](https://github.com/ahom/gw2DatTools/)
-* [wxWidgets](http://wxwidgets.org/)
-
-Keep in mind gw2DatTools is still under development and some modifications may
-be necessary to compile.
+* [DirectX SDK June 2010](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
+* [gw2DatTools](https://github.com/kytulendu/gw2DatTools)
+* [wxWidgets 3.0.0](http://wxwidgets.org/)
+* [OpenGL Extension Wrangler Library](http://glew.sourceforge.net/)
+* [OpenGL Mathematics](http://glm.g-truc.net/)
 
 ### Optional libraries
 
 * [Visual Leak Detector](http://vld.codeplex.com/)
 
-If you do not want to use Visual Leak Detector, remove the include for vld.h
+If you want to use Visual Leak Detector, remove the "//" at #include <vld.h>
 in Gw2Browser.cpp.
 
 Authors
 -------
 
-* [Rhoot](https://github.com/rhoot): Main author.
+* [Khral Steelforge](https://github.com/kytulendu)
 
-Also contains some code by:
+thanks to:
 
-* Xtridence: AtexAsm
-* David Dantowitz: Simple CRC
+* [Rhoot](https://github.com/rhoot) : Original Gw2Browser
+* [Loumie](https://github.com/ahom) : gw2DatTools
+* [Till034](https://github.com/Till034) : OnCompareItems function overload
+* David Dantowitz : Simple CRC
+* [Xtridence](http://forum.xentax.com/viewtopic.php?p=72880#p72880) : modified GWUnpacker to work with Gw2.dat
+* [ral](https://sites.google.com/site/jumptovictory/) : Information of files in Gw2.dat
+* [Open Icon Library](http://openiconlibrary.sourceforge.net/) : Icons used in this software
 
-Contributing
-------------
+special thanks to:
 
-For contributions, please go to [this project's page on GitHub](https://github.com/rhoot/Gw2Browser).
+* ArenaNet/NCSoft and the team that make Guild Wars 2!
